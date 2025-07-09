@@ -7,7 +7,10 @@ export class Start extends Phaser.Scene {
     preload() {
         this.load.image('background', 'assets/lobby_background.png');
         this.load.image('lobby_overlay', 'assets/lobby_overlay.png');
+        this.load.image('dim_overlay', 'assets/dim_overlay.png');
         this.load.image('top_bar', 'assets/top_bar_logo.png');
+        this.load.image('bottom_bar', 'assets/bottom_bar.png');
+        this.load.image('bonus_button', 'assets/bonus_button.png');
         // this.load.image('winline_logo', 'assets/winline_logo.png');
 
         // Load button assets for horizontal slider
@@ -23,17 +26,23 @@ export class Start extends Phaser.Scene {
         initVkBridgeApp();
         this.background = this.add.image(640, 360, 'background');
         this.lobbyOverlay = this.add.image(640, 360, 'lobby_overlay');
+        this.dimOverlay = this.add.image(640, 360, 'dim_overlay');
         this.topBar = this.add.image(640, 50, 'top_bar');
+        this.bottomBar = this.add.image(640, 660, 'bottom_bar');
+            this.dimOverlay.setTint(0xff0000);
         // this.winline_logo = this.add.image(640, 30, 'winline_logo');
         this.lobbyOverlay.scale = 0.5;
         this.topBar.setScale(0.5);
+        this.bottomBar.setScale(0.5);
         // this.winline_logo.setScale(0.15);
         // Create buttons for horizontal slider
         this.createButtons();
+        this.bonusButton = this.add.image(1040, 640, 'bonus_button');
+        this.bonusButton.setScale(0.4);
     }
 
     createButtons() {
-        const buttonScale = 0.29; // Scale down large images to ~200x300
+        const buttonScale = 0.27; // Scale down large images to ~200x300
         const buttonSpacing = 250; // Space between button centers
         const buttonY = 100; // Y position relative to container (0)
 
@@ -59,7 +68,21 @@ export class Start extends Phaser.Scene {
             
             // Create button sprite
             const button = this.add.image(x, buttonY, data.key);
-            button.setScale(buttonScale);
+            if (index == 0) {
+            button.setScale(0.25);
+            }
+            if (index == 1) {
+            button.setScale(0.27);
+            }
+            if (index == 2) {
+            button.setScale(0.29);
+            }
+            if (index == 3) {
+            button.setScale(0.27);
+            }
+            if (index == 4) {
+            button.setScale(0.25);
+            }
             button.setInteractive({ useHandCursor: true });
             
             // Store button reference with metadata
