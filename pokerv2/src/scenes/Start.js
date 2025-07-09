@@ -16,9 +16,11 @@ export class Start extends Phaser.Scene {
         this.load.image('high_bid_btn', 'assets/high_bid.png');
         this.load.image('random_match_btn', 'assets/random_match.png');
         this.load.image('train_game_btn', 'assets/train_game.png');
+        this.load.script('vklogic','./src/scripts/vklogic.js');
     }
 
     create() {
+        initVkBridgeApp();
         this.background = this.add.image(640, 360, 'background');
         this.lobbyOverlay = this.add.image(640, 360, 'lobby_overlay');
         this.topBar = this.add.image(640, 50, 'top_bar');
