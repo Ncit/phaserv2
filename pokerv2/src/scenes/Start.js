@@ -10,8 +10,6 @@ export class Start extends Phaser.Scene {
         this.load.image('dim_overlay', 'assets/dim_overlay.png');
         this.load.image('top_bar', 'assets/top_bar_logo.png');
         this.load.image('bottom_bar', 'assets/bottom_bar.png');
-        this.load.image('bonus_button', 'assets/bonus_button.png');
-        // this.load.image('winline_logo', 'assets/winline_logo.png');
 
         // Load button assets for horizontal slider
         this.load.image('fast_game_btn', 'assets/fast_game.png');
@@ -19,6 +17,9 @@ export class Start extends Phaser.Scene {
         this.load.image('high_bid_btn', 'assets/high_bid.png');
         this.load.image('random_match_btn', 'assets/random_match.png');
         this.load.image('train_game_btn', 'assets/train_game.png');
+        
+        // Load bonus button asset
+        this.load.image('bonus_button', 'assets/bonus_button.png');
         this.load.script('vklogic','./src/scripts/vklogic.js');
     }
 
@@ -30,15 +31,39 @@ export class Start extends Phaser.Scene {
         this.topBar = this.add.image(640, 50, 'top_bar');
         this.bottomBar = this.add.image(640, 660, 'bottom_bar');
             this.dimOverlay.setTint(0xff0000);
-        // this.winline_logo = this.add.image(640, 30, 'winline_logo');
         this.lobbyOverlay.scale = 0.5;
         this.topBar.setScale(0.5);
         this.bottomBar.setScale(0.5);
-        // this.winline_logo.setScale(0.15);
         // Create buttons for horizontal slider
         this.createButtons();
+        
+        // Create and setup bonus button
         this.bonusButton = this.add.image(1040, 640, 'bonus_button');
         this.bonusButton.setScale(0.4);
+        this.bonusButton.setInteractive({ useHandCursor: true });
+        
+        // Add hover effects to bonus button
+        this.bonusButton.on('pointerover', () => {
+            // this.bonusButton.setScale(0.44); // Scale up on hover
+            this.bonusButton.setTint(0xdddddd); // Slight tint for hover
+        });
+        
+        this.bonusButton.on('pointerout', () => {
+            // this.bonusButton.setScale(0.4); // Reset scale
+            this.bonusButton.clearTint(); // Remove tint
+        });
+        
+        // Add click handler with visual feedback
+        this.bonusButton.on('pointerdown', () => {
+            // Visual click feedback
+            this.bonusButton.setTint(0x888888);
+            console.log('Bonus button clicked!');
+            
+            // Reset tint after short delay
+            this.time.delayedCall(150, () => {
+                this.bonusButton.clearTint();
+            });
+        });
     }
 
     createButtons() {
