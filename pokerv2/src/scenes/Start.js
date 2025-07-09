@@ -33,7 +33,7 @@ export class Start extends Phaser.Scene {
     }
 
     createButtons() {
-        const buttonScale = 0.27; // Scale down large images to ~200x300
+        const buttonScale = 0.29; // Scale down large images to ~200x300
         const buttonSpacing = 250; // Space between button centers
         const buttonY = 100; // Y position relative to container (0)
 
@@ -47,7 +47,7 @@ export class Start extends Phaser.Scene {
         ];
 
         // Create container for slider
-        this.buttonContainer = this.add.container(0, 450); // Position container at y=450
+        this.buttonContainer = this.add.container(0, 250); // Position container at y=450
         this.buttonContainer.setSize(buttonData.length * buttonSpacing, 300);
 
         // Store buttons for later use
