@@ -22,7 +22,7 @@ function setupApp(appDataCallback) {
   vkBridge.send('VKWebAppGetLaunchParams')
   .then((data) => { 
     if (data.vk_user_id) {
-      auth(data.vk_user_id, function(authData) {
+      userInfo(data.vk_user_id, function(authData) {
       
       console.log(data); 
       // Параметры запуска получены

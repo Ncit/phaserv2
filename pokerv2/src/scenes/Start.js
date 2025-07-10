@@ -39,11 +39,6 @@ export class Start extends Phaser.Scene {
         setupApp(function(appData) {
             this.window.appData = appData
                 console.log(this.window.appData);
-            userInfo(appData.id, function(userInfoData) {
-                this.window.userInfoData = userInfoData
-                console.log(this.window.userInfoData);
-            
-            });
         });
         this.background = this.add.image(640, 360, 'background');
         this.lobbyOverlay = this.add.image(640, 360, 'lobby_overlay');
@@ -103,7 +98,7 @@ export class Start extends Phaser.Scene {
         ];
 
         controls.forEach((control, index) => {
-control.on('pointerover', () => {
+        control.on('pointerover', () => {
             // this.bonusButton.setScale(0.44); // Scale up on hover
             control.setTint(0xdddddd); // Slight tint for hover
         });
