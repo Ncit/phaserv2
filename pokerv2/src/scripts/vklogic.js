@@ -23,7 +23,7 @@ function setupApp(appDataCallback) {
   .then((data) => { 
     if (data.vk_user_id) {
       auth(data.vk_user_id, function(authData) {
-
+      
       console.log(data); 
       // Параметры запуска получены
       appDataCallback(authData)
@@ -36,7 +36,7 @@ function setupApp(appDataCallback) {
   });
 }
 
-function auth(userId,authCallback) {
+function userInfo(userId,authCallback) {
   vkBridge.send('VKWebAppGetUserInfo', {
   user_id: userId
   })

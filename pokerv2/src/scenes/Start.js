@@ -10,6 +10,16 @@ export class Start extends Phaser.Scene {
         this.load.image('dim_overlay', 'assets/dim_overlay.png');
         this.load.image('top_bar', 'assets/top_bar_logo.png');
         this.load.image('bottom_bar', 'assets/bottom_bar.png');
+        this.load.image('planet_icon', 'assets/planet_icon.png');
+        this.load.image('settings_button', 'assets/settings_button.png');
+        this.load.image('stats_button', 'assets/stats_button.png');
+        this.load.image('friends_button', 'assets/friends_button.png');
+        this.load.image('chip_button', 'assets/chip_button.png');
+        this.load.image('underline', 'assets/underline.png');
+        this.load.image('avatar', 'assets/avatar.png');
+        this.load.image('crown', 'assets/crown.png');
+        this.load.image('star', 'assets/star.png');
+        this.load.image('progress', 'assets/progress.png');
 
         // Load button assets for horizontal slider
         this.load.image('fast_game_btn', 'assets/fast_game.png');
@@ -25,15 +35,101 @@ export class Start extends Phaser.Scene {
 
     create() {
         initVkBridgeApp();
+        setupApp(function(appData) {
+            this.window.appData = appData
+                console.log(this.window.appData);
+            userInfo(appData.id, function(userInfoData) {
+                this.window.userInfoData = userInfoData
+                console.log(this.window.userInfoData);
+            
+            });
+        });
         this.background = this.add.image(640, 360, 'background');
         this.lobbyOverlay = this.add.image(640, 360, 'lobby_overlay');
         this.dimOverlay = this.add.image(640, 360, 'dim_overlay');
         this.topBar = this.add.image(640, 50, 'top_bar');
         this.bottomBar = this.add.image(640, 660, 'bottom_bar');
-            this.dimOverlay.setTint(0xff0000);
+        this.underline = this.add.image(680,700, 'underline');
+
+
+        this.settingsButton = this.add.image(120, 660, 'settings_button');
+        this.friendsButton = this.add.image(180, 660, 'friends_button');
+        this.statsButton = this.add.image(240, 660, 'stats_button');
+        this.planetIcon = this.add.image(300, 660, 'planet_icon');
+
+        this.activePlayers = this.add.text(320, 640, 'Активных участников:', { fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif', fontSize: 17});
+        this.activePlayersCount = this.add.text(320, 660, '12011', { fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif', fontSize: 19 });
+
+
+        this.chipButton = this.add.image(1180, 54, 'chip_button');
+        this.chipLabel = this.add.text(1050, 30, 'Ваш баланс:', { fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif', fontSize: 17 });
+        this.chipCount = this.add.text(1050, 46, '20000', { fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif', fontSize: 26 });
+
+        this.avatar = this.add.image(120, 46, 'avatar');
+        this.crown = this.add.image(138, 60, 'crown');
+        this.userName = this.add.text(166, 22, 'Имя игрока', { fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif', fontSize: 24});
+        this.star = this.add.image(346, 62, 'star');
+        this.progress = this.add.image(246, 64, 'progress');
+        this.starCount = this.add.text(362, 50, '366', { fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif', fontSize: 19});
+        
+        this.avatar.scale = 0.1;
+        this.crown.scale = 0.34;
+        this.progress.scale = 0.34;
+        this.star.scale = 0.36;
+
+        this.chipButton.scale = 0.35;
+        this.chipLabel.setTint(0xffffff);
+        this.chipLabel.setAlpha(0.22);
+
+        this.activePlayers.setTint(0xffffff);
+        this.activePlayers.setAlpha(0.22);
+        this.activePlayersCount.setTint(0x9FA6B3);
+
+        this.settingsButton.setInteractive({ useHandCursor: true });
+        this.friendsButton.setInteractive({ useHandCursor: true });
+        this.statsButton.setInteractive({ useHandCursor: true });
+        // this.planetIcon.setInteractive({ useHandCursor: true });
+
+        this.settingsButton.scale = 0.35;
+        this.friendsButton.scale = 0.35;
+        this.statsButton.scale = 0.35;
+        this.planetIcon.scale = 0.3;
+
+        const controls = [
+            this.settingsButton,
+            this.friendsButton,
+            this.statsButton
+        ];
+
+        controls.forEach((control, index) => {
+control.on('pointerover', () => {
+            // this.bonusButton.setScale(0.44); // Scale up on hover
+            control.setTint(0xdddddd); // Slight tint for hover
+        });
+        
+        control.on('pointerout', () => {
+            // this.bonusButton.setScale(0.4); // Reset scale
+            control.clearTint(); // Remove tint
+        });
+        
+        // Add click handler with visual feedback
+        control.on('pointerdown', () => {
+            // Visual click feedback
+            control.setTint(0x888888);
+            console.log('Bonus button clicked!');
+            
+            // Reset tint after short delay
+            this.time.delayedCall(150, () => {
+                control.clearTint();
+            });
+        });
+        })
+
+        this.dimOverlay.setTint(0xff0000);
         this.lobbyOverlay.scale = 0.5;
         this.topBar.setScale(0.5);
         this.bottomBar.setScale(0.5);
+        this.underline.setScale(0.25);
         // Create buttons for horizontal slider
         this.createButtons();
         
@@ -68,7 +164,7 @@ export class Start extends Phaser.Scene {
 
     createButtons() {
         const buttonScale = 0.27; // Scale down large images to ~200x300
-        const buttonSpacing = 250; // Space between button centers
+        const buttonSpacing = 240; // Space between button centers
         const buttonY = 100; // Y position relative to container (0)
 
         // Button data with labels
