@@ -1,4 +1,4 @@
-var isDebug = false
+var isDebug = true
 export class Splash extends Phaser.Scene {
 
     constructor() {

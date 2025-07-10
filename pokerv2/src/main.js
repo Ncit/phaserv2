@@ -12,8 +12,8 @@ const config = {
     backgroundColor: '#000000',
     pixelArt: false,
     scene: [
-        Splash,
-        Start,
+        // Splash,
+        // Start,
         GameScene
     ],
     scale: {

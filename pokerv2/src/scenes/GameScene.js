@@ -24,6 +24,13 @@ export class GameScene extends Phaser.Scene {
 
 
         this.load.image('club_3', 'assets/club_3.png');
+
+        this.load.image('back_card', 'assets/back_card.png');
+        this.load.image('player_name_placeholder', 'assets/player_name_placeholder.png');
+
+        this.load.image('avatarCircle', 'assets/avatar_cirlce.png');
+        this.load.image('dummy_avatar', 'https://gravatar.com/avatar/2ee1f504b415b376c586641aee2c3194?s=400&d=robohash&r=x');
+
     }
 
     create() {
@@ -98,6 +105,43 @@ export class GameScene extends Phaser.Scene {
             fill: '#FF4B00',
             strokeThickness: 1
         }).setOrigin(0.5);
+
+        this.addFirstPlayer()
+    }
+
+    addFirstPlayer() {
+
+        this.firstPlayerNamePlaceholder = this.add.image(200, 270, 'player_name_placeholder');//'avatarQ');
+        this.firstPlayerNamePlaceholder.scale = 0.36;
+
+        this.firstPlayerAvatarCircle = this.add.image(290, 270, 'avatarCircle');//'avatarQ');
+        this.firstPlayerAvatarCircle.scale = 0.3;
+
+        this.firstPlayerAvatar = this.add.image(290, 244, 'dummy_avatar');//'avatarQ');
+        this.firstPlayerAvatar.scale = 0.3;
+
+        this.firstPlayerName = this.add.text(180, 260, 'Иванченко', {
+            fontFamily: 'Arial',
+            fontSize: '22px',
+            fill: '#FF6A13',
+            strokeThickness: 1
+        }).setOrigin(0.5);
+
+        this.firstPlayerBank = this.add.text(190, 286, '500', {
+            fontFamily: 'Arial',
+            fontSize: '18px',
+            fill: '#ffffff',
+            strokeThickness: 1
+        }).setOrigin(0.5);
+
+
+        this.firstPlayerSCard = this.add.image(324, 300, 'back_card');//'avatarQ');
+        this.firstPlayerSCard.scale = 0.36;
+        this.firstPlayerSCard.rotation = -0.24;
+
+        this.firstPlayerFCard = this.add.image(344, 300, 'back_card');//'avatarQ');
+        this.firstPlayerFCard.scale = 0.36;
+        this.firstPlayerFCard.rotation = 0.24;
     }
 
     createProgressBar() {
