@@ -39,7 +39,7 @@ export class Start extends Phaser.Scene {
         //     scene.userName = appData.first_name;
         //     // scene.load.image('avatarQ', appData);
         // });
-        this.load.image('avatarQ', window.appData.photo_100);
+        this.load.image('avatarQ', window.appData.photo_200);
     }
 
     create() {
@@ -81,7 +81,7 @@ export class Start extends Phaser.Scene {
 //         loop: false,
 //         callback: () => {
            this.userAvatar = this.add.image(120, 46, 'avatarQ');
-           this.userAvatar.scale = 0.5;
+           this.userAvatar.scale = 0.2;
             this.crown = this.add.image(138, 60, 'crown');
             console.log("---");
             console.log(window.appData);

@@ -122,10 +122,6 @@ return
   .then((data) => { 
     if (data.vk_user_id) {
       userInfo(data.vk_user_id, function(authData) {
-    console.log("=-=-=-")
-    console.log(authData)
-    console.log("=-=-=-")
-      // Параметры запуска получены
       appDataCallback(authData)
 });
     }
