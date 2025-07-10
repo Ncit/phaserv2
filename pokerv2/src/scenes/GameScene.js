@@ -16,6 +16,7 @@ export class GameScene extends Phaser.Scene {
         this.load.image('raise_button', 'assets/raise_button.png');
         this.load.image('minus_button', 'assets/minus_button.png');
         this.load.image('plus_button', 'assets/plus_button.png');
+        this.load.image('button_placeholder', 'assets/button_placeholder.png');
 
         this.load.image('underline', 'assets/underline.png');
     }
@@ -31,7 +32,11 @@ export class GameScene extends Phaser.Scene {
         this.callButton = this.add.image(510, 640, 'call_button');
         this.raiseButton = this.add.image(710, 640, 'raise_button');
         this.minusButton = this.add.image(850, 640, 'minus_button');
-        this.plusButton = this.add.image(1170, 640, 'plus_button');
+        this.plusButton = this.add.image(1180, 640, 'plus_button');
+        this.minButton = this.add.image(910, 624, 'button_placeholder');
+        this.halfButton = this.add.image(980, 624, 'button_placeholder');
+        this.bankButton = this.add.image(1050, 624, 'button_placeholder');
+        this.maxButton = this.add.image(1120, 624, 'button_placeholder');
         
         this.underline = this.add.image(640,700, 'underline');
 
@@ -52,6 +57,11 @@ export class GameScene extends Phaser.Scene {
         this.minusButton.scale = 0.3
         this.plusButton.scale = 0.3
 
+        this.minButton.scale = 0.3
+        this.halfButton.scale = 0.3
+        this.bankButton.scale = 0.3
+        this.maxButton.scale = 0.3
+
         // Setup button interactions
         this.setupProgressBarControls();
     }
@@ -64,9 +74,9 @@ export class GameScene extends Phaser.Scene {
         this.progressStep = 5; // Amount to change per button click
 
         // Progress bar dimensions and position
-        const barWidth = 250;
+        const barWidth = 260;
         const barHeight = 10;
-        const barX = 1010; // Centered between minus (850) and plus (1110) buttons
+        const barX = 1014; // Centered between minus (850) and plus (1110) buttons
         const barY = 654;
 
         // Create progress bar background (border)
@@ -145,7 +155,7 @@ export class GameScene extends Phaser.Scene {
 
     updateProgressBar() {
         // Update progress bar fill width
-        const barWidth = 250;
+        const barWidth = 260;
         const newWidth = (barWidth * this.progressValue / 100);
         this.progressBarFill.width = newWidth;
 
