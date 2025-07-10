@@ -226,7 +226,7 @@ export class Start extends Phaser.Scene {
                 // Check if this is the Train Game button
                 if (data.key === 'train_game_btn') {
                     // Navigate to GameScene after visual feedback
-                    this.time.delayedCall(550, () => {
+                    this.time.delayedCall(150, () => {
                         button.clearTint();
                         console.log('Starting GameScene...');
                         this.scene.start('GameScene');
