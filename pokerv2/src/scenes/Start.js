@@ -37,6 +37,7 @@ export class Start extends Phaser.Scene {
             console.log('--');
             console.log(appData);
             scene.load.image('avatarQ', appData.photo_200);
+            scene.userName = appData.first_name;
             // scene.load.image('avatarQ', appData);
         });
 
@@ -82,7 +83,7 @@ this.time.addEvent({
            this.userAvatar = this.add.image(120, 46, 'avatarQ');
            this.userAvatar.scale = 0.2;
             this.crown = this.add.image(138, 60, 'crown');
-        this.userName = this.add.text(166, 22, 'Имя игрока', { fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif', fontSize: 24});
+        this.userName = this.add.text(166, 22, this.userName, { fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif', fontSize: 24});
         this.star = this.add.image(346, 62, 'star');
         this.progress = this.add.image(246, 64, 'progress');
         this.starCount = this.add.text(362, 50, '366', { fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif', fontSize: 19});
@@ -391,7 +392,8 @@ this.time.addEvent({
 function setupApp(appDataCallback) {
     if (isDebug) {
 const appData = {
-    photo_200: 'https://gravatar.com/avatar/2ee1f504b415b376c586641aee2c3194?s=400&d=robohash&r=x'
+    photo_200: 'https://gravatar.com/avatar/2ee1f504b415b376c586641aee2c3194?s=400&d=robohash&r=x',
+  first_name: "Никита"
 };
     // 
     appDataCallback(appData)
