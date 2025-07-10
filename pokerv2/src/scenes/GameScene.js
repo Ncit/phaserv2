@@ -175,11 +175,13 @@ export class GameScene extends Phaser.Scene {
         // Create unique property names for each player
         const playerPrefix = `player${playerNumber}`;
         
-        // Name placeholder background
-        this[`${playerPrefix}NamePlaceholder`] = this.add.image(
-            position.x, position.y, 'player_name_placeholder'
-        );
-        this[`${playerPrefix}NamePlaceholder`].scale = 0.36;
+        // Name placeholder background - only create if name is not empty
+        if (name && name.trim() !== '') {
+            this[`${playerPrefix}NamePlaceholder`] = this.add.image(
+                position.x, position.y, 'player_name_placeholder'
+            );
+            this[`${playerPrefix}NamePlaceholder`].scale = 0.36;
+        }
 
         // Avatar circle background
         this[`${playerPrefix}AvatarCircle`] = this.add.image(
@@ -199,15 +201,17 @@ export class GameScene extends Phaser.Scene {
             this[`${playerPrefix}Avatar`].scale = 0.3;
         });
 
-        // Player name text
-        this[`${playerPrefix}Name`] = this.add.text(
-            position.x - 20, position.y - 10, name, {
-                fontFamily: 'Arial',
-                fontSize: '22px',
-                fill: '#FF6A13',
-                strokeThickness: 1
-            }
-        ).setOrigin(0.5);
+        // Player name text - only create if name is not empty
+        if (name && name.trim() !== '') {
+            this[`${playerPrefix}Name`] = this.add.text(
+                position.x - 20, position.y - 10, name, {
+                    fontFamily: 'Arial',
+                    fontSize: '22px',
+                    fill: '#FF6A13',
+                    strokeThickness: 1
+                }
+            ).setOrigin(0.5);
+        }
 
         // Player bank text
         this[`${playerPrefix}Bank`] = this.add.text(
