@@ -1,48 +1,43 @@
 # Memory Bank: Tasks
 
 ## Current Task
-**Make progress bar corners rounded and remove stroke** ✅ COMPLETED
+**Move labels on buttons** ✅ COMPLETED
 
 ## Task Analysis
-- **Type**: UI Polish Enhancement
-- **Scope**: Enhance progress bar visual appearance with rounded corners
-- **Component**: Progress bar visual styling improvements
-- **Target**: GameScene progress bar component
-- **Impact**: Modern, polished UI appearance without stroke artifacts
+- **Type**: UI Positioning Enhancement
+- **Scope**: Reposition text labels to be directly on buttons
+- **Component**: Text label positioning for quick action buttons
+- **Target**: GameScene button text positioning
+- **Impact**: Cleaner UI with labels integrated directly on button surfaces
 
 ## Implementation Details
 - **Target File**: `pokerv2/src/scenes/GameScene.js`
-- **Progress Bar**: 250px wide rounded corner progress bar
-- **Visual Enhancement**: Rounded corners with 5px radius
+- **Text Positioning**: Moved labels from above buttons to centered on buttons
+- **Positioning Change**: Y-coordinate changed from 600 to 624 (button level)
 - **Features**:
-  - Smooth rounded corners using graphics fillRoundedRect
-  - Removed stroke/border for cleaner appearance
-  - Dynamic color-coded fill (Orange gradient tones)
-  - 10px height for sleeker profile
-  - Repositioned plus button to 1170px for better spacing
+  - Text directly overlaid on button surfaces
+  - Centered positioning using setOrigin(0.5)
+  - White text with black stroke for visibility against button background
+  - Maintained readability and accessibility
 
 ## Code Changes
-- **Graphics Conversion**: Changed from rectangle objects to graphics for rounded corners
-- **Visual System**: Background and fill using fillRoundedRect method
-- **Color Palette**: Updated to orange gradient (0xFF4B00 → 0xFB733A)
-- **Dimensions**: Width 250px, height 10px, positioned at (1010, 654)
-- **Corner Radius**: 5px rounded corners on background and fill
-- **Stroke Removal**: Eliminated border styling for clean appearance
+- **Text Positioning**: Updated `createButtonLabels()` method Y-coordinates
+- **Visual Integration**: Labels now appear directly on button surfaces
+- **Coordinate Update**: Changed all text Y-positions from 600 to 624
+- **Comment Update**: Changed from "above" to "on" quick action buttons
 
 ## Status
-- [x] Converted progress bar to graphics-based rendering
-- [x] Implemented 5px rounded corners
-- [x] Removed stroke/border styling
-- [x] Updated color palette to orange gradient
-- [x] Adjusted dimensions and positioning
-- [x] Maintained interactive functionality
+- [x] Updated text positioning from above to on buttons
+- [x] Maintained text visibility with stroke styling
+- [x] Preserved interactive functionality
+- [x] Improved visual integration of labels with buttons
 - [x] **IMPLEMENTATION COMPLETE** ✅
 
 ## Implementation Results
 - **File Modified**: `pokerv2/src/scenes/GameScene.js`
-- **Method Updated**: `updateProgressBarFill()` for graphics rendering
-- **Visual Enhancement**: Modern rounded progress bar with no stroke
-- **Positioning**: Plus button moved to 1170px, progress bar at 1010px center
+- **Method Updated**: `createButtonLabels()` Y-coordinate positioning
+- **Visual Enhancement**: Cleaner UI with integrated button labels
+- **Positioning**: Buttons at y=624, text now also at y=624 (centered on buttons)
 
 ## Previous Task Status
 ✅ **COMPLETED**: Horizontal slider for big buttons in Start.js scene
@@ -68,10 +63,11 @@
 - **Platform**: macOS, browser-based testing
 
 ## Status
-- [x] Rounded corners progress bar implementation complete
-- [x] Stroke/border removal successful
-- [x] Graphics-based rendering working
-- [x] Enhanced visual appearance achieved
+- [x] Quick action buttons implementation complete
+- [x] Text labels added above all buttons
+- [x] Interactive functionality working (hover/click effects)
+- [x] Progress bar integration successful
+- [x] Betting presets functional (MIN/HALF/BANK/MAX)
 - [x] Environment ready for new tasks
 - [x] Memory Bank active and tracking
 - [x] **CURRENT TASK COMPLETE** ✅

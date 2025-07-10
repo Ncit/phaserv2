@@ -62,8 +62,12 @@ export class GameScene extends Phaser.Scene {
         this.bankButton.scale = 0.3
         this.maxButton.scale = 0.3
 
+        // Add text labels above the quick action buttons
+        this.createButtonLabels();
+
         // Setup button interactions
         this.setupProgressBarControls();
+        this.setupQuickActionButtons();
     }
 
     createProgressBar() {
@@ -95,6 +99,41 @@ export class GameScene extends Phaser.Scene {
             0xFB733A
         );
         this.progressBarFill.setOrigin(0, 0.5);
+    }
+
+    createButtonLabels() {
+        // Add text labels on quick action buttons
+        this.minButtonText = this.add.text(910, 624, 'МИН.', {
+            fontFamily: 'Arial',
+            fontSize: '12px',
+            fill: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 1
+        }).setOrigin(0.5);
+
+        this.halfButtonText = this.add.text(980, 624, '1/2', {
+            fontFamily: 'Arial',
+            fontSize: '12px',
+            fill: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 1
+        }).setOrigin(0.5);
+
+        this.bankButtonText = this.add.text(1050, 624, 'БАНК', {
+            fontFamily: 'Arial',
+            fontSize: '12px',
+            fill: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 1
+        }).setOrigin(0.5);
+
+        this.maxButtonText = this.add.text(1120, 624, 'МАКС.', {
+            fontFamily: 'Arial',
+            fontSize: '12px',
+            fill: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 1
+        }).setOrigin(0.5);
     }
 
     setupProgressBarControls() {
@@ -136,6 +175,56 @@ export class GameScene extends Phaser.Scene {
 
         this.plusButton.on('pointerup', () => {
             this.plusButton.clearTint();
+        });
+    }
+
+    setupQuickActionButtons() {
+        // Make all quick action buttons interactive
+        const quickButtons = [this.minButton, this.halfButton, this.bankButton, this.maxButton];
+        
+        quickButtons.forEach(button => {
+            button.setInteractive({ useHandCursor: true });
+            
+            // Add hover effects
+            button.on('pointerover', () => {
+                button.setTint(0xdddddd);
+            });
+            
+            button.on('pointerout', () => {
+                button.clearTint();
+            });
+            
+            button.on('pointerdown', () => {
+                button.setTint(0x888888);
+            });
+            
+            button.on('pointerup', () => {
+                button.clearTint();
+            });
+        });
+
+        // MIN button - set progress to minimum (0%)
+        this.minButton.on('pointerdown', () => {
+            this.setProgressValue(0);
+            console.log('MIN button clicked - Progress set to 0%');
+        });
+
+        // HALF button - set progress to 50%
+        this.halfButton.on('pointerdown', () => {
+            this.setProgressValue(50);
+            console.log('HALF button clicked - Progress set to 50%');
+        });
+
+        // BANK button - set progress to 75% (representing bank/pot bet)
+        this.bankButton.on('pointerdown', () => {
+            this.setProgressValue(75);
+            console.log('BANK button clicked - Progress set to 75%');
+        });
+
+        // MAX button - set progress to maximum (100%)
+        this.maxButton.on('pointerdown', () => {
+            this.setProgressValue(100);
+            console.log('MAX button clicked - Progress set to 100%');
         });
     }
 
