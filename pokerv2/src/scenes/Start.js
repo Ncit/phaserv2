@@ -126,6 +126,8 @@ export class Start extends Phaser.Scene {
                 this.bonusButton.clearTint();
             });
         });
+        // HINT: подключение к игре
+        this.joinGameMode();
     }
 
     createButtons() {
@@ -207,8 +209,6 @@ export class Start extends Phaser.Scene {
                 // Check if this is the Train Game button
                 if (data.key === 'train_game_btn') {
                     // Send network message and navigate to GameScene
-                    this.joinGameMode(data.label);
-                    
                     this.time.delayedCall(150, () => {
                         button.clearTint();
                         console.log('Starting GameScene...');
@@ -216,7 +216,6 @@ export class Start extends Phaser.Scene {
                     });
                 } else {
                     // For other game modes, send join request but don't navigate yet
-                    this.joinGameMode(data.label);
                     
                     // Reset tint after short delay for other buttons
                     this.time.delayedCall(150, () => {
@@ -247,9 +246,7 @@ export class Start extends Phaser.Scene {
             maxScroll: this.maxX
         });
 
-        // Add drag functionality - DISABLED
-        // this.setupSliderDrag();
-
+        // HINT: 
         // Initialize NetworkService when Start scene loads
         this.initializeNetworkService();
     }
@@ -266,11 +263,10 @@ export class Start extends Phaser.Scene {
                 type: 'connect',
                 playerId: window.appData?.id || 'guest',
                 playerName: window.appData?.first_name || 'Guest',
+                avatar: window.appData?.photo_200 || null,
                 timestamp: Date.now()
             });
 
-            // Update active players count if connected
-            this.updateActivePlayersFromServer();
         });
 
         window.NetworkService.onDisconnect((event) => {
@@ -284,27 +280,14 @@ export class Start extends Phaser.Scene {
             // Handle network errors gracefully
             this.handleNetworkError(error);
         });
-
-        // Setup message handlers for lobby/start screen
-        window.NetworkService.onMessage('lobby_update', (data) => {
-            console.log('[Start] Lobby update received:', data);
-            this.updateLobbyInfo(data);
-        });
-
-        window.NetworkService.onMessage('active_players', (data) => {
-            console.log('[Start] Active players update:', data);
-            if (data.count && this.activePlayersCount) {
-                this.activePlayersCount.setText(data.count.toString());
-            }
-        });
-
+        // HINT: 
         window.NetworkService.onMessage('player_balance', (data) => {
             console.log('[Start] Player balance update:', data);
             if (data.balance && this.chipCount) {
                 this.chipCount.setText(data.balance.toString());
             }
         });
-
+        // HINT: 
         // Send ping to keep connection alive
         this.networkPingTimer = this.time.addEvent({
             delay: 30000, // 30 seconds
@@ -315,7 +298,7 @@ export class Start extends Phaser.Scene {
             },
             loop: true
         });
-
+        // HINT:
         // Request initial lobby data
         this.time.delayedCall(1000, () => {
             if (window.NetworkService.isConnected()) {
@@ -325,26 +308,6 @@ export class Start extends Phaser.Scene {
                 });
             }
         });
-    }
-
-    updateActivePlayersFromServer() {
-        // Request updated active player count
-        if (window.NetworkService.isConnected()) {
-            window.NetworkService.send({
-                type: 'get_active_players'
-            });
-        }
-    }
-
-    updateLobbyInfo(data) {
-        // Update lobby information from server
-        if (data.activePlayersCount && this.activePlayersCount) {
-            this.activePlayersCount.setText(data.activePlayersCount.toString());
-        }
-        
-        if (data.playerBalance && this.chipCount) {
-            this.chipCount.setText(data.playerBalance.toString());
-        }
     }
 
     handleDisconnection() {
@@ -360,14 +323,15 @@ export class Start extends Phaser.Scene {
         // Could show an error message to the user
     }
 
+    // HINT:
     // Send join game request when entering a game mode
-    joinGameMode(gameMode) {
+    joinGameMode() {
         if (window.NetworkService.isConnected()) {
             window.NetworkService.send({
-                type: 'join_game_mode',
-                gameMode: gameMode,
+                type: 'join_game',
                 playerId: window.appData?.id || 'guest',
                 playerName: window.appData?.first_name || 'Guest',
+                avatar: window.appData?.photo_200 || null,
                 timestamp: Date.now()
             });
         }
@@ -379,100 +343,6 @@ export class Start extends Phaser.Scene {
             this.networkPingTimer.destroy();
         }
         super.destroy();
-    }
-
-    setupSliderDrag() {
-        // Drag state variables
-        this.isDragging = false;
-        this.dragStartX = 0;
-        this.containerStartX = 0;
-        this.dragVelocity = 0;
-        this.lastDragTime = 0;
-        this.lastDragX = 0;
-
-        // Drag start
-        this.buttonContainer.on('pointerdown', (pointer) => {
-            this.isDragging = true;
-            this.dragStartX = pointer.x;
-            this.containerStartX = this.buttonContainer.x;
-            this.dragVelocity = 0;
-            this.lastDragTime = pointer.event.timeStamp;
-            this.lastDragX = pointer.x;
-            
-            // Stop any ongoing tweens
-            this.tweens.killTweensOf(this.buttonContainer);
-            
-            console.log('Drag started');
-        });
-
-        // Drag move
-        this.input.on('pointermove', (pointer) => {
-            if (!this.isDragging) return;
-
-            const dragDistance = pointer.x - this.dragStartX;
-            let newX = this.containerStartX + dragDistance;
-
-            // Calculate velocity for momentum
-            const currentTime = pointer.event.timeStamp;
-            const timeDelta = currentTime - this.lastDragTime;
-            if (timeDelta > 0) {
-                this.dragVelocity = (pointer.x - this.lastDragX) / timeDelta;
-            }
-            this.lastDragTime = currentTime;
-            this.lastDragX = pointer.x;
-
-            // Apply boundary constraints with resistance
-            if (newX > this.minX) {
-                newX = this.minX + (newX - this.minX) * 0.3; // Resistance when going too far left
-            } else if (newX < -this.maxX) {
-                newX = -this.maxX + (newX + this.maxX) * 0.3; // Resistance when going too far right
-            }
-
-            this.buttonContainer.x = newX;
-        });
-
-        // Drag end
-        this.input.on('pointerup', () => {
-            if (!this.isDragging) return;
-            
-            this.isDragging = false;
-            console.log('Drag ended, velocity:', this.dragVelocity);
-            
-            // Apply momentum and boundary correction
-            this.applyMomentumAndBounds();
-        });
-
-        // Handle pointer leave (drag outside game area)
-        this.input.on('pointerleave', () => {
-            if (!this.isDragging) return;
-            
-            this.isDragging = false;
-            this.applyMomentumAndBounds();
-        });
-    }
-
-    applyMomentumAndBounds() {
-        let targetX = this.buttonContainer.x;
-        
-        // Apply momentum if velocity is significant
-        if (Math.abs(this.dragVelocity) > 0.5) {
-            const momentumDistance = this.dragVelocity * 100; // Scale velocity to distance
-            targetX += momentumDistance;
-        }
-
-        // Clamp to boundaries
-        targetX = Phaser.Math.Clamp(targetX, -this.maxX, this.minX);
-
-        // Smooth animation to final position
-        this.tweens.add({
-            targets: this.buttonContainer,
-            x: targetX,
-            duration: 500,
-            ease: 'Cubic.easeOut',
-            onComplete: () => {
-                console.log('Slider animation complete at x:', this.buttonContainer.x);
-            }
-        });
     }
 
     update() {

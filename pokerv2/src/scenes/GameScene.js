@@ -737,7 +737,8 @@ export class GameScene extends Phaser.Scene {
         this.progressValue = Phaser.Math.Clamp(value, this.minProgress, this.maxProgress);
         this.updateProgressBar();
     }
-
+    
+    // HINT:
     // Game-specific network message handlers can be set up here if needed
     setupGameNetworkHandlers() {
         // Setup message handlers specific to the game scene
@@ -762,6 +763,7 @@ export class GameScene extends Phaser.Scene {
                 type: 'join_game',
                 playerId: window.appData?.id || 'guest',
                 playerName: window.appData?.first_name || 'Guest',
+                avatar: window.appData?.photo_200 || null,
                 gameId: 'poker_table_1'
             });
         }
