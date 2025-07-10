@@ -1,0 +1,81 @@
+import { ClientError, ClientUser, CommandRequest, CommandResponse, NeedRefreshAllStatesResponse } from "./Common";
+import { ClientGame, ClientGameCommandKind, ClientGameState } from "./Game";
+
+export class ClientLobbyState {
+    currentUser: ClientUser;
+
+    constructor(currentUser: ClientUser) {
+        this.currentUser = currentUser;
+    }
+}
+
+export enum ClientLobbyCommandKind {
+    OnConnection = "on_connection",
+    SetOldUniqueId = "set_old_unique_id",
+    SetUserName = "set_user_name",
+    GetLobbyState = "get_lobby_state",
+    EnterGame = "enter_game",
+    Error = "error",
+    NeedRefreshAllStates = "need_refresh_all_states",
+}
+
+
+export namespace ClientLobby {
+
+    export interface SetOldUniqueIdRequest extends CommandRequest<ClientLobbyCommandKind, string> {
+        kind: ClientLobbyCommandKind.SetOldUniqueId;
+    }
+
+    export interface SetUserNameRequest extends CommandRequest<ClientLobbyCommandKind,string> {
+        kind: ClientLobbyCommandKind.SetUserName;
+    }
+
+    export interface GetLobbyStateRequest extends CommandRequest<ClientLobbyCommandKind,void> {
+        kind: ClientLobbyCommandKind.GetLobbyState;
+    }
+
+    export interface EnterGameRequest extends CommandRequest<ClientLobbyCommandKind,void> {
+        kind: ClientLobbyCommandKind.EnterGame;
+    }
+
+    export interface OnConnectionResponse extends CommandResponse<ClientLobbyCommandKind,ClientUser> {
+        kind: ClientLobbyCommandKind.OnConnection;
+    }
+
+    export interface ErrorResponse extends CommandResponse<ClientLobbyCommandKind,ClientError> {
+        kind: ClientLobbyCommandKind.Error;
+    }
+
+    export interface SetOldUniqueIdResponse extends CommandResponse<ClientLobbyCommandKind,ClientUser> {
+        kind: ClientLobbyCommandKind.SetOldUniqueId;
+    }
+
+    export interface SetUserNameResponse extends CommandResponse<ClientLobbyCommandKind,ClientUser> {
+        kind: ClientLobbyCommandKind.SetUserName;
+    }
+
+    export interface GetLobbyStateResponse extends CommandResponse<ClientLobbyCommandKind,ClientLobbyState> {
+        kind: ClientLobbyCommandKind.GetLobbyState;
+    }
+
+    export type RequestMap = {
+        [ClientLobbyCommandKind.OnConnection]: void;
+        [ClientLobbyCommandKind.SetOldUniqueId]: SetOldUniqueIdRequest;
+        [ClientLobbyCommandKind.SetUserName]: SetUserNameRequest;
+        [ClientLobbyCommandKind.GetLobbyState]: GetLobbyStateRequest;
+        [ClientLobbyCommandKind.EnterGame]: EnterGameRequest;
+        [ClientLobbyCommandKind.Error]: void;
+        [ClientLobbyCommandKind.NeedRefreshAllStates]: void;
+      };
+
+      export type ResponseMap = {
+        [ClientLobbyCommandKind.OnConnection]: OnConnectionResponse;
+        [ClientLobbyCommandKind.SetOldUniqueId]: SetOldUniqueIdResponse;
+        [ClientLobbyCommandKind.SetUserName]: SetUserNameResponse;
+        [ClientLobbyCommandKind.GetLobbyState]: GetLobbyStateResponse;
+        [ClientLobbyCommandKind.EnterGame]: ClientGame.GameStateUpdateResponse;
+        [ClientLobbyCommandKind.Error]: ErrorResponse;
+        [ClientLobbyCommandKind.NeedRefreshAllStates]: NeedRefreshAllStatesResponse;
+      };
+}
+
