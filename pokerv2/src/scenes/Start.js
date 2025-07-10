@@ -5,6 +5,7 @@ export class Start extends Phaser.Scene {
     }
 
     preload() {
+        this.load.script('vklogic','./src/scripts/vklogic.js')
         this.load.image('background', 'assets/lobby_background.png');
         this.load.image('lobby_overlay', 'assets/lobby_overlay.png');
         this.load.image('dim_overlay', 'assets/dim_overlay.png');
