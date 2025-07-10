@@ -22,8 +22,8 @@ export class GameScene extends Phaser.Scene {
         this.load.image('underline', 'assets/underline.png');
         this.load.image('chip_button', 'assets/chip_button.png');
 
-
-        this.load.image('club_3', 'assets/cards/3_of_clubs.png');
+        // Load all playing cards from assets/cards directory
+        this.loadAllCards();
 
         this.load.image('back_card', 'assets/back_card.png');
         this.load.image('player_name_placeholder', 'assets/player_name_placeholder.png');
@@ -31,6 +31,34 @@ export class GameScene extends Phaser.Scene {
         this.load.image('avatarCircle', 'assets/avatar_cirlce.png');
         this.load.image('dummy_avatar', 'https://gravatar.com/avatar/2ee1f504b415b376c586641aee2c3194?s=400&d=robohash&r=x');
 
+    }
+
+    loadAllCards() {
+        // Define card suits and values
+        const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
+        const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'jack', 'queen', 'king', 'ace'];
+        
+        // Load all standard cards
+        suits.forEach(suit => {
+            values.forEach(value => {
+                const cardKey = `${value}_of_${suit}`;
+                const cardPath = `assets/cards/${value}_of_${suit}.png`;
+                this.load.image(cardKey, cardPath);
+            });
+        });
+        
+        // Load the variant cards with "2" suffix (higher quality versions)
+        const variantCards = [
+            'ace_of_spades2', 'jack_of_clubs2', 'jack_of_diamonds2', 'jack_of_hearts2', 'jack_of_spades2',
+            'queen_of_clubs2', 'queen_of_diamonds2', 'queen_of_hearts2', 'queen_of_spades2',
+            'king_of_clubs2', 'king_of_diamonds2', 'king_of_hearts2', 'king_of_spades2'
+        ];
+        
+        variantCards.forEach(cardKey => {
+            this.load.image(cardKey, `assets/cards/${cardKey}.png`);
+        });
+        
+        console.log(`Loaded ${suits.length * values.length + variantCards.length} card images`);
     }
 
     create() {
@@ -376,19 +404,19 @@ export class GameScene extends Phaser.Scene {
         const startX = -totalWidth / 2; // Start from left, centered around container origin
 
         // Create cards with equal spacing
-        this.firstCard = this.add.image(startX, 40, 'club_3'); // Offset Y by 40 to position below table center
+        this.firstCard = this.add.image(startX, 40, 'queen_of_clubs2'); // Offset Y by 40 to position below table center
         this.firstCard.setScale(cardScale);
         
-        this.secondCard = this.add.image(startX + cardSpacing, 40, 'club_3');
+        this.secondCard = this.add.image(startX + cardSpacing, 40, 'queen_of_clubs2');
         this.secondCard.setScale(cardScale);
         
-        this.thirdCard = this.add.image(startX + cardSpacing * 2, 40, 'club_3');
+        this.thirdCard = this.add.image(startX + cardSpacing * 2, 40, '3_of_clubs');
         this.thirdCard.setScale(cardScale);
         
-        this.fourthCard = this.add.image(startX + cardSpacing * 3, 40, 'club_3');
+        this.fourthCard = this.add.image(startX + cardSpacing * 3, 40, '3_of_clubs');
         this.fourthCard.setScale(cardScale);
         
-        this.fifthCard = this.add.image(startX + cardSpacing * 4, 40, 'club_3');
+        this.fifthCard = this.add.image(startX + cardSpacing * 4, 40, '3_of_clubs');
         this.fifthCard.setScale(cardScale);
 
         // Add all cards to container
