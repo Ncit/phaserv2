@@ -77,7 +77,7 @@ export class Start extends Phaser.Scene {
         // this.progress.scale = 0.34;
         // this.star.scale = 0.36;
 this.time.addEvent({
-        delay: 750,
+        delay: 1000,
         loop: false,
         callback: () => {
            this.userAvatar = this.add.image(120, 46, 'avatarQ');
