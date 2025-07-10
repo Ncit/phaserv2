@@ -31,15 +31,26 @@ export class Start extends Phaser.Scene {
         
         // Load bonus button asset
         this.load.image('bonus_button', 'assets/bonus_button.png');
-        this.load.script('vklogic','./src/scripts/vklogic.js');
-
-        setupApp(function(appData) {
-                console.log(appData);
-                     this.load.image('avatarQ', appData.photo_200);
+  vkBridge.send('VKWebAppGetLaunchParams')
+  .then((data) => { 
+    if (data.vk_user_id) {
+      userInfo(data.vk_user_id, function(authData) {
+      this.load.image('avatarQ', authData.photo_200);
+});
+    }
+  })
+  .catch((error) => {
+    // Ошибка
+    console.log(error);
+  });
+  
+        // setupApp(function(appData) {
+        //         console.log(appData);
+        //              this.load.image('avatarQ', appData.photo_200);
    
-                // this.userAvatar = this.add.image(120, 46, appData.photo_200);
-                // this.userAvatar.scale = 0.1;
-        });
+        //         // this.userAvatar = this.add.image(120, 46, appData.photo_200);
+        //         // this.userAvatar.scale = 0.1;
+        // });
 
         // this.load.image('avatarQ', 'https://gravatar.com/avatar/2ee1f504b415b376c586641aee2c3194?s=400&d=robohash&r=x');
     }
