@@ -479,10 +479,9 @@ export class GameScene extends Phaser.Scene {
     }
 
     handleMenu() {
-        // Open main menu (could pause game or show menu overlay)
-        console.log('Main menu accessed');
-        // Add menu logic here (e.g., pause game, show menu options)
-        // Could implement: return to lobby, quit game, game statistics
+        // Navigate back to Start scene
+        console.log('MENU - Returning to Start scene');
+        this.scene.start('Start');
     }
 
     increaseProgress() {

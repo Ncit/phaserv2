@@ -5,7 +5,7 @@ export class Start extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('avatarQ', window.appData.photo_200);
+        this.load.image('avatarQ', window.appData.photo_100);
     }
 
     create() {
@@ -223,10 +223,20 @@ export class Start extends Phaser.Scene {
                 button.setTint(0x888888);
                 console.log(`${data.label} button clicked!`);
                 
-                // Reset tint after short delay
-                this.time.delayedCall(150, () => {
-                    button.clearTint();
-                });
+                // Check if this is the Train Game button
+                if (data.key === 'train_game_btn') {
+                    // Navigate to GameScene after visual feedback
+                    this.time.delayedCall(550, () => {
+                        button.clearTint();
+                        console.log('Starting GameScene...');
+                        this.scene.start('GameScene');
+                    });
+                } else {
+                    // Reset tint after short delay for other buttons
+                    this.time.delayedCall(150, () => {
+                        button.clearTint();
+                    });
+                }
             });
         });
 
