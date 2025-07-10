@@ -106,42 +106,132 @@ export class GameScene extends Phaser.Scene {
             strokeThickness: 1
         }).setOrigin(0.5);
 
-        this.addFirstPlayer()
+        // Add all 5 players around the table
+        this.addAllPlayers()
     }
 
-    addFirstPlayer() {
+    addAllPlayers() {
+        // Position variables for easy adjustment
+        const tableCenter = { x: 640, y: 320 }; // Gaming table center
+        
+        // Player position variables
+        const leftPlayerX = 200;
+        const leftPlayerY = 270;
+        
+        const topLeftPlayerX = 200;
+        const topLeftPlayerY = 460;
+        
+        const topCenterPlayerX = tableCenter.x;
+        const topCenterPlayerY = 520;
+        
+        const topRightPlayerX = 900;
+        const topRightPlayerY = 270;
+        
+        const rightPlayerX = 900;
+        const rightPlayerY = 460;
 
-        this.firstPlayerNamePlaceholder = this.add.image(200, 270, 'player_name_placeholder');//'avatarQ');
-        this.firstPlayerNamePlaceholder.scale = 0.36;
+        // Player data with different names, banks, and avatar URLs
+        const playerData = [
+            {
+                name: 'Иванченко',
+                bank: '500',
+                position: { x: leftPlayerX, y: leftPlayerY }, // Left side
+                avatarUrl: 'https://gravatar.com/avatar/1?s=400&d=robohash&r=x'
+            },
+            {
+                name: 'Петрова',
+                bank: '750', 
+                position: { x: topLeftPlayerX, y: topLeftPlayerY }, // Top-left
+                avatarUrl: 'https://gravatar.com/avatar/2?s=400&d=robohash&r=x'
+            },
+            {
+                bank: '1200',
+                position: { x: topCenterPlayerX, y: topCenterPlayerY }, // Top center
+                avatarUrl: 'https://gravatar.com/avatar/3?s=400&d=robohash&r=x'
+            },
+            {
+                name: 'Козлова',
+                bank: '930',
+                position: { x: topRightPlayerX, y: topRightPlayerY }, // Top-right
+                avatarUrl: 'https://gravatar.com/avatar/4?s=400&d=robohash&r=x'
+            },
+            {
+                name: 'Волков',
+                bank: '680',
+                position: { x: rightPlayerX, y: rightPlayerY }, // Right side
+                avatarUrl: 'https://gravatar.com/avatar/5?s=400&d=robohash&r=x'
+            }
+        ];
 
-        this.firstPlayerAvatarCircle = this.add.image(290, 270, 'avatarCircle');//'avatarQ');
-        this.firstPlayerAvatarCircle.scale = 0.3;
+        // Add each player
+        playerData.forEach((player, index) => {
+            this.addPlayer(index + 1, player);
+        });
+    }
 
-        this.firstPlayerAvatar = this.add.image(290, 244, 'dummy_avatar');//'avatarQ');
-        this.firstPlayerAvatar.scale = 0.3;
+    addPlayer(playerNumber, playerData) {
+        const { name, bank, position, avatarUrl } = playerData;
+        
+        // Create unique property names for each player
+        const playerPrefix = `player${playerNumber}`;
+        
+        // Name placeholder background
+        this[`${playerPrefix}NamePlaceholder`] = this.add.image(
+            position.x, position.y, 'player_name_placeholder'
+        );
+        this[`${playerPrefix}NamePlaceholder`].scale = 0.36;
 
-        this.firstPlayerName = this.add.text(180, 260, 'Иванченко', {
-            fontFamily: 'Arial',
-            fontSize: '22px',
-            fill: '#FF6A13',
-            strokeThickness: 1
-        }).setOrigin(0.5);
+        // Avatar circle background
+        this[`${playerPrefix}AvatarCircle`] = this.add.image(
+            position.x + 90, position.y, 'avatarCircle'
+        );
+        this[`${playerPrefix}AvatarCircle`].scale = 0.3;
 
-        this.firstPlayerBank = this.add.text(190, 286, '500', {
-            fontFamily: 'Arial',
-            fontSize: '18px',
-            fill: '#ffffff',
-            strokeThickness: 1
-        }).setOrigin(0.5);
+        // Load and create avatar dynamically
+        const avatarKey = `avatar${playerNumber}`;
+        this.load.image(avatarKey, avatarUrl);
+        this.load.start();
+        
+        this.load.once('complete', () => {
+            this[`${playerPrefix}Avatar`] = this.add.image(
+                position.x + 90, position.y - 26, avatarKey
+            );
+            this[`${playerPrefix}Avatar`].scale = 0.3;
+        });
 
+        // Player name text
+        this[`${playerPrefix}Name`] = this.add.text(
+            position.x - 20, position.y - 10, name, {
+                fontFamily: 'Arial',
+                fontSize: '22px',
+                fill: '#FF6A13',
+                strokeThickness: 1
+            }
+        ).setOrigin(0.5);
 
-        this.firstPlayerSCard = this.add.image(324, 300, 'back_card');//'avatarQ');
-        this.firstPlayerSCard.scale = 0.36;
-        this.firstPlayerSCard.rotation = -0.24;
+        // Player bank text
+        this[`${playerPrefix}Bank`] = this.add.text(
+            position.x - 10, position.y + 16, bank, {
+                fontFamily: 'Arial',
+                fontSize: '18px',
+                fill: '#ffffff',
+                strokeThickness: 1
+            }
+        ).setOrigin(0.5);
 
-        this.firstPlayerFCard = this.add.image(344, 300, 'back_card');//'avatarQ');
-        this.firstPlayerFCard.scale = 0.36;
-        this.firstPlayerFCard.rotation = 0.24;
+        // First card (slightly rotated left)
+        this[`${playerPrefix}FirstCard`] = this.add.image(
+            position.x + 124, position.y + 30, 'back_card'
+        );
+        this[`${playerPrefix}FirstCard`].scale = 0.36;
+        this[`${playerPrefix}FirstCard`].rotation = -0.24;
+
+        // Second card (slightly rotated right)
+        this[`${playerPrefix}SecondCard`] = this.add.image(
+            position.x + 144, position.y + 30, 'back_card'
+        );
+        this[`${playerPrefix}SecondCard`].scale = 0.36;
+        this[`${playerPrefix}SecondCard`].rotation = 0.24;
     }
 
     createProgressBar() {
