@@ -1,0 +1,24 @@
+{
+  "name": "texas_holdem",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "server": "npx ts-node -r tsconfig-paths/register server/server.ts",
+    "debug_client": "npx ts-node debug_client/client.ts",
+    "debug_client_web": "npm --prefix debug_client_web start"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/ws": "^8.18.1",
+    "typescript": "^5.8.3",
+    "unique-names-generator": "^4.7.1",
+    "ws": "^8.18.3"
+  },
+  "description": "",
+  "devDependencies": {
+    "tsconfig-paths": "^4.2.0"
+  }
+}
