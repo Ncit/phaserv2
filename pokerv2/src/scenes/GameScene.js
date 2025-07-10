@@ -196,10 +196,17 @@ export class GameScene extends Phaser.Scene {
         this.load.start();
         
         this.load.once('complete', () => {
-            this[`${playerPrefix}Avatar`] = this.add.image(
-                position.x + 90, position.y - 26, avatarKey
-            );
-            this[`${playerPrefix}Avatar`].scale = 0.3;
+            if (window.isDebug) {
+                this[`${playerPrefix}Avatar`] = this.add.image(
+                    position.x + 90, position.y - 26, avatarKey
+                );
+                this[`${playerPrefix}Avatar`].scale = 0.3;
+            } else {
+
+                this[`${playerPrefix}Avatar`] = this.add.image(
+                    position.x + 90, position.y, avatarKey
+                );
+            }
             
             
         // First card (slightly rotated left)

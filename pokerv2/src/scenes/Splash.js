@@ -1,4 +1,3 @@
-var isDebug = false
 export class Splash extends Phaser.Scene {
 
     constructor() {
@@ -108,7 +107,7 @@ export class Splash extends Phaser.Scene {
 
 
 function setupApp(appDataCallback) {
-    if (isDebug) {
+    if (window.isDebug) {
 const appData = {
     photo_200: 'https://gravatar.com/avatar/2ee1f504b415b376c586641aee2c3194?s=400&d=robohash&r=x',
   first_name: "Никита"
