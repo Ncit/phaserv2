@@ -39,6 +39,9 @@ export class Start extends Phaser.Scene {
         setupApp(function(appData) {
             this.window.appData = appData
                 console.log(this.window.appData);
+                
+                this.userAvatar = this.add.image(120, 46, appData.photo_200);
+        this.userAvatar.scale = 0.1;
         });
         this.background = this.add.image(640, 360, 'background');
         this.lobbyOverlay = this.add.image(640, 360, 'lobby_overlay');
@@ -56,19 +59,18 @@ export class Start extends Phaser.Scene {
         this.activePlayers = this.add.text(320, 640, 'Активных участников:', { fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif', fontSize: 17});
         this.activePlayersCount = this.add.text(320, 660, '12011', { fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif', fontSize: 19 });
 
-
         this.chipButton = this.add.image(1180, 54, 'chip_button');
         this.chipLabel = this.add.text(1050, 30, 'Ваш баланс:', { fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif', fontSize: 17 });
         this.chipCount = this.add.text(1050, 46, '20000', { fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif', fontSize: 26 });
 
-        this.avatar = this.add.image(120, 46, 'avatar');
+        this.avatarPlaceholder = this.add.image(120, 46, 'avatar');
         this.crown = this.add.image(138, 60, 'crown');
         this.userName = this.add.text(166, 22, 'Имя игрока', { fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif', fontSize: 24});
         this.star = this.add.image(346, 62, 'star');
         this.progress = this.add.image(246, 64, 'progress');
         this.starCount = this.add.text(362, 50, '366', { fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif', fontSize: 19});
         
-        this.avatar.scale = 0.1;
+        this.avatarPlaceholder.scale = 0.1;
         this.crown.scale = 0.34;
         this.progress.scale = 0.34;
         this.star.scale = 0.36;
