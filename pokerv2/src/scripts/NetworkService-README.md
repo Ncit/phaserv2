@@ -191,11 +191,36 @@ The NetworkService expects messages in this format:
 }
 ```
 
+### Hole Cards Message Format:
+```javascript
+// Server sends hole cards to player
+{
+    type: 'hole_cards',
+    cards: [
+        { value: 'ace', suit: 'spades' },
+        { value: 'king', suit: 'hearts' }
+    ]
+}
+
+// Or with specific player ID
+{
+    type: 'player_cards', 
+    playerId: 'player123',
+    cards: [
+        { value: 'queen', suit: 'diamonds' },
+        { value: 'jack', suit: 'clubs' }
+    ]
+}
+```
+
 ### Common Message Types Used in Poker Game:
 - `join_game` - Join a poker table
 - `player_action` - Fold, call, raise actions
 - `game_state` - Current game state update
-- `card_dealt` - Cards dealt to players
+- `card_dealt` - Community cards dealt (flop, turn, river)
+- `hole_cards` - Player's private hole cards
+- `player_cards` - Specific player's cards with player ID
+- `get_hole_cards` - Request current hole cards from server
 - `chat_message` - Chat messages
 - `ping` - Keep connection alive
 

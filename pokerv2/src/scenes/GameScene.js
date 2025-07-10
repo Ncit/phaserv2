@@ -757,6 +757,16 @@ export class GameScene extends Phaser.Scene {
             this.updateCards(data.cards);
         });
 
+        window.NetworkService.onMessage('hole_cards', (data) => {
+            console.log('[GameScene] Hole cards received:', data);
+            this.updatePlayerCards(data.cards);
+        });
+
+        window.NetworkService.onMessage('player_cards', (data) => {
+            console.log('[GameScene] Player cards received:', data);
+            this.updatePlayerCards(data.cards, data.playerId);
+        });
+
         // Send join game message when entering the game scene
         if (window.NetworkService.isConnected()) {
             window.NetworkService.send({
@@ -766,6 +776,15 @@ export class GameScene extends Phaser.Scene {
                 avatar: window.appData?.photo_200 || null,
                 gameId: 'poker_table_1'
             });
+
+            // Request current hole cards after joining
+            setTimeout(() => {
+                window.NetworkService.send({
+                    type: 'get_hole_cards',
+                    playerId: window.appData?.id || 'guest',
+                    gameId: 'poker_table_1'
+                });
+            }, 500);
         }
     }
 
@@ -814,6 +833,48 @@ export class GameScene extends Phaser.Scene {
                 }
             });
         }
+    }
+
+    updatePlayerCards(cards, playerId = null) {
+        // Update player's hole cards from server data
+        if (!cards || cards.length < 2) {
+            console.warn('[GameScene] Invalid hole cards data received');
+            return;
+        }
+
+        // Determine which player to update
+        let playerNumber = 3; // Default to current user (player 3)
+        
+        if (playerId) {
+            // If specific player ID provided, find matching player
+            // This assumes you have a way to map player IDs to player numbers
+            // For now, default to current user if it's their ID
+            if (playerId === (window.appData?.id || 'guest')) {
+                playerNumber = 3; // Current user is player 3
+            } else {
+                // For other players, you'd need logic to determine their player number
+                console.log(`[GameScene] Received cards for other player: ${playerId}`);
+                return; // Don't update other players' cards for now
+            }
+        }
+
+        const playerPrefix = `player${playerNumber}`;
+        
+        // Update first card
+        if (cards[0] && this[`${playerPrefix}FirstCard`]) {
+            const firstCardKey = `${cards[0].value}_of_${cards[0].suit}`;
+            this[`${playerPrefix}FirstCard`].setTexture(firstCardKey);
+            console.log(`[GameScene] Updated ${playerPrefix}FirstCard to ${firstCardKey}`);
+        }
+
+        // Update second card  
+        if (cards[1] && this[`${playerPrefix}SecondCard`]) {
+            const secondCardKey = `${cards[1].value}_of_${cards[1].suit}`;
+            this[`${playerPrefix}SecondCard`].setTexture(secondCardKey);
+            console.log(`[GameScene] Updated ${playerPrefix}SecondCard to ${secondCardKey}`);
+        }
+
+        console.log(`[GameScene] Player ${playerNumber} hole cards updated:`, cards);
     }
 
     update() {
