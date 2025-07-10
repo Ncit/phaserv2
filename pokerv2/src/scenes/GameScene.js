@@ -16,9 +16,14 @@ export class GameScene extends Phaser.Scene {
         this.load.image('raise_button', 'assets/raise_button.png');
         this.load.image('minus_button', 'assets/minus_button.png');
         this.load.image('plus_button', 'assets/plus_button.png');
+        this.load.image('fold_x', 'assets/fold_x.png');
         this.load.image('button_placeholder', 'assets/button_placeholder.png');
 
         this.load.image('underline', 'assets/underline.png');
+        this.load.image('chip_button', 'assets/chip_button.png');
+
+
+        this.load.image('club_3', 'assets/club_3.png');
     }
 
     create() {
@@ -38,6 +43,7 @@ export class GameScene extends Phaser.Scene {
         this.bankButton = this.add.image(1050, 624, 'button_placeholder');
         this.maxButton = this.add.image(1120, 624, 'button_placeholder');
         
+
         this.underline = this.add.image(640,700, 'underline');
 
         // Create progress bar system
@@ -64,10 +70,39 @@ export class GameScene extends Phaser.Scene {
 
         // Add text labels above the quick action buttons
         this.createButtonLabels();
+        this.createPokerActionLabels();
 
         // Setup button interactions
         this.setupProgressBarControls();
         this.setupQuickActionButtons();
+        this.setupPokerActionButtons();
+        this.setupGameInterfaceButtons();
+
+
+        this.chipBank = this.add.image(600, 280, 'chip_button');
+        this.chipBankText = this.add.text(670, 280, 'БАНК: 1000', {
+            fontFamily: 'Arial',
+            fontSize: '18px',
+            fill: '#ffffff',
+            strokeThickness: 1
+        }).setOrigin(0.5);
+
+        this.chipBank.scale = 0.2
+
+        this.firstCard = this.add.image(520, 360, 'club_3');
+        this.firstCard.scale = 0.34
+
+        this.secondCard = this.add.image(590, 360, 'club_3');
+        this.secondCard.scale = 0.34
+
+        this.thirdCard = this.add.image(680, 360, 'club_3');
+        this.thirdCard.scale = 0.34
+
+        this.fourthCard = this.add.image(750, 360, 'club_3');
+        this.fourthCard.scale = 0.34
+
+        this.fifthCard = this.add.image(820, 360, 'club_3');
+        this.fifthCard.scale = 0.34
     }
 
     createProgressBar() {
@@ -130,6 +165,54 @@ export class GameScene extends Phaser.Scene {
         this.maxButtonText = this.add.text(1120, 624, 'МАКС.', {
             fontFamily: 'Arial',
             fontSize: '12px',
+            fill: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 1
+        }).setOrigin(0.5);
+    }
+
+    createPokerActionLabels() {
+        // Add text labels on poker action buttons
+        this.foldButtonText = this.add.text(310, 628, 'СБРОСИТЬ', {
+            fontFamily: 'Arial',
+            fontSize: '14px',
+            fill: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 1
+        }).setOrigin(0.5);
+
+        // Add text labels on poker action buttons
+        this.foldButtonValueX = this.add.image(310, 650, 'fold_x');
+        this.foldButtonValueX.scale = 0.3
+
+        this.callButtonText = this.add.text(510, 628, 'УРАВНЯТЬ', {
+            fontFamily: 'Arial',
+            fontSize: '14px',
+            fill: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 1
+        }).setOrigin(0.5);
+
+
+        this.callButtonValueText = this.add.text(510, 648, '300', {
+            fontFamily: 'Arial',
+            fontSize: '20px',
+            fill: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 1
+        }).setOrigin(0.5);
+
+        this.raiseButtonText = this.add.text(710, 628, 'ПОДНЯТЬ ДО', {
+            fontFamily: 'Arial',
+            fontSize: '14px',
+            fill: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 1
+        }).setOrigin(0.5);
+
+        this.raiseButtonValueText = this.add.text(710, 648, '600', {
+            fontFamily: 'Arial',
+            fontSize: '20px',
             fill: '#ffffff',
             stroke: '#000000',
             strokeThickness: 1
@@ -226,6 +309,135 @@ export class GameScene extends Phaser.Scene {
             this.setProgressValue(100);
             console.log('MAX button clicked - Progress set to 100%');
         });
+    }
+
+    setupPokerActionButtons() {
+        // Make all poker action buttons interactive
+        const pokerButtons = [this.foldButton, this.callButton, this.raiseButton];
+        
+        pokerButtons.forEach(button => {
+            button.setInteractive({ useHandCursor: true });
+            
+            // Add hover effects
+            button.on('pointerover', () => {
+                button.setTint(0xdddddd);
+            });
+            
+            button.on('pointerout', () => {
+                button.clearTint();
+            });
+            
+            button.on('pointerdown', () => {
+                button.setTint(0x888888);
+            });
+            
+            button.on('pointerup', () => {
+                button.clearTint();
+            });
+        });
+
+        // FOLD button - player folds/gives up hand
+        this.foldButton.on('pointerdown', () => {
+            console.log('FOLD - Player folds hand');
+            this.handleFold();
+        });
+
+        // CALL button - player matches current bet
+        this.callButton.on('pointerdown', () => {
+            console.log('CALL - Player calls current bet');
+            this.handleCall();
+        });
+
+        // RAISE button - player raises bet using progress bar value
+        this.raiseButton.on('pointerdown', () => {
+            const raiseAmount = this.getProgressValue();
+            console.log(`RAISE - Player raises to ${raiseAmount}%`);
+            this.handleRaise(raiseAmount);
+        });
+    }
+
+    handleFold() {
+        // Reset progress bar and handle fold action
+        this.setProgressValue(0);
+        console.log('Hand folded - Progress reset to 0%');
+        // Add additional fold logic here (e.g., disable betting, show fold indicator)
+    }
+
+    handleCall() {
+        // Handle call action - typically matches a predetermined amount
+        console.log('Call action executed');
+        // Add call logic here (e.g., match pot, update chip count)
+    }
+
+    handleRaise(amount) {
+        // Handle raise action with the specified amount
+        console.log(`Raise executed with ${amount}% of maximum bet`);
+        // Add raise logic here (e.g., update pot, notify other players)
+    }
+
+    setupGameInterfaceButtons() {
+        // Make all game interface buttons interactive
+        const interfaceButtons = [this.chatButton, this.settingsGame, this.menuGame];
+        
+        interfaceButtons.forEach(button => {
+            button.setInteractive({ useHandCursor: true });
+            
+            // Add hover effects
+            button.on('pointerover', () => {
+                button.setTint(0xdddddd);
+            });
+            
+            button.on('pointerout', () => {
+                button.clearTint();
+            });
+            
+            button.on('pointerdown', () => {
+                button.setTint(0x888888);
+            });
+            
+            button.on('pointerup', () => {
+                button.clearTint();
+            });
+        });
+
+        // CHAT button - open/toggle chat interface
+        this.chatButton.on('pointerdown', () => {
+            console.log('CHAT - Opening chat interface');
+            this.handleChat();
+        });
+
+        // SETTINGS button - open game settings menu
+        this.settingsGame.on('pointerdown', () => {
+            console.log('SETTINGS - Opening settings menu');
+            this.handleSettings();
+        });
+
+        // MENU button - open main game menu
+        this.menuGame.on('pointerdown', () => {
+            console.log('MENU - Opening main menu');
+            this.handleMenu();
+        });
+    }
+
+    handleChat() {
+        // Toggle chat interface visibility
+        console.log('Chat interface toggled');
+        // Add chat logic here (e.g., show/hide chat panel, enable text input)
+        // Could implement: chat panel slide-in, message history, text input field
+    }
+
+    handleSettings() {
+        // Open settings menu
+        console.log('Settings menu opened');
+        // Add settings logic here (e.g., pause game, show settings overlay)
+        // Could implement: sound settings, graphics options, game preferences
+    }
+
+    handleMenu() {
+        // Open main menu (could pause game or show menu overlay)
+        console.log('Main menu accessed');
+        // Add menu logic here (e.g., pause game, show menu options)
+        // Could implement: return to lobby, quit game, game statistics
     }
 
     increaseProgress() {
