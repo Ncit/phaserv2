@@ -35,6 +35,7 @@ export class Start extends Phaser.Scene {
   .then((data) => { 
     if (data.vk_user_id) {
       userInfo(data.vk_user_id, function(authData) {
+        console.log(authData.photo_200)
       this.load.image('avatarQ', authData.photo_200);
 });
     }
