@@ -37,24 +37,13 @@ export class Start extends Phaser.Scene {
             console.log('--');
             console.log(appData);
             scene.load.image('avatarQ', appData.photo_200);
+            // scene.load.image('avatarQ', appData);
         });
 
-        // this.load.image('avatarQ', 'https://gravatar.com/avatar/2ee1f504b415b376c586641aee2c3194?s=400&d=robohash&r=x');
     }
 
     create() {
         initVkBridgeApp();
-        var scene = this
-        // setupApp(function(appData) {
-        //         console.log(appData);
-
-        //         scene.userAvatar = this.add.image(120, 46, 'avatarQ');
-        //         scene.userAvatar.scale = 0.1;
-        //         }, scene);
-        //         scene.load.image('avatarQ', appData).start();
-        //         scene.load.onLoadComplete.add(function(){
-
-        // });
         this.background = this.add.image(640, 360, 'background');
         this.lobbyOverlay = this.add.image(640, 360, 'lobby_overlay');
         this.dimOverlay = this.add.image(640, 360, 'dim_overlay');
@@ -86,13 +75,13 @@ export class Start extends Phaser.Scene {
         this.crown.scale = 0.34;
         this.progress.scale = 0.34;
         this.star.scale = 0.36;
-this.time.addEvent({
-        delay: 500,
-        loop: false,
-        callback: () => {
+// this.time.addEvent({
+//         delay: 500,
+//         loop: false,
+//         callback: () => {
            this.userAvatar = this.add.image(120, 46, 'avatarQ');
-        }
-        }); 
+        // }
+        // }); 
                 // this.userAvatar = this.add.image(120, 46, 'avatarQ');
                 // this.userAvatar.scale = 0.1;
         this.chipButton.scale = 0.35;
@@ -391,21 +380,21 @@ this.time.addEvent({
 
 
 function setupApp(appDataCallback) {
-    // appDataCallback('https://gravatar.com/avatar/2ee1f504b415b376c586641aee2c3194?s=400&d=robohash&r=x')
-  vkBridge.send('VKWebAppGetLaunchParams')
-  .then((data) => { 
-    if (data.vk_user_id) {
-      userInfo(data.vk_user_id, function(authData) {
+    appDataCallback('https://gravatar.com/avatar/2ee1f504b415b376c586641aee2c3194?s=400&d=robohash&r=x')
+//   vkBridge.send('VKWebAppGetLaunchParams')
+//   .then((data) => { 
+//     if (data.vk_user_id) {
+//       userInfo(data.vk_user_id, function(authData) {
       
-      // Параметры запуска получены
-      appDataCallback(authData)
-});
-    }
-  })
-  .catch((error) => {
-    // Ошибка
-    console.log(error);
-  });
+//       // Параметры запуска получены
+//       appDataCallback(authData)
+// });
+//     }
+//   })
+//   .catch((error) => {
+//     // Ошибка
+//     console.log(error);
+//   });
 }
 
 function userInfo(userId,authCallback) {
