@@ -1,3 +1,5 @@
+// import { setupApp } from './scripts/vklogic.js';
+
 export class Start extends Phaser.Scene {
 
     constructor() {
@@ -32,14 +34,9 @@ export class Start extends Phaser.Scene {
         this.load.image('bonus_button', 'assets/bonus_button.png');
         var scene = this
         setupApp(function(appData) {
-                console.log("----");
-                console.log(appData);
-                     scene.load.image('avatarQ', appData.photo_200).start();
-   scene.load.onLoadComplete.add(function(){
-    scene.userAvatar = this.add.image(120, 46, 'avatarQ');
-   }, this);
-                // scene.userAvatar = this.add.image(120, 46, 'avatarQ');
-                // scene.window.item.userAvatar.scale = 0.1;
+            console.log('--');
+            console.log(appData);
+            scene.load.image('avatarQ', appData.photo_200);
         });
 
         // this.load.image('avatarQ', 'https://gravatar.com/avatar/2ee1f504b415b376c586641aee2c3194?s=400&d=robohash&r=x');
@@ -47,11 +44,16 @@ export class Start extends Phaser.Scene {
 
     create() {
         initVkBridgeApp();
+        var scene = this
         // setupApp(function(appData) {
         //         console.log(appData);
-                
-        //         this.userAvatar = this.add.image(120, 46, appData.photo_200);
-        //         this.userAvatar.scale = 0.1;
+
+        //         scene.userAvatar = this.add.image(120, 46, 'avatarQ');
+        //         scene.userAvatar.scale = 0.1;
+        //         }, scene);
+        //         scene.load.image('avatarQ', appData).start();
+        //         scene.load.onLoadComplete.add(function(){
+
         // });
         this.background = this.add.image(640, 360, 'background');
         this.lobbyOverlay = this.add.image(640, 360, 'lobby_overlay');
@@ -84,7 +86,13 @@ export class Start extends Phaser.Scene {
         this.crown.scale = 0.34;
         this.progress.scale = 0.34;
         this.star.scale = 0.36;
-
+this.time.addEvent({
+        delay: 500,
+        loop: false,
+        callback: () => {
+           this.userAvatar = this.add.image(120, 46, 'avatarQ');
+        }
+        }); 
                 // this.userAvatar = this.add.image(120, 46, 'avatarQ');
                 // this.userAvatar.scale = 0.1;
         this.chipButton.scale = 0.35;
@@ -375,15 +383,15 @@ export class Start extends Phaser.Scene {
     }
 
     update() {
-//         if (this.userAvatar == null) {
-// this.userAvatar = this.add.image(120, 46, 'avatarQ');
-//                 // this.userAvatar.scale = 0.1;
-//         }
+
     }
     
 }
 
+
+
 function setupApp(appDataCallback) {
+    // appDataCallback('https://gravatar.com/avatar/2ee1f504b415b376c586641aee2c3194?s=400&d=robohash&r=x')
   vkBridge.send('VKWebAppGetLaunchParams')
   .then((data) => { 
     if (data.vk_user_id) {
