@@ -1,5 +1,5 @@
 // import { setupApp } from './scripts/vklogic.js';
-
+var isDebug = false
 export class Start extends Phaser.Scene {
 
     constructor() {
@@ -64,24 +64,33 @@ export class Start extends Phaser.Scene {
         this.chipLabel = this.add.text(1050, 30, 'Ваш баланс:', { fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif', fontSize: 17 });
         this.chipCount = this.add.text(1050, 46, '20000', { fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif', fontSize: 26 });
 
-        this.avatarPlaceholder = this.add.image(120, 46, 'avatar');
-        this.crown = this.add.image(138, 60, 'crown');
+        // this.avatarPlaceholder = this.add.image(120, 46, 'avatar');
+        // this.crown = this.add.image(138, 60, 'crown');
+        // this.userName = this.add.text(166, 22, 'Имя игрока', { fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif', fontSize: 24});
+        // this.star = this.add.image(346, 62, 'star');
+        // this.progress = this.add.image(246, 64, 'progress');
+        // this.starCount = this.add.text(362, 50, '366', { fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif', fontSize: 19});
+        
+        // this.avatarPlaceholder.scale = 0.1;
+        // this.crown.scale = 0.34;
+        // this.progress.scale = 0.34;
+        // this.star.scale = 0.36;
+this.time.addEvent({
+        delay: 500,
+        loop: false,
+        callback: () => {
+           this.userAvatar = this.add.image(120, 46, 'avatarQ');
+           this.userAvatar.scale = 0.2;
+            this.crown = this.add.image(138, 60, 'crown');
         this.userName = this.add.text(166, 22, 'Имя игрока', { fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif', fontSize: 24});
         this.star = this.add.image(346, 62, 'star');
         this.progress = this.add.image(246, 64, 'progress');
         this.starCount = this.add.text(362, 50, '366', { fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif', fontSize: 19});
-        
-        this.avatarPlaceholder.scale = 0.1;
         this.crown.scale = 0.34;
         this.progress.scale = 0.34;
         this.star.scale = 0.36;
-// this.time.addEvent({
-//         delay: 500,
-//         loop: false,
-//         callback: () => {
-           this.userAvatar = this.add.image(120, 46, 'avatarQ');
-        // }
-        // }); 
+        }
+        }); 
                 // this.userAvatar = this.add.image(120, 46, 'avatarQ');
                 // this.userAvatar.scale = 0.1;
         this.chipButton.scale = 0.35;
@@ -380,21 +389,29 @@ export class Start extends Phaser.Scene {
 
 
 function setupApp(appDataCallback) {
-    appDataCallback('https://gravatar.com/avatar/2ee1f504b415b376c586641aee2c3194?s=400&d=robohash&r=x')
-//   vkBridge.send('VKWebAppGetLaunchParams')
-//   .then((data) => { 
-//     if (data.vk_user_id) {
-//       userInfo(data.vk_user_id, function(authData) {
+    if (isDebug) {
+const appData = {
+    photo_200: 'https://gravatar.com/avatar/2ee1f504b415b376c586641aee2c3194?s=400&d=robohash&r=x'
+};
+    // 
+    appDataCallback(appData)
+  
+return
+    }
+    vkBridge.send('VKWebAppGetLaunchParams')
+  .then((data) => { 
+    if (data.vk_user_id) {
+      userInfo(data.vk_user_id, function(authData) {
       
-//       // Параметры запуска получены
-//       appDataCallback(authData)
-// });
-//     }
-//   })
-//   .catch((error) => {
-//     // Ошибка
-//     console.log(error);
-//   });
+      // Параметры запуска получены
+      appDataCallback(authData)
+});
+    }
+  })
+  .catch((error) => {
+    // Ошибка
+    console.log(error);
+  });
 }
 
 function userInfo(userId,authCallback) {
