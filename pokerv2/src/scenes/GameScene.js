@@ -121,7 +121,7 @@ export class GameScene extends Phaser.Scene {
         const topLeftPlayerX = 200;
         const topLeftPlayerY = 460;
         
-        const topCenterPlayerX = tableCenter.x;
+        const topCenterPlayerX = tableCenter.x - 100;
         const topCenterPlayerY = 520;
         
         const topRightPlayerX = 900;
@@ -145,6 +145,7 @@ export class GameScene extends Phaser.Scene {
                 avatarUrl: 'https://gravatar.com/avatar/2?s=400&d=robohash&r=x'
             },
             {
+                name: 'Игрок',
                 bank: '1200',
                 position: { x: topCenterPlayerX, y: topCenterPlayerY }, // Top center
                 avatarUrl: 'https://gravatar.com/avatar/3?s=400&d=robohash&r=x'
