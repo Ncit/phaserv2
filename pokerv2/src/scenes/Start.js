@@ -32,16 +32,25 @@ export class Start extends Phaser.Scene {
         // Load bonus button asset
         this.load.image('bonus_button', 'assets/bonus_button.png');
         this.load.script('vklogic','./src/scripts/vklogic.js');
+
+        setupApp(function(appData) {
+                console.log(appData);
+                     this.load.image('avatarQ', appData.photo_200);
+   
+                // this.userAvatar = this.add.image(120, 46, appData.photo_200);
+                // this.userAvatar.scale = 0.1;
+        });
+
+        // this.load.image('avatarQ', 'https://gravatar.com/avatar/2ee1f504b415b376c586641aee2c3194?s=400&d=robohash&r=x');
     }
 
     create() {
         initVkBridgeApp();
         setupApp(function(appData) {
-            this.window.appData = appData
-                console.log(this.window.appData);
+                console.log(appData);
                 
                 this.userAvatar = this.add.image(120, 46, appData.photo_200);
-        this.userAvatar.scale = 0.1;
+                this.userAvatar.scale = 0.1;
         });
         this.background = this.add.image(640, 360, 'background');
         this.lobbyOverlay = this.add.image(640, 360, 'lobby_overlay');
@@ -75,6 +84,9 @@ export class Start extends Phaser.Scene {
         this.progress.scale = 0.34;
         this.star.scale = 0.36;
 
+                this.userAvatar = this.add.image(120, 46, 'avatarQ');
+                this.userAvatar.scale = 0.1;
+                
         this.chipButton.scale = 0.35;
         this.chipLabel.setTint(0xffffff);
         this.chipLabel.setAlpha(0.22);
