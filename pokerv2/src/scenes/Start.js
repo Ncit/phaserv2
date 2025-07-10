@@ -1,3 +1,5 @@
+// import { setupApp } from './scripts/vklogic.js';
+
 export class Start extends Phaser.Scene {
 
     constructor() {
@@ -5,7 +7,6 @@ export class Start extends Phaser.Scene {
     }
 
     preload() {
-        this.load.script('vklogic','./src/scripts/vklogic.js')
         this.load.image('background', 'assets/lobby_background.png');
         this.load.image('lobby_overlay', 'assets/lobby_overlay.png');
         this.load.image('dim_overlay', 'assets/dim_overlay.png');
@@ -377,4 +378,42 @@ export class Start extends Phaser.Scene {
 
     }
     
+}
+
+
+
+function setupApp(appDataCallback) {
+  vkBridge.send('VKWebAppGetLaunchParams')
+  .then((data) => { 
+    if (data.vk_user_id) {
+      userInfo(data.vk_user_id, function(authData) {
+      
+      // Параметры запуска получены
+      appDataCallback(authData)
+});
+    }
+  })
+  .catch((error) => {
+    // Ошибка
+    console.log(error);
+  });
+}
+
+function userInfo(userId,authCallback) {
+  vkBridge.send('VKWebAppGetUserInfo', {
+  user_id: userId
+  })
+  .then((data) => { 
+    if (data.id) {
+      // Данные пользователя получены
+      authCallback(data);     
+    }
+  })
+  .catch((error) => {
+    // Ошибка
+    console.log(error);
+  });
+}
+function initVkBridgeApp() {
+	vkBridge.send("VKWebAppInit", {});
 }
