@@ -5,7 +5,7 @@ export class Start extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('avatarQ', window.appData.photo_100);
+        this.load.image('avatarQ', window.appData.photo_200);
     }
 
     create() {

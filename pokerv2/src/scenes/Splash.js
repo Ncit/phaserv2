@@ -110,7 +110,7 @@ export class Splash extends Phaser.Scene {
 function setupApp(appDataCallback) {
     if (isDebug) {
 const appData = {
-    photo_100: 'https://gravatar.com/avatar/2ee1f504b415b376c586641aee2c3194?s=400&d=robohash&r=x',
+    photo_200: 'https://gravatar.com/avatar/2ee1f504b415b376c586641aee2c3194?s=400&d=robohash&r=x',
   first_name: "Никита"
 };
     // 

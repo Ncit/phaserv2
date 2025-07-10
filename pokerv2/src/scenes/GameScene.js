@@ -148,7 +148,7 @@ export class GameScene extends Phaser.Scene {
                 name: window.appData.first_name,
                 bank: '1200',
                 position: { x: topCenterPlayerX, y: topCenterPlayerY }, // Top center
-                avatarUrl: window.appData.photo_100
+                avatarUrl: window.appData.photo_200
             },
             {
                 name: 'Козлова',
