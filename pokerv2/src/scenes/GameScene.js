@@ -31,11 +31,14 @@ export class GameScene extends Phaser.Scene {
         this.callButton = this.add.image(510, 640, 'call_button');
         this.raiseButton = this.add.image(710, 640, 'raise_button');
         this.minusButton = this.add.image(850, 640, 'minus_button');
-        this.plusButton = this.add.image(1110, 640, 'plus_button');
+        this.plusButton = this.add.image(1170, 640, 'plus_button');
         
         this.underline = this.add.image(640,700, 'underline');
 
-        // this.underline.setScale(0.25);
+        // Create progress bar system
+        this.createProgressBar();
+
+        // Scale elements
         this.underline.setDisplaySize(400,10);
         this.gamingTable.scale = 0.4
         this.menuGame.scale = 0.3
@@ -48,6 +51,126 @@ export class GameScene extends Phaser.Scene {
 
         this.minusButton.scale = 0.3
         this.plusButton.scale = 0.3
+
+        // Setup button interactions
+        this.setupProgressBarControls();
+    }
+
+    createProgressBar() {
+        // Progress bar configuration
+        this.progressValue = 50; // Initial value (0-100)
+        this.maxProgress = 100;
+        this.minProgress = 0;
+        this.progressStep = 5; // Amount to change per button click
+
+        // Progress bar dimensions and position
+        const barWidth = 250;
+        const barHeight = 10;
+        const barX = 1010; // Centered between minus (850) and plus (1110) buttons
+        const barY = 654;
+
+        // Create progress bar background (border)
+        this.progressBarBg = this.add.rectangle(barX, barY, barWidth + 4, barHeight + 4, 0x333333);
+        this.progressBarBg.setStrokeStyle(0, 0xffffff);
+
+        // Create progress bar background (inner)
+        this.progressBarInner = this.add.rectangle(barX, barY, barWidth, barHeight, 0x111111);
+
+        // Create progress bar fill
+        this.progressBarFill = this.add.rectangle(
+            barX - barWidth/2, 
+            barY, 
+            (barWidth * this.progressValue / 100), 
+            barHeight - 2, 
+            0xFB733A
+        );
+        this.progressBarFill.setOrigin(0, 0.5);
+    }
+
+    setupProgressBarControls() {
+        // Make buttons interactive
+        this.minusButton.setInteractive({ useHandCursor: true });
+        this.plusButton.setInteractive({ useHandCursor: true });
+
+        // Minus button functionality
+        this.minusButton.on('pointerover', () => {
+            this.minusButton.setTint(0xdddddd);
+        });
+
+        this.minusButton.on('pointerout', () => {
+            this.minusButton.clearTint();
+        });
+
+        this.minusButton.on('pointerdown', () => {
+            this.minusButton.setTint(0x888888);
+            this.decreaseProgress();
+        });
+
+        this.minusButton.on('pointerup', () => {
+            this.minusButton.clearTint();
+        });
+
+        // Plus button functionality
+        this.plusButton.on('pointerover', () => {
+            this.plusButton.setTint(0xdddddd);
+        });
+
+        this.plusButton.on('pointerout', () => {
+            this.plusButton.clearTint();
+        });
+
+        this.plusButton.on('pointerdown', () => {
+            this.plusButton.setTint(0x888888);
+            this.increaseProgress();
+        });
+
+        this.plusButton.on('pointerup', () => {
+            this.plusButton.clearTint();
+        });
+    }
+
+    increaseProgress() {
+        // Increase progress value
+        this.progressValue = Math.min(this.progressValue + this.progressStep, this.maxProgress);
+        this.updateProgressBar();
+        console.log(`Progress increased to: ${this.progressValue}%`);
+    }
+
+    decreaseProgress() {
+        // Decrease progress value
+        this.progressValue = Math.max(this.progressValue - this.progressStep, this.minProgress);
+        this.updateProgressBar();
+        console.log(`Progress decreased to: ${this.progressValue}%`);
+    }
+
+    updateProgressBar() {
+        // Update progress bar fill width
+        const barWidth = 250;
+        const newWidth = (barWidth * this.progressValue / 100);
+        this.progressBarFill.width = newWidth;
+
+        // Update progress text
+        // Change color based on progress level
+        if (this.progressValue <= 25) {
+            this.progressBarFill.setFillStyle(0xFF4B00); // Red for low values
+        } else if (this.progressValue <= 50) {
+            this.progressBarFill.setFillStyle(0xFD5F1D); // Orange for medium-low values
+        } else if (this.progressValue <= 75) {
+            this.progressBarFill.setFillStyle(0xFC692C); // Yellow for medium-high values
+        } else {
+            this.progressBarFill.setFillStyle(0xFB733A); // Green for high values
+        }
+    }
+
+    // Utility method to get current progress value
+    getProgressValue() {
+        return this.progressValue;
+    }
+
+    // Utility method to set progress value programmatically
+    setProgressValue(value) {
+        this.progressValue = Phaser.Math.Clamp(value, this.minProgress, this.maxProgress);
+        this.updateProgressBar();
     }
 
     update() {
