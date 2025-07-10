@@ -373,8 +373,10 @@ export class Start extends Phaser.Scene {
     }
 
     update() {
+        if (this.userAvatar == null) {
 this.userAvatar = this.add.image(120, 46, 'avatarQ');
-                this.userAvatar.scale = 0.1;
+                // this.userAvatar.scale = 0.1;
+        }
     }
     
 }
