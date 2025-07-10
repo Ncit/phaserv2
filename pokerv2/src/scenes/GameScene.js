@@ -121,7 +121,7 @@ export class GameScene extends Phaser.Scene {
         const topLeftPlayerX = 200;
         const topLeftPlayerY = 460;
         
-        const topCenterPlayerX = tableCenter.x - 100;
+        const topCenterPlayerX = tableCenter.x - 50;
         const topCenterPlayerY = 520;
         
         const topRightPlayerX = 900;
@@ -145,10 +145,10 @@ export class GameScene extends Phaser.Scene {
                 avatarUrl: 'https://gravatar.com/avatar/2?s=400&d=robohash&r=x'
             },
             {
-                name: 'Игрок',
+                name: window.appData.first_name,
                 bank: '1200',
                 position: { x: topCenterPlayerX, y: topCenterPlayerY }, // Top center
-                avatarUrl: 'https://gravatar.com/avatar/3?s=400&d=robohash&r=x'
+                avatarUrl: window.appData.photo_100
             },
             {
                 name: 'Козлова',
@@ -200,6 +200,21 @@ export class GameScene extends Phaser.Scene {
                 position.x + 90, position.y - 26, avatarKey
             );
             this[`${playerPrefix}Avatar`].scale = 0.3;
+            
+            
+        // First card (slightly rotated left)
+        this[`${playerPrefix}FirstCard`] = this.add.image(
+            position.x + 124, position.y + 30, 'back_card'
+        );
+        this[`${playerPrefix}FirstCard`].scale = 0.36;
+        this[`${playerPrefix}FirstCard`].rotation = -0.24;
+
+        // Second card (slightly rotated right)
+        this[`${playerPrefix}SecondCard`] = this.add.image(
+            position.x + 144, position.y + 30, 'back_card'
+        );
+        this[`${playerPrefix}SecondCard`].scale = 0.36;
+        this[`${playerPrefix}SecondCard`].rotation = 0.24;
         });
 
         // Player name text - only create if name is not empty
@@ -223,20 +238,6 @@ export class GameScene extends Phaser.Scene {
                 strokeThickness: 1
             }
         ).setOrigin(0.5);
-
-        // First card (slightly rotated left)
-        this[`${playerPrefix}FirstCard`] = this.add.image(
-            position.x + 124, position.y + 30, 'back_card'
-        );
-        this[`${playerPrefix}FirstCard`].scale = 0.36;
-        this[`${playerPrefix}FirstCard`].rotation = -0.24;
-
-        // Second card (slightly rotated right)
-        this[`${playerPrefix}SecondCard`] = this.add.image(
-            position.x + 144, position.y + 30, 'back_card'
-        );
-        this[`${playerPrefix}SecondCard`].scale = 0.36;
-        this[`${playerPrefix}SecondCard`].rotation = 0.24;
     }
 
     createProgressBar() {
