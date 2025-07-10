@@ -76,7 +76,7 @@ export class Start extends Phaser.Scene {
         // this.progress.scale = 0.34;
         // this.star.scale = 0.36;
 this.time.addEvent({
-        delay: 500,
+        delay: 750,
         loop: false,
         callback: () => {
            this.userAvatar = this.add.image(120, 46, 'avatarQ');
@@ -395,14 +395,16 @@ const appData = {
 };
     // 
     appDataCallback(appData)
-  
 return
     }
+
     vkBridge.send('VKWebAppGetLaunchParams')
   .then((data) => { 
     if (data.vk_user_id) {
       userInfo(data.vk_user_id, function(authData) {
-      
+    console.log("=-=-=-")
+    console.log(authData)
+    console.log("=-=-=-")
       // Параметры запуска получены
       appDataCallback(authData)
 });
