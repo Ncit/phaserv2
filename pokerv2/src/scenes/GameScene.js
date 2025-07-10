@@ -206,6 +206,7 @@ export class GameScene extends Phaser.Scene {
                 this[`${playerPrefix}Avatar`] = this.add.image(
                     position.x + 90, position.y + 40, avatarKey
                 );
+                this[`${playerPrefix}Avatar`].scale = 0.5;
             }
             
             
