@@ -32,11 +32,11 @@ export class Start extends Phaser.Scene {
         
         // Load bonus button asset
         this.load.image('bonus_button', 'assets/bonus_button.png');
-
+        var scene = this
         setupApp(function(appData) {
                 console.log("----");
                 console.log(appData);
-                     this.load.image('avatarQ', appData.photo_200);
+                     scene.load.image('avatarQ', appData.photo_200);
    
                 // this.userAvatar = this.add.image(120, 46, appData.photo_200);
                 // this.userAvatar.scale = 0.1;
