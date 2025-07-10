@@ -114,7 +114,7 @@ const appData = {
 };
     // 
     appDataCallback(appData)
-return
+    return
     }
 
     vkBridge.send('VKWebAppGetLaunchParams')

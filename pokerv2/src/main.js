@@ -5,7 +5,6 @@ import { GameScene } from './scenes/GameScene.js';
 // Global debug variable accessible in all files
 window.isDebug = false; // Set to false for production
 
-
 const config = {
     type: Phaser.AUTO,
     title: 'Overlord Rising',
