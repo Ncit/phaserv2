@@ -225,13 +225,18 @@ export class Start extends Phaser.Scene {
                 
                 // Check if this is the Train Game button
                 if (data.key === 'train_game_btn') {
-                    // Navigate to GameScene after visual feedback
+                    // Send network message and navigate to GameScene
+                    this.joinGameMode(data.label);
+                    
                     this.time.delayedCall(150, () => {
                         button.clearTint();
                         console.log('Starting GameScene...');
                         this.scene.start('GameScene');
                     });
                 } else {
+                    // For other game modes, send join request but don't navigate yet
+                    this.joinGameMode(data.label);
+                    
                     // Reset tint after short delay for other buttons
                     this.time.delayedCall(150, () => {
                         button.clearTint();
@@ -263,6 +268,136 @@ export class Start extends Phaser.Scene {
 
         // Add drag functionality - DISABLED
         // this.setupSliderDrag();
+
+        // Initialize NetworkService when Start scene loads
+        this.initializeNetworkService();
+    }
+
+    initializeNetworkService() {
+        // Initialize NetworkService for the entire application
+        
+        // Setup connection event handlers
+        window.NetworkService.onConnect(() => {
+            console.log('[Start] Connected to game server!');
+            
+            // Send initial connection request
+            window.NetworkService.send({
+                type: 'connect',
+                playerId: window.appData?.id || 'guest',
+                playerName: window.appData?.first_name || 'Guest',
+                timestamp: Date.now()
+            });
+
+            // Update active players count if connected
+            this.updateActivePlayersFromServer();
+        });
+
+        window.NetworkService.onDisconnect((event) => {
+            console.log('[Start] Disconnected from game server');
+            // Show disconnection indicator or fallback to offline mode
+            this.handleDisconnection();
+        });
+
+        window.NetworkService.onError((error) => {
+            console.error('[Start] Network error:', error);
+            // Handle network errors gracefully
+            this.handleNetworkError(error);
+        });
+
+        // Setup message handlers for lobby/start screen
+        window.NetworkService.onMessage('lobby_update', (data) => {
+            console.log('[Start] Lobby update received:', data);
+            this.updateLobbyInfo(data);
+        });
+
+        window.NetworkService.onMessage('active_players', (data) => {
+            console.log('[Start] Active players update:', data);
+            if (data.count && this.activePlayersCount) {
+                this.activePlayersCount.setText(data.count.toString());
+            }
+        });
+
+        window.NetworkService.onMessage('player_balance', (data) => {
+            console.log('[Start] Player balance update:', data);
+            if (data.balance && this.chipCount) {
+                this.chipCount.setText(data.balance.toString());
+            }
+        });
+
+        // Send ping to keep connection alive
+        this.networkPingTimer = this.time.addEvent({
+            delay: 30000, // 30 seconds
+            callback: () => {
+                if (window.NetworkService.isConnected()) {
+                    window.NetworkService.send({ type: 'ping' });
+                }
+            },
+            loop: true
+        });
+
+        // Request initial lobby data
+        this.time.delayedCall(1000, () => {
+            if (window.NetworkService.isConnected()) {
+                window.NetworkService.send({
+                    type: 'get_lobby_info',
+                    playerId: window.appData?.id || 'guest'
+                });
+            }
+        });
+    }
+
+    updateActivePlayersFromServer() {
+        // Request updated active player count
+        if (window.NetworkService.isConnected()) {
+            window.NetworkService.send({
+                type: 'get_active_players'
+            });
+        }
+    }
+
+    updateLobbyInfo(data) {
+        // Update lobby information from server
+        if (data.activePlayersCount && this.activePlayersCount) {
+            this.activePlayersCount.setText(data.activePlayersCount.toString());
+        }
+        
+        if (data.playerBalance && this.chipCount) {
+            this.chipCount.setText(data.playerBalance.toString());
+        }
+    }
+
+    handleDisconnection() {
+        // Handle disconnection from server
+        console.log('[Start] Handling disconnection...');
+        // Could show a reconnecting message or switch to offline mode
+        // For now, just log it
+    }
+
+    handleNetworkError(error) {
+        // Handle network errors
+        console.error('[Start] Handling network error:', error);
+        // Could show an error message to the user
+    }
+
+    // Send join game request when entering a game mode
+    joinGameMode(gameMode) {
+        if (window.NetworkService.isConnected()) {
+            window.NetworkService.send({
+                type: 'join_game_mode',
+                gameMode: gameMode,
+                playerId: window.appData?.id || 'guest',
+                playerName: window.appData?.first_name || 'Guest',
+                timestamp: Date.now()
+            });
+        }
+    }
+
+    // Override destroy to cleanup network resources
+    destroy() {
+        if (this.networkPingTimer) {
+            this.networkPingTimer.destroy();
+        }
+        super.destroy();
     }
 
     setupSliderDrag() {

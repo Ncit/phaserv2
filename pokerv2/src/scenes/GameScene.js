@@ -136,6 +136,9 @@ export class GameScene extends Phaser.Scene {
 
         // Add all 5 players around the table
         this.addAllPlayers()
+
+        // Setup game-specific network handlers
+        this.setupGameNetworkHandlers()
     }
 
     addAllPlayers() {
@@ -581,19 +584,50 @@ export class GameScene extends Phaser.Scene {
         // Reset progress bar and handle fold action
         this.setProgressValue(0);
         console.log('Hand folded - Progress reset to 0%');
-        // Add additional fold logic here (e.g., disable betting, show fold indicator)
+        
+        // Send fold action to server
+        if (window.NetworkService && window.NetworkService.isConnected()) {
+            window.NetworkService.send({
+                type: 'player_action',
+                action: 'fold',
+                playerId: window.appData?.id || 'guest',
+                gameId: 'poker_table_1',
+                timestamp: Date.now()
+            });
+        }
     }
 
     handleCall() {
         // Handle call action - typically matches a predetermined amount
         console.log('Call action executed');
-        // Add call logic here (e.g., match pot, update chip count)
+        
+        // Send call action to server
+        if (window.NetworkService && window.NetworkService.isConnected()) {
+            window.NetworkService.send({
+                type: 'player_action',
+                action: 'call',
+                playerId: window.appData?.id || 'guest',
+                gameId: 'poker_table_1',
+                timestamp: Date.now()
+            });
+        }
     }
 
     handleRaise(amount) {
         // Handle raise action with the specified amount
         console.log(`Raise executed with ${amount}% of maximum bet`);
-        // Add raise logic here (e.g., update pot, notify other players)
+        
+        // Send raise action to server with amount
+        if (window.NetworkService && window.NetworkService.isConnected()) {
+            window.NetworkService.send({
+                type: 'player_action',
+                action: 'raise',
+                amount: amount,
+                playerId: window.appData?.id || 'guest',
+                gameId: 'poker_table_1',
+                timestamp: Date.now()
+            });
+        }
     }
 
     setupGameInterfaceButtons() {
@@ -702,6 +736,82 @@ export class GameScene extends Phaser.Scene {
     setProgressValue(value) {
         this.progressValue = Phaser.Math.Clamp(value, this.minProgress, this.maxProgress);
         this.updateProgressBar();
+    }
+
+    // Game-specific network message handlers can be set up here if needed
+    setupGameNetworkHandlers() {
+        // Setup message handlers specific to the game scene
+        window.NetworkService.onMessage('game_state', (data) => {
+            console.log('[GameScene] Received game state:', data);
+            this.updateGameFromServer(data);
+        });
+
+        window.NetworkService.onMessage('player_action', (data) => {
+            console.log('[GameScene] Player action received:', data);
+            this.handlePlayerAction(data);
+        });
+
+        window.NetworkService.onMessage('card_dealt', (data) => {
+            console.log('[GameScene] Cards dealt:', data);
+            this.updateCards(data.cards);
+        });
+
+        // Send join game message when entering the game scene
+        if (window.NetworkService.isConnected()) {
+            window.NetworkService.send({
+                type: 'join_game',
+                playerId: window.appData?.id || 'guest',
+                playerName: window.appData?.first_name || 'Guest',
+                gameId: 'poker_table_1'
+            });
+        }
+    }
+
+    updateGameFromServer(gameData) {
+        // Update game state from server data
+        if (gameData.pot) {
+            this.chipBankText.setText(`БАНК: ${gameData.pot}`);
+        }
+        
+        if (gameData.players) {
+            // Update player information
+            gameData.players.forEach((player, index) => {
+                const playerPrefix = `player${index + 1}`;
+                if (this[`${playerPrefix}Bank`]) {
+                    this[`${playerPrefix}Bank`].setText(player.chips);
+                }
+            });
+        }
+    }
+
+    handlePlayerAction(actionData) {
+        // Handle other players' actions
+        console.log(`Player ${actionData.playerId} performed action: ${actionData.action}`);
+        
+        switch(actionData.action) {
+            case 'fold':
+                // Show fold indicator for player
+                break;
+            case 'call':
+                // Show call animation
+                break;
+            case 'raise':
+                // Show raise animation and update pot
+                break;
+        }
+    }
+
+    updateCards(cards) {
+        // Update community cards from server data
+        if (cards && this.communityCards) {
+            cards.forEach((card, index) => {
+                if (this.communityCards[index] && card) {
+                    // Update card texture based on server data
+                    const cardKey = `${card.value}_of_${card.suit}`;
+                    this.communityCards[index].setTexture(cardKey);
+                }
+            });
+        }
     }
 
     update() {
