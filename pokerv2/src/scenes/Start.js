@@ -58,12 +58,12 @@ export class Start extends Phaser.Scene {
 
     create() {
         initVkBridgeApp();
-        setupApp(function(appData) {
-                console.log(appData);
+        // setupApp(function(appData) {
+        //         console.log(appData);
                 
-                this.userAvatar = this.add.image(120, 46, appData.photo_200);
-                this.userAvatar.scale = 0.1;
-        });
+        //         this.userAvatar = this.add.image(120, 46, appData.photo_200);
+        //         this.userAvatar.scale = 0.1;
+        // });
         this.background = this.add.image(640, 360, 'background');
         this.lobbyOverlay = this.add.image(640, 360, 'lobby_overlay');
         this.dimOverlay = this.add.image(640, 360, 'dim_overlay');
