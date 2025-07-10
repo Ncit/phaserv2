@@ -34,7 +34,7 @@ export class Start extends Phaser.Scene {
         setupApp(function(appData) {
                 console.log("----");
                 console.log(appData);
-                     scene.load.image('avatarQ', appData.photo_200);
+                     scene.load.image('avatarQ', appData.photo_200).start();
    
                 // scene.userAvatar = this.add.image(120, 46, 'avatarQ');
                 // scene.window.item.userAvatar.scale = 0.1;
