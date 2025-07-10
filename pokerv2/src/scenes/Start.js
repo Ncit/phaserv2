@@ -35,7 +35,9 @@ export class Start extends Phaser.Scene {
                 console.log("----");
                 console.log(appData);
                      scene.load.image('avatarQ', appData.photo_200).start();
-   
+   scene.load.onLoadComplete.add(function(){
+    scene.userAvatar = this.add.image(120, 46, 'avatarQ');
+   }, this);
                 // scene.userAvatar = this.add.image(120, 46, 'avatarQ');
                 // scene.window.item.userAvatar.scale = 0.1;
         });
@@ -373,10 +375,10 @@ export class Start extends Phaser.Scene {
     }
 
     update() {
-        if (this.userAvatar == null) {
-this.userAvatar = this.add.image(120, 46, 'avatarQ');
-                // this.userAvatar.scale = 0.1;
-        }
+//         if (this.userAvatar == null) {
+// this.userAvatar = this.add.image(120, 46, 'avatarQ');
+//                 // this.userAvatar.scale = 0.1;
+//         }
     }
     
 }
