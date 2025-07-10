@@ -1,41 +1,45 @@
 # Memory Bank: Tasks
 
 ## Current Task
-**Make bonus button clickable** ✅ COMPLETED
+**Add splash scene with preloader for 2 seconds before showing start scene** 🔄 IN PROGRESS
 
 ## Task Analysis
-- **Type**: UI Enhancement 
-- **Scope**: Make existing bonus button interactive
-- **Component**: Add click and hover functionality to bonus button
-- **Target**: bonus_button.png at position (1040, 640)
-- **Impact**: Enhanced user interaction
+- **Type**: Scene Enhancement
+- **Scope**: Create new splash scene with preloader functionality
+- **Component**: New Splash scene that displays before Start scene
+- **Target**: Game initialization sequence
+- **Impact**: Professional game startup experience with loading indication
 
 ## Implementation Details
-- **Asset**: bonus_button.png (399KB) already available
-- **Position**: (1040, 640) with 0.4 scale
-- **Features Added**:
-  - Interactive cursor (hand pointer)
-  - Hover effects (scale 0.4 → 0.44 + tint)
-  - Click feedback (darker tint + console log)
-  - Visual reset after 150ms
+- **New File**: `pokerv2/src/scenes/Splash.js`
+- **Duration**: 2-second timer before transitioning to Start scene
+- **Features**:
+  - Loading bar with progress indication
+  - Background (space.png) and logo (phaser.png)
+  - Game title display
+  - Countdown timer with text updates
+  - Manual skip functionality (click to skip)
+  - Smooth transition to Start scene
 
 ## Code Changes
-- **Asset Loading**: Added bonus_button loading in preload()
-- **Interactivity**: Added setInteractive() with useHandCursor
-- **Hover Effects**: Scale and tint changes on pointerover/pointerout
-- **Click Handler**: Visual feedback and console logging on pointerdown
+- **New Scene**: Created Splash.js with complete preloader
+- **Main Config**: Updated main.js to load Splash before Start
+- **Assets Used**: space.png (background), phaser.png (logo)
+- **Timer System**: 2-second countdown with visual feedback
 
 ## Status
-- [x] Asset loading added to preload()
-- [x] Button made interactive with cursor change
-- [x] Hover effects implemented (scale + tint)
-- [x] Click handler with visual feedback
+- [x] Created new Splash scene file
+- [x] Added loading bar and progress indication
+- [x] Implemented 2-second timer system
+- [x] Added manual skip functionality
+- [x] Updated main.js scene configuration
 - [x] **IMPLEMENTATION COMPLETE** ✅
 
 ## Implementation Results
-- **File Modified**: `pokerv2/src/scenes/Start.js`
-- **Lines Added**: ~18 lines of interaction code
-- **Features Working**: Bonus button now fully clickable with visual feedback
+- **Files Created**: `pokerv2/src/scenes/Splash.js`
+- **Files Modified**: `pokerv2/src/main.js`
+- **Lines Added**: ~95 lines of splash scene code
+- **Features Working**: Splash screen displays for 2 seconds before Start scene
 
 ## Previous Task Status
 ✅ **COMPLETED**: Horizontal slider for big buttons in Start.js scene
@@ -51,20 +55,21 @@
 - **Layout**: Centered container positioning
 
 ## Ready for New Implementation
-**IMPLEMENT MODE ACTIVE** - Waiting for task specification
+**IMPLEMENT MODE ACTIVE** - Current task completed
 
 ## Implementation Environment
 - **Framework**: Phaser.js v3 (working)
 - **Project**: pokerv2/ directory
-- **Current Scene**: Start.js (modified and functional)
-- **Assets**: Multiple game mode images available
+- **Current Scenes**: Splash.js (new) → Start.js (modified and functional)
+- **Assets**: Multiple game mode images + splash assets available
 - **Platform**: macOS, browser-based testing
 
 ## Status
-- [x] Previous implementation complete
+- [x] Splash scene implementation complete
+- [x] Scene transition working (Splash → Start)
 - [x] Environment ready for new tasks
 - [x] Memory Bank active and tracking
-- [ ] **NEW TASK SPECIFICATION NEEDED**
+- [x] **CURRENT TASK COMPLETE** ✅
 
 ## Next Required Action
 **Ready for new task specification** or **REFLECT mode**

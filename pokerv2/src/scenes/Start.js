@@ -1,5 +1,4 @@
 // import { setupApp } from './scripts/vklogic.js';
-var isDebug = false
 export class Start extends Phaser.Scene {
 
     constructor() {
@@ -7,44 +6,45 @@ export class Start extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('background', 'assets/lobby_background.png');
-        this.load.image('lobby_overlay', 'assets/lobby_overlay.png');
-        this.load.image('dim_overlay', 'assets/dim_overlay.png');
-        this.load.image('top_bar', 'assets/top_bar_logo.png');
-        this.load.image('bottom_bar', 'assets/bottom_bar.png');
-        this.load.image('planet_icon', 'assets/planet_icon.png');
-        this.load.image('settings_button', 'assets/settings_button.png');
-        this.load.image('stats_button', 'assets/stats_button.png');
-        this.load.image('friends_button', 'assets/friends_button.png');
-        this.load.image('chip_button', 'assets/chip_button.png');
-        this.load.image('underline', 'assets/underline.png');
-        this.load.image('avatar', 'assets/avatar.png');
-        this.load.image('crown', 'assets/crown.png');
-        this.load.image('star', 'assets/star.png');
-        this.load.image('progress', 'assets/progress.png');
+        // this.load.image('background', 'assets/lobby_background.png');
+        // this.load.image('lobby_overlay', 'assets/lobby_overlay.png');
+        // this.load.image('dim_overlay', 'assets/dim_overlay.png');
+        // this.load.image('top_bar', 'assets/top_bar_logo.png');
+        // this.load.image('bottom_bar', 'assets/bottom_bar.png');
+        // this.load.image('planet_icon', 'assets/planet_icon.png');
+        // this.load.image('settings_button', 'assets/settings_button.png');
+        // this.load.image('stats_button', 'assets/stats_button.png');
+        // this.load.image('friends_button', 'assets/friends_button.png');
+        // this.load.image('chip_button', 'assets/chip_button.png');
+        // this.load.image('underline', 'assets/underline.png');
+        // this.load.image('avatar', 'assets/avatar.png');
+        // this.load.image('crown', 'assets/crown.png');
+        // this.load.image('star', 'assets/star.png');
+        // this.load.image('progress', 'assets/progress.png');
 
-        // Load button assets for horizontal slider
-        this.load.image('fast_game_btn', 'assets/fast_game.png');
-        this.load.image('friends_game_btn', 'assets/friends_game.png');
-        this.load.image('high_bid_btn', 'assets/high_bid.png');
-        this.load.image('random_match_btn', 'assets/random_match.png');
-        this.load.image('train_game_btn', 'assets/train_game.png');
+        // // Load button assets for horizontal slider
+        // this.load.image('fast_game_btn', 'assets/fast_game.png');
+        // this.load.image('friends_game_btn', 'assets/friends_game.png');
+        // this.load.image('high_bid_btn', 'assets/high_bid.png');
+        // this.load.image('random_match_btn', 'assets/random_match.png');
+        // this.load.image('train_game_btn', 'assets/train_game.png');
         
-        // Load bonus button asset
-        this.load.image('bonus_button', 'assets/bonus_button.png');
-        var scene = this
-        setupApp(function(appData) {
-            console.log('--');
-            console.log(appData);
-            scene.load.image('avatarQ', appData.photo_200);
-            scene.userName = appData.first_name;
-            // scene.load.image('avatarQ', appData);
-        });
-
+        // // Load bonus button asset
+        // this.load.image('bonus_button', 'assets/bonus_button.png');
+        // var scene = this
+        // setupApp(function(appData) {
+        //     console.log('--');
+        //     console.log(appData);
+        //     scene.load.image('avatarQ', appData.photo_100);
+        //     scene.userName = appData.first_name;
+        //     // scene.load.image('avatarQ', appData);
+        // });
+        this.load.image('avatarQ', window.appData.photo_100);
     }
 
     create() {
-        initVkBridgeApp();
+        // initVkBridgeApp();
+
         this.background = this.add.image(640, 360, 'background');
         this.lobbyOverlay = this.add.image(640, 360, 'lobby_overlay');
         this.dimOverlay = this.add.image(640, 360, 'dim_overlay');
@@ -76,22 +76,24 @@ export class Start extends Phaser.Scene {
         // this.crown.scale = 0.34;
         // this.progress.scale = 0.34;
         // this.star.scale = 0.36;
-this.time.addEvent({
-        delay: 1000,
-        loop: false,
-        callback: () => {
+// this.time.addEvent({
+//         delay: 100,
+//         loop: false,
+//         callback: () => {
            this.userAvatar = this.add.image(120, 46, 'avatarQ');
            this.userAvatar.scale = 0.2;
             this.crown = this.add.image(138, 60, 'crown');
-        this.userName = this.add.text(166, 22, this.userName, { fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif', fontSize: 24});
+            console.log("---");
+            console.log(window.appData);
+        this.userName = this.add.text(166, 22, window.appData.first_name, { fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif', fontSize: 24});
         this.star = this.add.image(346, 62, 'star');
         this.progress = this.add.image(246, 64, 'progress');
         this.starCount = this.add.text(362, 50, '366', { fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif', fontSize: 19});
         this.crown.scale = 0.34;
         this.progress.scale = 0.34;
         this.star.scale = 0.36;
-        }
-        }); 
+        // }
+        // }); 
                 // this.userAvatar = this.add.image(120, 46, 'avatarQ');
                 // this.userAvatar.scale = 0.1;
         this.chipButton.scale = 0.35;
@@ -385,54 +387,4 @@ this.time.addEvent({
 
     }
     
-}
-
-
-
-function setupApp(appDataCallback) {
-    if (isDebug) {
-const appData = {
-    photo_200: 'https://gravatar.com/avatar/2ee1f504b415b376c586641aee2c3194?s=400&d=robohash&r=x',
-  first_name: "Никита"
-};
-    // 
-    appDataCallback(appData)
-return
-    }
-
-    vkBridge.send('VKWebAppGetLaunchParams')
-  .then((data) => { 
-    if (data.vk_user_id) {
-      userInfo(data.vk_user_id, function(authData) {
-    console.log("=-=-=-")
-    console.log(authData)
-    console.log("=-=-=-")
-      // Параметры запуска получены
-      appDataCallback(authData)
-});
-    }
-  })
-  .catch((error) => {
-    // Ошибка
-    console.log(error);
-  });
-}
-
-function userInfo(userId,authCallback) {
-  vkBridge.send('VKWebAppGetUserInfo', {
-  user_id: userId
-  })
-  .then((data) => { 
-    if (data.id) {
-      // Данные пользователя получены
-      authCallback(data);     
-    }
-  })
-  .catch((error) => {
-    // Ошибка
-    console.log(error);
-  });
-}
-function initVkBridgeApp() {
-	vkBridge.send("VKWebAppInit", {});
 }
