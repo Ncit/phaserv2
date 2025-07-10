@@ -1,5 +1,6 @@
 import { Splash } from './scenes/Splash.js';
 import { Start } from './scenes/Start.js';
+import { GameScene } from './scenes/GameScene.js';
 
 const config = {
     type: Phaser.AUTO,
@@ -11,8 +12,9 @@ const config = {
     backgroundColor: '#000000',
     pixelArt: false,
     scene: [
-        Splash,
-        Start
+        // Splash,
+        // Start,
+        GameScene
     ],
     scale: {
         mode: Phaser.Scale.FIT,

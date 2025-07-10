@@ -1,4 +1,3 @@
-// import { setupApp } from './scripts/vklogic.js';
 export class Start extends Phaser.Scene {
 
     constructor() {
@@ -6,39 +5,6 @@ export class Start extends Phaser.Scene {
     }
 
     preload() {
-        // this.load.image('background', 'assets/lobby_background.png');
-        // this.load.image('lobby_overlay', 'assets/lobby_overlay.png');
-        // this.load.image('dim_overlay', 'assets/dim_overlay.png');
-        // this.load.image('top_bar', 'assets/top_bar_logo.png');
-        // this.load.image('bottom_bar', 'assets/bottom_bar.png');
-        // this.load.image('planet_icon', 'assets/planet_icon.png');
-        // this.load.image('settings_button', 'assets/settings_button.png');
-        // this.load.image('stats_button', 'assets/stats_button.png');
-        // this.load.image('friends_button', 'assets/friends_button.png');
-        // this.load.image('chip_button', 'assets/chip_button.png');
-        // this.load.image('underline', 'assets/underline.png');
-        // this.load.image('avatar', 'assets/avatar.png');
-        // this.load.image('crown', 'assets/crown.png');
-        // this.load.image('star', 'assets/star.png');
-        // this.load.image('progress', 'assets/progress.png');
-
-        // // Load button assets for horizontal slider
-        // this.load.image('fast_game_btn', 'assets/fast_game.png');
-        // this.load.image('friends_game_btn', 'assets/friends_game.png');
-        // this.load.image('high_bid_btn', 'assets/high_bid.png');
-        // this.load.image('random_match_btn', 'assets/random_match.png');
-        // this.load.image('train_game_btn', 'assets/train_game.png');
-        
-        // // Load bonus button asset
-        // this.load.image('bonus_button', 'assets/bonus_button.png');
-        // var scene = this
-        // setupApp(function(appData) {
-        //     console.log('--');
-        //     console.log(appData);
-        //     scene.load.image('avatarQ', appData.photo_100);
-        //     scene.userName = appData.first_name;
-        //     // scene.load.image('avatarQ', appData);
-        // });
         this.load.image('avatarQ', window.appData.photo_200);
     }
 
@@ -386,5 +352,4 @@ export class Start extends Phaser.Scene {
     update() {
 
     }
-    
 }
