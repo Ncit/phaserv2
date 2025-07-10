@@ -1,5 +1,3 @@
-// import { setupApp } from './scripts/vklogic.js';
-
 export class Start extends Phaser.Scene {
 
     constructor() {
@@ -38,8 +36,8 @@ export class Start extends Phaser.Scene {
                 console.log(appData);
                      scene.load.image('avatarQ', appData.photo_200);
    
-                // this.userAvatar = this.add.image(120, 46, appData.photo_200);
-                // this.userAvatar.scale = 0.1;
+                // scene.userAvatar = this.add.image(120, 46, 'avatarQ');
+                // scene.window.item.userAvatar.scale = 0.1;
         });
 
         // this.load.image('avatarQ', 'https://gravatar.com/avatar/2ee1f504b415b376c586641aee2c3194?s=400&d=robohash&r=x');
@@ -85,8 +83,8 @@ export class Start extends Phaser.Scene {
         this.progress.scale = 0.34;
         this.star.scale = 0.36;
 
-                this.userAvatar = this.add.image(120, 46, 'avatarQ');
-                this.userAvatar.scale = 0.1;
+                // this.userAvatar = this.add.image(120, 46, 'avatarQ');
+                // this.userAvatar.scale = 0.1;
         this.chipButton.scale = 0.35;
         this.chipLabel.setTint(0xffffff);
         this.chipLabel.setAlpha(0.22);
@@ -375,12 +373,11 @@ export class Start extends Phaser.Scene {
     }
 
     update() {
-
+this.userAvatar = this.add.image(120, 46, 'avatarQ');
+                this.userAvatar.scale = 0.1;
     }
     
 }
-
-
 
 function setupApp(appDataCallback) {
   vkBridge.send('VKWebAppGetLaunchParams')
