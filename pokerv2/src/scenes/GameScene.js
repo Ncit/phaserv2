@@ -23,7 +23,7 @@ export class GameScene extends Phaser.Scene {
         this.load.image('chip_button', 'assets/chip_button.png');
 
 
-        this.load.image('club_3', 'assets/club_3.png');
+        this.load.image('club_3', 'assets/cards/3_of_clubs.png');
 
         this.load.image('back_card', 'assets/back_card.png');
         this.load.image('player_name_placeholder', 'assets/player_name_placeholder.png');
@@ -367,8 +367,8 @@ export class GameScene extends Phaser.Scene {
         this.cardContainer = this.add.container(640, 320); // Center on gaming table position
 
         // Card spacing configuration
-        const cardSpacing = 70; // Equal padding between cards
-        const cardScale = 0.34;
+        const cardSpacing = 88; // Equal padding between cards
+        const cardScale = 0.13;
         const totalCards = 5;
         
         // Calculate starting position to center all cards
