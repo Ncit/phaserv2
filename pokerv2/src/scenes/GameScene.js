@@ -89,20 +89,15 @@ export class GameScene extends Phaser.Scene {
 
         this.chipBank.scale = 0.2
 
-        this.firstCard = this.add.image(520, 360, 'club_3');
-        this.firstCard.scale = 0.34
+        // Create card container and center it on gaming table
+        this.createCardContainer();
 
-        this.secondCard = this.add.image(590, 360, 'club_3');
-        this.secondCard.scale = 0.34
-
-        this.thirdCard = this.add.image(680, 360, 'club_3');
-        this.thirdCard.scale = 0.34
-
-        this.fourthCard = this.add.image(750, 360, 'club_3');
-        this.fourthCard.scale = 0.34
-
-        this.fifthCard = this.add.image(820, 360, 'club_3');
-        this.fifthCard.scale = 0.34
+        this.handRank = this.add.text(640, 430, 'FULL HOUSE', {
+            fontFamily: 'Arial',
+            fontSize: '22px',
+            fill: '#FF4B00',
+            strokeThickness: 1
+        }).setOrigin(0.5);
     }
 
     createProgressBar() {
@@ -217,6 +212,56 @@ export class GameScene extends Phaser.Scene {
             stroke: '#000000',
             strokeThickness: 1
         }).setOrigin(0.5);
+    }
+
+    createCardContainer() {
+        // Create container for cards and center it on gaming table
+        this.cardContainer = this.add.container(640, 320); // Center on gaming table position
+
+        // Card spacing configuration
+        const cardSpacing = 70; // Equal padding between cards
+        const cardScale = 0.34;
+        const totalCards = 5;
+        
+        // Calculate starting position to center all cards
+        const totalWidth = (totalCards - 1) * cardSpacing;
+        const startX = -totalWidth / 2; // Start from left, centered around container origin
+
+        // Create cards with equal spacing
+        this.firstCard = this.add.image(startX, 40, 'club_3'); // Offset Y by 40 to position below table center
+        this.firstCard.setScale(cardScale);
+        
+        this.secondCard = this.add.image(startX + cardSpacing, 40, 'club_3');
+        this.secondCard.setScale(cardScale);
+        
+        this.thirdCard = this.add.image(startX + cardSpacing * 2, 40, 'club_3');
+        this.thirdCard.setScale(cardScale);
+        
+        this.fourthCard = this.add.image(startX + cardSpacing * 3, 40, 'club_3');
+        this.fourthCard.setScale(cardScale);
+        
+        this.fifthCard = this.add.image(startX + cardSpacing * 4, 40, 'club_3');
+        this.fifthCard.setScale(cardScale);
+
+        // Add all cards to container
+        this.cardContainer.add([
+            this.firstCard,
+            this.secondCard, 
+            this.thirdCard,
+            this.fourthCard,
+            this.fifthCard
+        ]);
+
+        // Store cards array for easy access
+        this.communityCards = [
+            this.firstCard,
+            this.secondCard,
+            this.thirdCard,
+            this.fourthCard,
+            this.fifthCard
+        ];
+
+        console.log('Card container created with 5 cards centered on gaming table');
     }
 
     setupProgressBarControls() {
