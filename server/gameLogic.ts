@@ -1,37 +1,45 @@
-import { ClientGame, ClientGameCommandKind } from "@/common/Game";
-import { userStorage } from "./userStorage";
-import { NeedRefreshAllStatesKindConst, NeedRefreshAllStatesResponse, UserState } from "@/common/Common";
-import { createInitialGameState, UserNotificator } from "./gameState";
+import { ClientGame, ClientGameCommandKind, ClientUserRegister, GameActionAmount } from "@/common/Game";
+import { User, userStorage } from "./userStorage";
+import { NeedRefreshAllStatesResponse } from "@/common/Common";
+import { createInitialGameState, GameStateKind, UserNotificator } from "./gameState";
+import _ from "lodash";
 
 const gameState = createInitialGameState();
 
 export default {
-    processMessage: (message: any, connectionId: string) => {
+    processMessage: (message: any, connectionId: string, user: User, userNotificator: UserNotificator) => {
         console.log("processMessage called", { message, connectionId });
-        const kind = message.kind as ClientGameCommandKind
-        switch (kind) {
-            case ClientGameCommandKind.UpdateReady:
-                return updateReady(connectionId, message.data);
-            case ClientGameCommandKind.LeaveGame:
-                return leaveGame(connectionId);
-            case ClientGameCommandKind.GameStateUpdate:
-                return gameStateUpdate(connectionId);
+
+        if (user.isAnonymous) {
+            if (message.kind === ClientGameCommandKind.RegisterUser) {
+                return registerUser(connectionId, message.data);
+            } else {
+                throw new Error("User is anonymous");
+            }
+        } else {
+            const kind = message.kind as ClientGameCommandKind
+            switch (kind) {
+                case ClientGameCommandKind.LeaveGame:
+                    return leaveGame(connectionId);
+                case ClientGameCommandKind.GameStateUpdate:
+                    return gameStateUpdate(connectionId);
+                case ClientGameCommandKind.ConnectToGame:
+                    return connectToGame(connectionId, userNotificator);
+                case ClientGameCommandKind.GameAction:
+                    return gameAction(connectionId, message.data);
+                case ClientGameCommandKind.StartGame:
+                    return startGame(connectionId);
+            }
         }
     },
     gameStateUpdate,
     addUserToGame
 }
 
-function updateReady(connectionId: string, data: boolean) {
-    console.log("updateReady called", { connectionId, data });
-    const uniqueId = userStorage.getUniqueId(connectionId)
-    gameState.updateUserReady(uniqueId, data);
-    return gameStateUpdate(connectionId);
-}
-
 function leaveGame(connectionId: string) {
     console.log("leaveGame called", { connectionId });
-    throw new Error("Function not implemented.");
+    gameState.removeUser(userStorage.getUniqueId(connectionId));
+    return gameStateUpdate(connectionId);
 }
 
 function addUserToGame(connectionId: string, userNotificator: UserNotificator): NeedRefreshAllStatesResponse {
@@ -47,12 +55,13 @@ function addUserToGame(connectionId: string, userNotificator: UserNotificator): 
 
     gameState.addUser({
         uniqueId: user.uniqueId,
+        name: user.name,
         hand: [],
-        currentBid: 0,
-        isReady: false,
-        userNotificator: userNotificator
+        currentBet: 0,
+        userNotificator: userNotificator,
+        allowedActions: []
     });
-    return new NeedRefreshAllStatesResponse(UserState.InGame);
+    return new NeedRefreshAllStatesResponse();
 }
 
 function gameStateUpdate(connectionId: string): ClientGame.GameStateUpdateResponse {
@@ -61,21 +70,93 @@ function gameStateUpdate(connectionId: string): ClientGame.GameStateUpdateRespon
     if (user === undefined) {
         throw new Error("User not found");
     }
+
+    const users = gameState.getUsers()
+
+    // сортируем пользователей что бы они были в порядке их хода
+    const userIndex = _.findIndex(users, u => u.uniqueId === user.uniqueId);
+    let before: typeof users = [];
+    let after: typeof users = [];
+
+    if (userIndex === -1) {
+        return {
+            kind: ClientGameCommandKind.GameStateUpdate,
+            data: {
+                currentUser: user,
+                users: [],
+                cardsInHand: [],
+                cardsOnTable: [],
+                currentBet: 0,
+                allowedActions: []
+            }
+        };
+    } else {
+        before = users.slice(0, userIndex);
+        after = users.slice(userIndex+1);
+    }
+
+    const rotatedUsers = after.concat(before);
+
     return {
         kind: ClientGameCommandKind.GameStateUpdate,
         data: {
             currentUser: user,
-            users: gameState.getUsers().filter(userInGame => userInGame.uniqueId !== user.uniqueId).map(userInGame => ({
-                name: userStorage.getUser(userInGame.uniqueId)?.name ?? "Unknown",
+            users: rotatedUsers.map(userInGame => ({
+                name: userInGame.name,
                 cardsInHandNum: userInGame.hand.length,
-                currentBid: userInGame.currentBid,
-                isReady: userInGame.isReady
+                currentBet: userInGame.currentBet,
             })),
             cardsInHand: gameState.getUsers().find(userInGame => userInGame.uniqueId === user.uniqueId)?.hand ?? [],
             cardsOnTable: gameState.getCardsOnTable(),
-            currentBid: gameState.getUsers().find(userInGame => userInGame.uniqueId === user.uniqueId)?.currentBid ?? 0,
-            isReady: gameState.getUsers().find(userInGame => userInGame.uniqueId === user.uniqueId)?.isReady ?? false
-        },
-        userState: UserState.InGame
+            currentBet: gameState.getUsers().find(userInGame => userInGame.uniqueId === user.uniqueId)?.currentBet ?? 0,
+            allowedActions: gameState.getUsers().find(userInGame => userInGame.uniqueId === user.uniqueId)?.allowedActions ?? []
+        }
     }
 }
+function registerUser(connectionId: string, data: ClientUserRegister) {
+    console.log("registerUser called", { connectionId, data });
+    const user = userStorage.getUser(connectionId)
+    if (user === undefined) {
+        throw new Error("User not found");
+    }
+    userStorage.registerUser(connectionId, data);
+    return gameStateUpdate(connectionId);
+}
+
+function connectToGame(connectionId: string, userNotificator: UserNotificator) {
+    const user = userStorage.getUser(connectionId)
+    if (user === undefined) {
+        throw new Error("User not found");
+    }
+    gameState.addUser({
+        uniqueId: user.uniqueId,
+        name: user.name,
+        hand: [],
+        currentBet: 0,
+        userNotificator: userNotificator,
+        allowedActions: []
+    });
+    return gameStateUpdate(connectionId);
+}
+
+function gameAction(connectionId: string, data: GameActionAmount) {
+    const user = userStorage.getUser(connectionId)
+    if (user === undefined) {
+        throw new Error("User not found");
+    }
+    gameState.onGameAction(user.uniqueId, data.action, data.amount);
+    return gameStateUpdate(connectionId);
+}
+
+function startGame(connectionId: string) {
+    const user = userStorage.getUser(connectionId)  
+    if (user === undefined) {
+        throw new Error("User not found");
+    }
+    if(gameState.getState() !== GameStateKind.WaitingForStart) {
+        throw new Error("Game is not in waiting for start state");
+    }
+    gameState.callNextStage();
+    return gameStateUpdate(connectionId);
+}
+

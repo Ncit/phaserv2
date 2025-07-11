@@ -1,22 +1,22 @@
 
 import { WebSocketServer } from 'ws';
 import { userStorage } from './userStorage';
-import { ClientLobbyCommandKind, ClientLobby } from '@/common/Lobby';
-import { ClientError, UserState } from '@/common/Common';
+import { ClientError } from '@/common/Common';
 import gameLogic from './gameLogic';
 import { UserNotificator } from './gameState';
+import { ClientGame, ClientGameCommandKind } from '@/common/Game';
+import { starWars, uniqueNamesGenerator } from 'unique-names-generator';
 
 const wss = new WebSocketServer({ port: 8080 });
 
-function catchAndCreateError<T>(handle: () => T): T | ClientLobby.ErrorResponse {
+function catchAndCreateError<T>(handle: () => T): T | ClientGame.ErrorResponse {
     try {
         return handle();
     } catch (error) {
         console.error(error);
         return {
-            kind: ClientLobbyCommandKind.Error,
-            data: new ClientError((error as any).toString()),
-            userState: UserState.InLobby
+            kind: ClientGameCommandKind.Error,
+            data: new ClientError((error as any).toString())
         };
     }
 }
@@ -25,8 +25,23 @@ wss.on('connection', function connection(ws) {
     // Generate a random connectionId (e.g., 16 hex characters)
     let connectionId = Math.random().toString(16).slice(2, 18);
     console.log('Client connected', connectionId);
-    // const response = lobbyLogic.onConnection(connectionId);
-    // ws.send(JSON.stringify(response));
+
+    userStorage.createUser(connectionId);
+
+
+    const userNotificator: UserNotificator = {
+        needRefreshAllStates: () => {
+            console.log("needRefreshAllStates", connectionId);
+            const user = userStorage.getUser(connectionId)
+            if (user === undefined) {
+                throw new Error("User not found");
+            }
+            ws.send(JSON.stringify({
+                kind: ClientGameCommandKind.NeedRefreshAllStates,
+                userUniqueId: user.uniqueId
+            }));
+        }
+    }
 
     ws.on('message', function onMessage(data) {
         try {
@@ -35,23 +50,8 @@ wss.on('connection', function connection(ws) {
                 throw new Error("User not found");
             }
 
-            const userNotificator: UserNotificator = {
-                needRefreshAllStates: () => {
-                    console.log("needRefreshAllStates", connectionId);
-                    const user = userStorage.getUser(connectionId)
-                    if (user === undefined) {
-                        throw new Error("User not found");
-                    }
-                    ws.send(JSON.stringify({
-                        kind: "need_refresh_all_states",
-                        userState: user.state
-                    }));
-                }
-            }
-
             let parsed = JSON.parse(data.toString())
-
-            const response2 = gameLogic.processMessage(parsed, connectionId);
+            const response2 = gameLogic.processMessage(parsed, connectionId, user, userNotificator);
             console.log(`processMessage ${parsed.kind}`, response2);
             ws.send(JSON.stringify(response2));
         } catch (error) {

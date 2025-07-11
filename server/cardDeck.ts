@@ -21,8 +21,8 @@ export class CardDeck {
         }
     }
 
-    public drawCard(): Card {
-        return this.cards.pop()!;
+    public drawCards(count: number): Card[] {
+        return this.cards.splice(0, count);
     }
 
     public getCardsRemaining(): number {

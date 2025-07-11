@@ -27,11 +27,12 @@
 
     /* Modules */
     "module": "commonjs",                                /* Specify what module code is generated. */
+    "outDir": "./dist",                                 /* Specify an output folder for all emitted files. */
     // "rootDir": "./",                                  /* Specify the root folder within your source files. */
     // "moduleResolution": "node10",                     /* Specify how TypeScript looks up a file from a given module specifier. */
     "baseUrl": ".",
     "paths": {
-      "@/common/*": ["debug_client_web/src/common/*"]
+      "@/common/*": ["common/*"]
     },
     // "rootDirs": [],                                   /* Allow multiple folders to be treated as one when resolving modules. */
     // "typeRoots": [],                                  /* Specify multiple folders that act like './node_modules/@types'. */
@@ -110,6 +111,11 @@
 
     /* Completeness */
     // "skipDefaultLibCheck": true,                      /* Skip type checking .d.ts files that are included with TypeScript. */
-    "skipLibCheck": true                                 /* Skip type checking all .d.ts files. */
-  }
+    "skipLibCheck": true                                /* Skip type checking all .d.ts files. */
+
+  },
+  "include": [
+    "common/*",
+    "server/*",
+  ]
 }

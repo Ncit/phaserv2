@@ -18,10 +18,6 @@ const GamePage: React.FC<GamePageProps> = ({
     sendJson({ kind: 'leave_game', data: undefined, userUniqueId });
   };
 
-  const handleReady = () => {
-    sendJson({ kind: 'update_ready', data: true, userUniqueId });
-  };
-
   const handleRefreshGameState = () => {
     sendJson({ kind: 'game_state_update', userUniqueId });
   };
@@ -30,7 +26,6 @@ const GamePage: React.FC<GamePageProps> = ({
     <div style={{ border: '1px solid #eee', padding: 10, marginBottom: 10 }}>
       <div style={{ marginBottom: 8 }}>
         <button onClick={handleLeaveGame} disabled={!connected}>Leave Game</button>
-        <button onClick={handleReady} disabled={!connected} style={{ marginLeft: 8 }}>Ready</button>
         <button onClick={handleRefreshGameState} disabled={!connected} style={{ marginLeft: 8 }}>Refresh Game State</button>
       </div>
       {/* Display basic game state info */}
@@ -47,7 +42,6 @@ const GamePage: React.FC<GamePageProps> = ({
               <th style={{ border: '1px solid #ccc', padding: 4 }}>Unique ID</th>
               <th style={{ border: '1px solid #ccc', padding: 4 }}>Cards In Hand</th>
               <th style={{ border: '1px solid #ccc', padding: 4 }}>Current Bid</th>
-              <th style={{ border: '1px solid #ccc', padding: 4 }}>Is Ready</th>
             </tr>
           </thead>
           <tbody>
@@ -57,7 +51,6 @@ const GamePage: React.FC<GamePageProps> = ({
               <td style={{ border: '1px solid #ccc', padding: 4 }}>{gameState.currentUser?.uniqueId}</td>
               <td style={{ border: '1px solid #ccc', padding: 4 }}>{gameState.cardsInHand?.length ?? '-'}</td>
               <td style={{ border: '1px solid #ccc', padding: 4 }}>{gameState.currentBid ?? '-'}</td>
-              <td style={{ border: '1px solid #ccc', padding: 4 }}>-</td>
             </tr>
             {/* Other users rows */}
             {gameState.users?.map((user, idx) => (
@@ -66,7 +59,6 @@ const GamePage: React.FC<GamePageProps> = ({
                 <td style={{ border: '1px solid #ccc', padding: 4 }}>-</td>
                 <td style={{ border: '1px solid #ccc', padding: 4 }}>{user.cardsInHandNum}</td>
                 <td style={{ border: '1px solid #ccc', padding: 4 }}>{user.currentBid}</td>
-                <td style={{ border: '1px solid #ccc', padding: 4 }}>{user.isReady ? 'Yes' : 'No'}</td>
               </tr>
             ))}
           </tbody>
