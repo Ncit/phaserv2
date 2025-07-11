@@ -143,8 +143,6 @@ export const ButtonConfig = {
             key: 'train_game',
             label: 'Train Game',
             index: 2,
-            action: 'startScene',
-            target: 'GameScene',
         },
         randomMatch: {
             pattern: 'game_mode',
@@ -157,6 +155,8 @@ export const ButtonConfig = {
             key: 'friends_game',
             label: 'Friends Game',
             index: 4,
+            action: 'startScene',
+            target: 'GameScene',
         },
 
         // Control buttons

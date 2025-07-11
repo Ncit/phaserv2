@@ -187,7 +187,7 @@ export class LobbyScene extends Phaser.Scene {
                 button.setTint(0x888888);
                 console.log(`${data.label} button clicked!`);
 
-                if (data.key === 'train_game_btn') {
+                if (data.key === 'friends_game_btn') {
                     this.time.delayedCall(150, () => {
                         button.clearTint();
                         this.scene.start('GameScene');
