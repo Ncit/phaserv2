@@ -1,0 +1,28 @@
+{
+  "name": "texas_holdem",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "server": "npx ts-node -r tsconfig-paths/register server/server.ts",
+    "debug_client": "npx ts-node debug_client/client.ts",
+    "debug_client_web": "npm --prefix debug_client_web start",
+    "server_build": "tsc --project tsconfig.json",
+    "upload_to_server": "rsync -avr -e \"ssh\" --exclude \"node_modules\" . grender@192.168.31.90:/data/sources/texas_holdem"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/ws": "^8.18.1",
+    "lodash": "^4.17.21",
+    "typescript": "^5.8.3",
+    "unique-names-generator": "^4.7.1",
+    "ws": "^8.18.3"
+  },
+  "description": "",
+  "devDependencies": {
+    "@types/lodash": "^4.17.20",
+    "tsconfig-paths": "^4.2.0"
+  }
+}
