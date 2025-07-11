@@ -14,16 +14,11 @@ const config = {
     height: 720,
     backgroundColor: '#000000',
     pixelArt: false,
-    scene: [
-        Splash,
-        Start,
-        GameScene
-    ],
+    scene: [Splash, Start, GameScene],
     scale: {
         mode: Phaser.Scale.FIT,
-        autoCenter: Phaser.Scale.CENTER_BOTH
+        autoCenter: Phaser.Scale.CENTER_BOTH,
     },
-}
+};
 
 new Phaser.Game(config);
-            

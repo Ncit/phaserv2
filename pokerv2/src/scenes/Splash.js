@@ -1,5 +1,4 @@
 export class Splash extends Phaser.Scene {
-
     constructor() {
         super('Splash');
     }
@@ -31,29 +30,30 @@ export class Splash extends Phaser.Scene {
         this.load.image('high_bid_btn', 'assets/high_bid.png');
         this.load.image('random_match_btn', 'assets/random_match.png');
         this.load.image('train_game_btn', 'assets/train_game.png');
-        
+
         // Load bonus button asset
         this.load.image('bonus_button', 'assets/bonus_button.png');
 
-        setupApp(function(appData) {
-             window.appData = appData
+        setupApp(function (appData) {
+            window.appData = appData;
         });
     }
 
     create() {
-        
         // Create splash screen background
         this.background = this.add.image(640, 360, 'splash_background');
-        
+
         // Add game title
-        this.titleText = this.add.text(640, 100, 'Poker Game', {
-            fontFamily: 'Arial',
-            fontSize: '48px',
-            fill: '#ffffff',
-            stroke: '#000000',
-            strokeThickness: 3
-        }).setOrigin(0.5);
-        
+        this.titleText = this.add
+            .text(640, 100, 'Poker Game', {
+                fontFamily: 'Arial',
+                fontSize: '48px',
+                fill: '#ffffff',
+                stroke: '#000000',
+                strokeThickness: 3,
+            })
+            .setOrigin(0.5);
+
         // If assets are already loaded (e.g., on restart), start timer immediately
         if (this.load.isReady()) {
             this.startTimer();
@@ -65,14 +65,16 @@ export class Splash extends Phaser.Scene {
         if (this.loadingBar) this.loadingBar.setVisible(false);
         if (this.percentText) this.percentText.setVisible(false);
         if (this.loadingText) this.loadingText.setVisible(false);
-        
+
         // Show "Press any key" or countdown
-        this.instructionText = this.add.text(640, 500, 'Starting in 2 seconds...', {
-            fontFamily: 'Arial',
-            fontSize: '24px',
-            fill: '#ffffff'
-        }).setOrigin(0.5);
-        
+        this.instructionText = this.add
+            .text(640, 500, 'Starting in 2 seconds...', {
+                fontFamily: 'Arial',
+                fontSize: '24px',
+                fill: '#ffffff',
+            })
+            .setOrigin(0.5);
+
         // Create countdown timer
         let countdown = 2;
         this.countdownTimer = this.time.addEvent({
@@ -80,19 +82,21 @@ export class Splash extends Phaser.Scene {
             repeat: 1,
             callback: () => {
                 countdown--;
-                this.instructionText.setText(`Starting in ${countdown} seconds...`);
-                
+                this.instructionText.setText(
+                    `Starting in ${countdown} seconds...`
+                );
+
                 if (countdown === 0) {
                     this.instructionText.setText('Starting game...');
                 }
-            }
+            },
         });
-        
+
         // Transition to Start scene after 2 seconds
         this.time.delayedCall(2000, () => {
             this.scene.start('Start');
         });
-        
+
         // Allow manual skip by clicking/touching
         // this.input.once('pointerdown', () => {
         //     if (this.countdownTimer) {
@@ -101,51 +105,51 @@ export class Splash extends Phaser.Scene {
         //     this.scene.start('Start');
         // });
     }
-} 
-
-
-
+}
 
 function setupApp(appDataCallback) {
     if (window.isDebug) {
-const appData = {
-    photo_200: 'https://gravatar.com/avatar/2ee1f504b415b376c586641aee2c3194?s=400&d=robohash&r=x',
-  first_name: "Никита"
-};
-    // 
-    appDataCallback(appData)
-    return
+        const appData = {
+            photo_200:
+                'https://gravatar.com/avatar/2ee1f504b415b376c586641aee2c3194?s=400&d=robohash&r=x',
+            first_name: 'Никита',
+        };
+        //
+        appDataCallback(appData);
+        return;
     }
 
-    vkBridge.send('VKWebAppGetLaunchParams')
-  .then((data) => { 
-    if (data.vk_user_id) {
-      userInfo(data.vk_user_id, function(authData) {
-      appDataCallback(authData)
-});
-    }
-  })
-  .catch((error) => {
-    // Ошибка
-    console.log(error);
-  });
+    vkBridge
+        .send('VKWebAppGetLaunchParams')
+        .then((data) => {
+            if (data.vk_user_id) {
+                userInfo(data.vk_user_id, function (authData) {
+                    appDataCallback(authData);
+                });
+            }
+        })
+        .catch((error) => {
+            // Ошибка
+            console.log(error);
+        });
 }
 
-function userInfo(userId,authCallback) {
-  vkBridge.send('VKWebAppGetUserInfo', {
-  user_id: userId
-  })
-  .then((data) => { 
-    if (data.id) {
-      // Данные пользователя получены
-      authCallback(data);     
-    }
-  })
-  .catch((error) => {
-    // Ошибка
-    console.log(error);
-  });
+function userInfo(userId, authCallback) {
+    vkBridge
+        .send('VKWebAppGetUserInfo', {
+            user_id: userId,
+        })
+        .then((data) => {
+            if (data.id) {
+                // Данные пользователя получены
+                authCallback(data);
+            }
+        })
+        .catch((error) => {
+            // Ошибка
+            console.log(error);
+        });
 }
 function initVkBridgeApp() {
-	vkBridge.send("VKWebAppInit", {});
+    vkBridge.send('VKWebAppInit', {});
 }
