@@ -1,6 +1,6 @@
-export class Splash extends Phaser.Scene {
+export class LoadingScene extends Phaser.Scene {
     constructor() {
-        super('Splash');
+        super('LoadingScene');
     }
 
     preload() {
@@ -92,9 +92,9 @@ export class Splash extends Phaser.Scene {
             },
         });
 
-        // Transition to Start scene after 2 seconds
+        // Transition to LobbyScene after 2 seconds
         this.time.delayedCall(2000, () => {
-            this.scene.start('Start');
+            this.scene.start('LobbyScene');
         });
 
         // Allow manual skip by clicking/touching
@@ -102,7 +102,7 @@ export class Splash extends Phaser.Scene {
         //     if (this.countdownTimer) {
         //         this.countdownTimer.destroy();
         //     }
-        //     this.scene.start('Start');
+        //     this.scene.start('LobbyScene');
         // });
     }
 }
@@ -152,4 +152,4 @@ function userInfo(userId, authCallback) {
 }
 function initVkBridgeApp() {
     vkBridge.send('VKWebAppInit', {});
-}
+} 

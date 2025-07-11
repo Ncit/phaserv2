@@ -40,8 +40,8 @@ export class UIManager {
         }
 
         // Scene-specific initialization
-        if (this.currentScene === 'Start') {
-            this.initializeStartScene();
+        if (this.currentScene === 'LobbyScene') {
+            this.initializeLobbyScene();
         } else if (this.currentScene === 'GameScene') {
             this.initializeGameScene();
         }
@@ -50,8 +50,8 @@ export class UIManager {
         eventManager.emit('ui_initialized', this.currentScene);
     }
 
-    // Initialize Start scene UI
-    initializeStartScene() {
+    // Initialize LobbyScene UI
+    initializeLobbyScene() {
         // Create background elements
         this.createBackgroundElements();
         
@@ -71,7 +71,7 @@ export class UIManager {
         this.buttonManager.createButton('bonus', 1040, 640);
 
         if (this.isDebug) {
-            console.log('UIManager: Start scene UI initialized');
+            console.log('UIManager: LobbyScene UI initialized');
         }
     }
 
@@ -168,7 +168,7 @@ export class UIManager {
         this.uiElements.set('gameBackground', { gameBg, gamingTable });
     }
 
-    // Create control buttons for Start scene
+            // Create control buttons for LobbyScene
     createControlButtons() {
         const controlButtons = [
             { key: 'settings', x: 120, y: 660 },
@@ -333,8 +333,8 @@ export class UIManager {
                 break;
                 
             case 'menu':
-                // Return to Start scene
-                this.scene.scene.start('Start');
+                        // Return to LobbyScene
+        this.scene.scene.start('LobbyScene');
                 break;
                 
             case 'bonus':

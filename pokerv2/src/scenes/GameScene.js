@@ -757,9 +757,9 @@ export class GameScene extends Phaser.Scene {
     }
 
     handleMenu() {
-        // Navigate back to Start scene
-        console.log('MENU - Returning to Start scene');
-        this.scene.start('Start');
+        // Navigate back to LobbyScene
+        console.log('MENU - Returning to LobbyScene');
+        this.scene.start('LobbyScene');
     }
 
     increaseProgress() {

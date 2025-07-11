@@ -1,6 +1,6 @@
-export class Start extends Phaser.Scene {
+export class LobbyScene extends Phaser.Scene {
     constructor() {
-        super('Start');
+        super('LobbyScene');
     }
 
     preload() {
@@ -207,4 +207,4 @@ export class Start extends Phaser.Scene {
     }
 
     update() {}
-}
+} 

@@ -1,5 +1,5 @@
-import { Splash } from './scenes/Splash.js';
-import { Start } from './scenes/Start.js';
+import { LoadingScene } from './scenes/LoadingScene.js';
+import { LobbyScene } from './scenes/LobbyScene.js';
 import { GameScene } from './scenes/GameScene.js';
 
 // Global debug variable accessible in all files
@@ -14,7 +14,7 @@ const config = {
     height: 720,
     backgroundColor: '#000000',
     pixelArt: false,
-    scene: [Splash, Start, GameScene],
+            scene: [LoadingScene, LobbyScene, GameScene],
     scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,
