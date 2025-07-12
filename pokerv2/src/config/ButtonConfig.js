@@ -168,7 +168,7 @@ export const ButtonConfig = {
             label: 'Friends Game',
             index: 4,
             action: 'startScene',
-            target: 'GameScene',
+            target: 'FriendsGame',
         },
 
         // Control buttons

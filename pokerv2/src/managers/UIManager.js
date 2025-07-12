@@ -50,8 +50,8 @@ export class UIManager {
         // Scene-specific initialization
         if (this.currentScene === 'LobbyScene') {
             this.initializeLobbyScene();
-        } else if (this.currentScene === 'GameScene') {
-            this.initializeGameScene();
+        } else if (this.currentScene === 'FriendsGame') {
+            this.initializeFriendsGame();
         }
 
         this.initialized = true;
@@ -84,7 +84,7 @@ export class UIManager {
     }
 
     // Initialize Game scene UI
-    initializeGameScene() {
+    initializeFriendsGame() {
         // Create background elements
         this.createGameBackgroundElements();
         
@@ -109,7 +109,7 @@ export class UIManager {
             console.log('UIManager: Progress bar stats after creation:', this.progressBarManager.getStats());
         }
         
-        // Note: Buttons are created by GameScene to preserve exact positioning
+        // Note: Buttons are created by FriendsGame to preserve exact positioning
         // UIManager handles event coordination and progress bar management
 
         if (this.isDebug) {

@@ -1,6 +1,6 @@
 import { LoadingScene } from './scenes/LoadingScene.js';
 import { LobbyScene } from './scenes/LobbyScene.js';
-import { GameScene } from './scenes/GameScene.js';
+import { FriendsGame } from './scenes/FriendsGame.js';
 
 // Global debug variable accessible in all files
 window.isDebug = true; // Set to true for development
@@ -14,7 +14,7 @@ const config = {
     height: 720,
     backgroundColor: '#000000',
     pixelArt: false,
-            scene: [LoadingScene, LobbyScene, GameScene],
+            scene: [LoadingScene, LobbyScene, FriendsGame],
     scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,

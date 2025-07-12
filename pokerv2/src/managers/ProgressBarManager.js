@@ -209,7 +209,7 @@ export class ProgressBarManager {
         return false;
     }
 
-    // Create the main game progress bar (extracted from GameScene)
+    // Create the main game progress bar (extracted from FriendsGame)
     createGameProgressBar() {
         const config = GameConfig.layout.progressBar;
         return this.createProgressBar('main', config.x, config.y, {
