@@ -96,4 +96,33 @@ export const GameConfig = {
         hoverDelay: 100,
         transitionDelay: 200,
     },
+
+    // Typography settings
+    typography: {
+        fontFamily: 'PF Din Text Comp Pro',
+        fallbackFonts: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        
+        // Font sizes
+        sizes: {
+            small: '12px',
+            medium: '16px',
+            large: '20px',
+            xlarge: '24px',
+            xxlarge: '32px',
+        },
+        
+        // Font weights
+        weights: {
+            regular: 400,
+            medium: 500,
+            bold: 700,
+        },
+        
+        // Line heights
+        lineHeights: {
+            tight: 1.2,
+            normal: 1.4,
+            relaxed: 1.6,
+        },
+    },
 } 
