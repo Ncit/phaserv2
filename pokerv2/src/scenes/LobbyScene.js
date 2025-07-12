@@ -1,3 +1,9 @@
+import { ButtonManager } from '../managers/ButtonManager.js';
+import { UIManager } from '../managers/UIManager.js';
+import { GameConfig } from '../config/GameConfig.js';
+import { ButtonConfig } from '../config/ButtonConfig.js';
+import { AssetConfig } from '../config/AssetConfig.js';
+
 export class LobbyScene extends Phaser.Scene {
     constructor() {
         super('LobbyScene');
@@ -8,6 +14,11 @@ export class LobbyScene extends Phaser.Scene {
     }
 
     create() {
+        // Initialize managers
+        this.buttonManager = new ButtonManager(this);
+        this.uiManager = new UIManager(this);
+
+        // Create background elements (preserved exactly)
         this.background = this.add.image(640, 360, 'background');
         this.lobbyOverlay = this.add.image(640, 360, 'lobby_overlay');
         this.dimOverlay = this.add.image(640, 360, 'dim_overlay');
@@ -15,11 +26,13 @@ export class LobbyScene extends Phaser.Scene {
         this.bottomBar = this.add.image(640, 660, 'bottom_bar');
         this.underline = this.add.image(680, 700, 'underline');
 
-        this.settingsButton = this.add.image(120, 660, 'settings_button');
-        this.friendsButton = this.add.image(180, 660, 'friends_button');
-        this.statsButton = this.add.image(240, 660, 'stats_button');
+        // Create control buttons using ButtonManager (preserved functionality)
+        this.settingsButton = this.buttonManager.createButton('settings', 120, 660);
+        this.friendsButton = this.buttonManager.createButton('friends', 180, 660);
+        this.statsButton = this.buttonManager.createButton('stats', 240, 660);
         this.planetIcon = this.add.image(300, 660, 'planet_icon');
 
+        // Create text elements (preserved exactly)
         this.activePlayers = this.add.text(320, 640, 'Активных участников:', {
             fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif',
             fontSize: 17,
@@ -29,6 +42,7 @@ export class LobbyScene extends Phaser.Scene {
             fontSize: 19,
         });
 
+        // Create chip elements (preserved exactly)
         this.chipButton = this.add.image(1180, 54, 'chip_button');
         this.chipLabel = this.add.text(1050, 30, 'Ваш баланс:', {
             fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif',
@@ -39,7 +53,7 @@ export class LobbyScene extends Phaser.Scene {
             fontSize: 26,
         });
 
-        // User avatar and profile elements
+        // Create user profile elements (preserved exactly)
         this.userAvatar = this.add.image(120, 46, 'avatarQ');
         this.userAvatar.scale = 0.3;
         this.crown = this.add.image(138, 60, 'crown');
@@ -57,7 +71,7 @@ export class LobbyScene extends Phaser.Scene {
         this.progress.scale = 0.34;
         this.star.scale = 0.36;
 
-        // UI styling
+        // Apply UI styling (preserved exactly)
         this.chipButton.scale = 0.35;
         this.chipLabel.setTint(0xffffff);
         this.chipLabel.setAlpha(0.22);
@@ -66,72 +80,19 @@ export class LobbyScene extends Phaser.Scene {
         this.activePlayers.setAlpha(0.22);
         this.activePlayersCount.setTint(0x9fa6b3);
 
-        // Button interactions
-        this.settingsButton.setInteractive({ useHandCursor: true });
-        this.friendsButton.setInteractive({ useHandCursor: true });
-        this.statsButton.setInteractive({ useHandCursor: true });
-
-        this.settingsButton.scale = 0.35;
-        this.friendsButton.scale = 0.35;
-        this.statsButton.scale = 0.35;
+        // Apply layout scaling (preserved exactly)
         this.planetIcon.scale = 0.3;
-
-        const controls = [
-            this.settingsButton,
-            this.friendsButton,
-            this.statsButton,
-        ];
-
-        controls.forEach((control, index) => {
-            control.on('pointerover', () => {
-                control.setTint(0xdddddd);
-            });
-
-            control.on('pointerout', () => {
-                control.clearTint();
-            });
-
-            control.on('pointerdown', () => {
-                control.setTint(0x888888);
-                console.log('Control button clicked!');
-
-                this.time.delayedCall(150, () => {
-                    control.clearTint();
-                });
-            });
-        });
-
-        // Layout scaling
         this.dimOverlay.setTint(0xff0000);
         this.lobbyOverlay.scale = 0.5;
         this.topBar.setScale(0.5);
         this.bottomBar.setScale(0.5);
         this.underline.setScale(0.25);
 
-        // Create game mode buttons
+        // Create game mode buttons using ButtonManager
         this.createButtons();
 
-        // Create and setup bonus button
-        this.bonusButton = this.add.image(1040, 640, 'bonus_button');
-        this.bonusButton.setScale(0.4);
-        this.bonusButton.setInteractive({ useHandCursor: true });
-
-        this.bonusButton.on('pointerover', () => {
-            this.bonusButton.setTint(0xdddddd);
-        });
-
-        this.bonusButton.on('pointerout', () => {
-            this.bonusButton.clearTint();
-        });
-
-        this.bonusButton.on('pointerdown', () => {
-            this.bonusButton.setTint(0x888888);
-            console.log('Bonus button clicked!');
-
-            this.time.delayedCall(150, () => {
-                this.bonusButton.clearTint();
-            });
-        });
+        // Create bonus button using ButtonManager (preserved functionality)
+        this.bonusButton = this.buttonManager.createButton('bonus', 1040, 640);
     }
 
     createButtons() {
@@ -147,7 +108,7 @@ export class LobbyScene extends Phaser.Scene {
             { key: 'friends_game_btn', label: 'Friends Game' },
         ];
 
-        // Create container for slider
+        // Create container for slider (preserved exactly)
         this.buttonContainer = this.add.container(0, 250);
         this.buttonContainer.setSize(buttonData.length * buttonSpacing, 300);
 
@@ -157,7 +118,7 @@ export class LobbyScene extends Phaser.Scene {
             const x = index * buttonSpacing;
             const button = this.add.image(x, buttonY, data.key);
 
-            // Set individual button scales
+            // Set individual button scales (preserved exactly)
             const scales = [0.25, 0.27, 0.29, 0.27, 0.25];
             button.setScale(scales[index]);
             button.setInteractive({ useHandCursor: true });
@@ -166,6 +127,7 @@ export class LobbyScene extends Phaser.Scene {
             this.buttons.push(button);
             this.buttonContainer.add(button);
 
+            // Apply button interactions (preserved exactly)
             button.on('pointerover', () => {
                 if (!this.isDragging) {
                     button.setScale(buttonScale * 1.1);
@@ -174,7 +136,7 @@ export class LobbyScene extends Phaser.Scene {
             });
 
             button.on('pointerout', () => {
-                button.setScale(buttonScale);
+                button.setScale(scales[index]);
                 button.clearTint();
             });
 
@@ -200,7 +162,7 @@ export class LobbyScene extends Phaser.Scene {
             });
         });
 
-        // Center the container
+        // Center the container (preserved exactly)
         const totalWidth = (buttonData.length - 1) * buttonSpacing;
         const containerStartX = (1280 - totalWidth) / 2;
         this.buttonContainer.x = containerStartX;

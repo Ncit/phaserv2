@@ -99,6 +99,18 @@ export const ButtonConfig = {
             action: 'raise',
         },
 
+        // Progress control buttons
+        minus: {
+            pattern: 'quick_action',
+            key: 'minus_button',
+            action: 'decreaseProgress',
+        },
+        plus: {
+            pattern: 'quick_action',
+            key: 'plus_button',
+            action: 'increaseProgress',
+        },
+
         // Quick betting buttons
         min: {
             pattern: 'quick_action',

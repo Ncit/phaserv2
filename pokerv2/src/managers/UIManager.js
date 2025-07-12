@@ -10,13 +10,13 @@ import { ProgressBarManager } from './ProgressBarManager.js';
 export class UIManager {
     constructor(scene) {
         this.scene = scene;
-        this.isDebug = window.isDebug || false;
+        this.isDebug = true; // Enable debug for troubleshooting
         
         // Initialize all sub-managers
         this.buttonManager = new ButtonManager(scene);
         this.playerManager = new PlayerManager(scene);
         this.cardManager = new CardManager(scene);
-        this.progressBarManager = new ProgressBarManager(scene);
+        this.progressBarManager = null; // Will be set by scene
         this.assetHelper = new AssetHelper(scene);
         
         // UI state tracking
@@ -26,6 +26,14 @@ export class UIManager {
         
         // Set up event listeners
         this.setupEventListeners();
+    }
+
+    // Set the progress bar manager instance (called by scene)
+    setProgressBarManager(progressBarManager) {
+        this.progressBarManager = progressBarManager;
+        if (this.isDebug) {
+            console.log('UIManager: Progress bar manager set');
+        }
     }
 
     // Initialize the UI system for the current scene
@@ -87,17 +95,22 @@ export class UIManager {
         this.createAllPlayers();
         
         // Create progress bar
-        this.progressBarManager.createGameProgressBar();
+        if (!this.progressBarManager) {
+            console.error('UIManager: Progress bar manager not set!');
+            return;
+        }
+        
+        const progressBarElements = this.progressBarManager.createGameProgressBar();
         this.progressBarManager.setupProgressBarControls('main');
         
-        // Create poker action buttons
-        this.createPokerActionButtons();
+        if (this.isDebug) {
+            console.log('UIManager: Progress bar created and controls set up');
+            console.log('UIManager: Progress bar elements:', progressBarElements);
+            console.log('UIManager: Progress bar stats after creation:', this.progressBarManager.getStats());
+        }
         
-        // Create betting control buttons
-        this.createBettingControlButtons();
-        
-        // Create game interface buttons
-        this.createGameInterfaceButtons();
+        // Note: Buttons are created by GameScene to preserve exact positioning
+        // UIManager handles event coordination and progress bar management
 
         if (this.isDebug) {
             console.log('UIManager: Game scene UI initialized');
@@ -290,9 +303,30 @@ export class UIManager {
 
     // Handle poker actions
     handlePokerAction(action) {
+        if (this.isDebug) {
+            console.log(`UIManager: Received poker action '${action}'`);
+        }
+        
         switch (action) {
             case 'fold':
                 // Reset progress bar and handle fold logic
+                if (!this.progressBarManager) {
+                    console.error('UIManager: Progress bar manager not available for fold action!');
+                    return;
+                }
+                
+                if (this.isDebug) {
+                    console.log('UIManager: Handling fold action - resetting progress bar');
+                    console.log('UIManager: Progress bar stats:', this.progressBarManager.getStats());
+                }
+                
+                // Check if progress bar exists before trying to set it
+                const currentProgress = this.progressBarManager.getProgress('main');
+                if (currentProgress === null) {
+                    console.error('UIManager: Progress bar "main" does not exist! Creating it now...');
+                    this.progressBarManager.createGameProgressBar();
+                }
+                
                 this.progressBarManager.setProgress('main', 0);
                 // Additional fold logic here
                 break;

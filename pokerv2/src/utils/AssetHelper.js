@@ -174,4 +174,52 @@ export class AssetHelper {
             console.log('AssetHelper: Cleaned up resources');
         }
     }
+
+    static loadGameAssets(scene) {
+        scene.load.image('game_bg', 'assets/game_bg_2.png');
+        scene.load.image('menu_game', 'assets/menu_game.png');
+        scene.load.image('settings_game', 'assets/settings_game.png');
+        scene.load.image('gaming_table', 'assets/gaming_table.png');
+        scene.load.image('chat_button', 'assets/chat_button.png');
+        scene.load.image('fold_button', 'assets/fold_button.png');
+        scene.load.image('call_button', 'assets/call_button.png');
+        scene.load.image('raise_button', 'assets/raise_button.png');
+        scene.load.image('minus_button', 'assets/minus_button.png');
+        scene.load.image('plus_button', 'assets/plus_button.png');
+        scene.load.image('fold_x', 'assets/fold_x.png');
+        scene.load.image('button_placeholder', 'assets/button_placeholder.png');
+        scene.load.image('underline', 'assets/underline.png');
+        scene.load.image('chip_button', 'assets/chip_button.png');
+        scene.load.image('back_card', 'assets/back_card.png');
+        scene.load.image('player_name_placeholder', 'assets/player_name_placeholder.png');
+        scene.load.image('avatarCircle', 'assets/avatar_cirlce.png');
+        scene.load.image('dummy_avatar', 'https://gravatar.com/avatar/2ee1f504b415b376c586641aee2c3194?s=400&d=robohash&r=x');
+    }
+
+    static loadCardAssets(scene) {
+        const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
+        const values = [
+            '2', '3', '4', '5', '6', '7', '8', '9', '10',
+            'jack', 'queen', 'king', 'ace'
+        ];
+        suits.forEach((suit) => {
+            values.forEach((value) => {
+                const cardKey = `${value}_of_${suit}`;
+                const cardPath = `assets/cards/${value}_of_${suit}.png`;
+                scene.load.image(cardKey, cardPath);
+            });
+        });
+        const variantCards = [
+            'ace_of_spades2', 'jack_of_clubs2', 'jack_of_diamonds2', 'jack_of_hearts2', 'jack_of_spades2',
+            'queen_of_clubs2', 'queen_of_diamonds2', 'queen_of_hearts2', 'queen_of_spades2',
+            'king_of_clubs2', 'king_of_diamonds2', 'king_of_hearts2', 'king_of_spades2'
+        ];
+        variantCards.forEach((cardKey) => {
+            scene.load.image(cardKey, `assets/cards/${cardKey}.png`);
+        });
+    }
+
+    static loadPlayerAssets(scene) {
+        // Add player-specific asset loading here if needed
+    }
 } 

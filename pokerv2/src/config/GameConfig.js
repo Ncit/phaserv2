@@ -16,10 +16,10 @@ export const GameConfig = {
         
         // Progress bar configuration
         progressBar: {
-            x: 640,
-            y: 650,
+            x: 1014,
+            y: 654,
             width: 260,
-            height: 20,
+            height: 10,
             step: 5,
             min: 0,
             max: 100,

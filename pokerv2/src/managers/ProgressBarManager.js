@@ -47,6 +47,7 @@ export class ProgressBarManager {
 
         if (this.isDebug) {
             console.log(`ProgressBarManager: Created progress bar '${key}' at (${x}, ${y})`);
+            console.log(`ProgressBarManager: Progress bar elements:`, elements);
         }
 
         return elements;
@@ -56,35 +57,40 @@ export class ProgressBarManager {
     createProgressBarElements(x, y, config) {
         const elements = {};
 
-        // Background (full bar outline)
+        // Background (full bar outline) - match original styling
         elements.background = this.scene.add.rectangle(
             x, y,
-            config.width, config.height,
+            config.width + 4, config.height + 4,
             config.colors.background
         );
+        elements.background.setStrokeStyle(0, 0xffffff);
 
-        // Secondary background (darker inner)
+        // Secondary background (darker inner) - match original styling
         elements.backgroundSecondary = this.scene.add.rectangle(
             x, y,
-            config.width - 4, config.height - 4,
+            config.width,
+            config.height,
             config.colors.backgroundSecondary
         );
 
-        // Progress fill (colored based on value)
+        // Progress fill (colored based on value) - match original positioning
+        const fillWidth = (config.width * config.value) / config.max;
         elements.fill = this.scene.add.rectangle(
             x - config.width / 2, y,
-            0, config.height - 4,
-            config.colors.low
+            fillWidth,
+            config.height - 2,
+            config.colors.high
         );
         elements.fill.setOrigin(0, 0.5);
 
-        // Optional progress text
-        elements.text = this.scene.add.text(x, y + config.height / 2 + 15, '0%', {
-            fontFamily: 'Arial',
-            fontSize: '14px',
-            color: '#ffffff',
-        });
-        elements.text.setOrigin(0.5);
+        // Ensure proper z-index by bringing to front
+        elements.background.setDepth(1000);
+        elements.backgroundSecondary.setDepth(1001);
+        elements.fill.setDepth(1002);
+
+        if (this.isDebug) {
+            console.log(`ProgressBarManager: Created progress bar elements at (${x}, ${y}) with width ${config.width}, height ${config.height}`);
+        }
 
         return elements;
     }
@@ -104,17 +110,12 @@ export class ProgressBarManager {
         progressBarData.value = clampedValue;
 
         // Calculate fill width
-        const fillWidth = (config.width - 4) * (clampedValue / config.max);
+        const fillWidth = config.width * (clampedValue / config.max);
         elements.fill.width = fillWidth;
 
         // Update fill color based on progress level
         const fillColor = this.getProgressColor(clampedValue, config.max, config.colors);
         elements.fill.setFillStyle(fillColor);
-
-        // Update text if present
-        if (elements.text) {
-            elements.text.setText(`${Math.round(clampedValue)}%`);
-        }
 
         if (this.isDebug) {
             console.log(`ProgressBarManager: Updated progress bar '${key}' to ${clampedValue}%`);
@@ -217,7 +218,7 @@ export class ProgressBarManager {
             min: config.min,
             max: config.max,
             step: config.step,
-            initialValue: 0,
+            initialValue: 50, // Match original initial value
         });
     }
 
