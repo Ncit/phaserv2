@@ -152,7 +152,7 @@ export class LobbyScene extends Phaser.Scene {
                 if (data.key === 'friends_game_btn') {
                     this.time.delayedCall(150, () => {
                         button.clearTint();
-                        this.scene.start('FriendsGame');
+                        this.scene.start('FriendsGameScene');
                     });
                 } else {
                     this.time.delayedCall(150, () => {

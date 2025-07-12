@@ -9,9 +9,9 @@ import { PlayerConfig } from '../config/PlayerConfig.js';
 import { AssetConfig } from '../config/AssetConfig.js';
 import { AssetHelper } from '../utils/AssetHelper.js';
 
-export class FriendsGame extends Phaser.Scene {
+export class FriendsGameScene extends Phaser.Scene {
     constructor() {
-        super('FriendsGame');
+        super('FriendsGameScene');
     }
 
     preload() {
@@ -31,7 +31,7 @@ export class FriendsGame extends Phaser.Scene {
         // Initialize UI Manager for Game Scene (pass the progressBarManager instance)
         this.uiManager = new UIManager(this);
         this.uiManager.setProgressBarManager(this.progressBarManager);
-        this.uiManager.initializeFriendsGame();
+        this.uiManager.initializeFriendsGameScene();
 
         // Create background elements (preserved exactly)
         this.background = this.add.image(640, 360, 'game_bg');
