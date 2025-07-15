@@ -204,18 +204,8 @@ export class NetworkManager {
             throw new Error('Not connected to server');
         }
 
-        const actionData = { action, amount };
-        console.log('NetworkManager: Sending poker action:', actionData);
-        this.socket.emit('pokerAction', actionData);
-    }
-
-    setReady(ready) {
-        if (!this.isConnected || !this.socket) {
-            throw new Error('Not connected to server');
-        }
-
-        console.log('NetworkManager: Setting ready status:', ready);
-        this.socket.emit('setReady', ready);
+        console.log('NetworkManager: Sending poker action:', { action, amount });
+        this.socket.emit('pokerAction', { action, amount });
     }
 
     startGame() {
@@ -223,7 +213,7 @@ export class NetworkManager {
             throw new Error('Not connected to server');
         }
 
-        console.log('NetworkManager: Requesting to start game');
+        console.log('NetworkManager: Starting game');
         this.socket.emit('startGame');
     }
 

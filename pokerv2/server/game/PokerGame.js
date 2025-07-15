@@ -64,12 +64,26 @@ class PokerGame {
             existingPlayer.disconnected = false; // Mark as reconnected
             existingPlayer.avatarUrl = player.avatarUrl; // Update avatar if changed
             
+            // Auto-ready reconnected players if game is in lobby
+            if (this.status === 'lobby') {
+                existingPlayer.ready = true;
+                this.readyPlayers.add(existingPlayer.id);
+                existingPlayer.bank = 1000; // Give them 1000 money
+                
+                // Check if all players are ready and we have enough players
+                if (this.readyPlayers.size >= this.minPlayers && 
+                    this.readyPlayers.size === this.getPlayerCount()) {
+                    this.allPlayersReady = true;
+                }
+            }
+            
             // If game is in progress, handle reconnection carefully
             if (this.status === 'playing') {
-                // Don't automatically unfold - keep their current state
-                // They were folded due to disconnection, so they should remain folded
-                existingPlayer.hasActed = false; // Reset action status for next round
-                console.log(`🔄 Player ${player.name} reconnected during game - keeping folded state`);
+                // Allow reconnected players to act in the same hand
+                // Reset their folded state and action status
+                existingPlayer.folded = false;
+                existingPlayer.hasActed = false;
+                console.log(`🔄 Player ${player.name} reconnected during game - restored to active state`);
             }
             
             return existingPlayer;
@@ -89,10 +103,20 @@ class PokerGame {
             hand: [],
             handRank: null,
             position: this.players.size,
-            ready: false
+            ready: true // Auto-ready players
         });
 
         this.playerOrder.push(player.id);
+        
+        // Add player to ready players set and give them 1000 money
+        this.readyPlayers.add(player.id);
+        this.players.get(player.id).bank = 1000;
+        
+        // Check if all players are ready and we have enough players
+        if (this.readyPlayers.size >= this.minPlayers && 
+            this.readyPlayers.size === this.getPlayerCount()) {
+            this.allPlayersReady = true;
+        }
 
         return player;
     }
@@ -115,10 +139,10 @@ class PokerGame {
             this.allPlayersReady = this.readyPlayers.size >= this.minPlayers && 
                                   this.readyPlayers.size === this.getPlayerCount();
             
-            // If game is in progress, mark player as folded
+            // If game is in progress, don't automatically fold
             if (this.status === 'playing') {
-                player.folded = true;
-                console.log(`🔄 Player ${player.name} marked as disconnected and folded`);
+                // Keep player active for potential reconnection
+                console.log(`🔄 Player ${player.name} marked as disconnected but kept active for reconnection`);
             }
             
             // If not enough active players, end the game
@@ -154,9 +178,9 @@ class PokerGame {
             
             // If game is in progress, handle differently
             if (this.status === 'playing') {
-                // Mark as folded but keep them in the game for potential reconnection
-                player.folded = true;
-                console.log(`🔄 Player ${player.name} folded due to disconnection`);
+                // Don't automatically fold - keep them in the game for potential reconnection
+                // They can reconnect and continue playing in the same hand
+                console.log(`🔄 Player ${player.name} disconnected during game - keeping active for reconnection`);
                 
                 // Check if we need to end the game
                 const activePlayers = this.getActivePlayers();
@@ -171,9 +195,9 @@ class PokerGame {
     }
 
     shouldResetRoomAfterDisconnect() {
-        // Always reset room when a player disconnects or reconnects
-        // This ensures a clean state for all players
-        return true;
+        // Only reset room when a player disconnects, not when they reconnect
+        // This allows reconnected players to continue the current game
+        return false;
     }
 
     getPlayerIdBySocketId(socketId) {
@@ -211,52 +235,6 @@ class PokerGame {
         return Array.from(this.players.values()).filter(p => !p.disconnected).length;
     }
 
-    setPlayerReady(playerId) {
-        if (!this.players.has(playerId)) {
-            throw new Error('Player not found');
-        }
-
-        const player = this.players.get(playerId);
-        player.ready = true;
-        this.readyPlayers.add(playerId);
-
-        // Give player 1000 money when they click ready
-        player.bank = 1000;
-
-        // Check if all players are ready and we have enough players
-        if (this.readyPlayers.size >= this.minPlayers && 
-            this.readyPlayers.size === this.getPlayerCount()) {
-            this.allPlayersReady = true;
-        }
-
-        return {
-            playerId,
-            ready: true,
-            allPlayersReady: this.allPlayersReady,
-            readyCount: this.readyPlayers.size,
-            totalPlayers: this.getPlayerCount()
-        };
-    }
-
-    setPlayerNotReady(playerId) {
-        if (!this.players.has(playerId)) {
-            throw new Error('Player not found');
-        }
-
-        const player = this.players.get(playerId);
-        player.ready = false;
-        this.readyPlayers.delete(playerId);
-        this.allPlayersReady = false;
-
-        return {
-            playerId,
-            ready: false,
-            allPlayersReady: false,
-            readyCount: this.readyPlayers.size,
-            totalPlayers: this.getPlayerCount()
-        };
-    }
-
     startGame() {
         if (!this.allPlayersReady) {
             throw new Error('Not all players are ready');
@@ -273,12 +251,22 @@ class PokerGame {
     endGame() {
         this.status = 'lobby';
         this.phase = 'lobby';
-        this.readyPlayers.clear();
-        this.allPlayersReady = false;
         
-        // Reset all players to not ready
+        // Keep all players ready
+        this.readyPlayers.clear();
+        for (const [playerId, player] of this.players.entries()) {
+            if (!player.disconnected) {
+                this.readyPlayers.add(playerId);
+            }
+        }
+        
+        // Check if all players are ready and we have enough players
+        this.allPlayersReady = this.readyPlayers.size >= this.minPlayers && 
+                              this.readyPlayers.size === this.getPlayerCount();
+        
+        // Reset all players to lobby state but keep them ready
         for (const player of this.players.values()) {
-            player.ready = false;
+            player.ready = true; // Keep players auto-ready
             player.currentBet = 0;
             player.folded = false;
             player.allIn = false;
@@ -384,14 +372,22 @@ class PokerGame {
             player.hand = [];
             player.handRank = null;
             player.hasActed = false;
-            player.ready = false;
+            player.ready = true; // Keep players auto-ready
             // Reset bank to 1000 for next game
             player.bank = 1000;
         }
         
-        // Clear ready status
+        // Keep all players ready and check if all are ready
         this.readyPlayers.clear();
-        this.allPlayersReady = false;
+        for (const [playerId, player] of this.players.entries()) {
+            if (!player.disconnected) {
+                this.readyPlayers.add(playerId);
+            }
+        }
+        
+        // Check if all players are ready and we have enough players
+        this.allPlayersReady = this.readyPlayers.size >= this.minPlayers && 
+                              this.readyPlayers.size === this.getPlayerCount();
         
         // Clear timers
         this.clearTimers();
@@ -533,7 +529,7 @@ class PokerGame {
     }
 
     getActivePlayers() {
-        return Array.from(this.players.values()).filter(p => !p.folded && !p.disconnected);
+        return Array.from(this.players.values()).filter(p => !p.folded);
     }
 
     handlePlayerAction(socketId, actionData) {
@@ -542,10 +538,10 @@ class PokerGame {
             throw new Error('Player not found');
         }
 
-        // Get active player order (excluding disconnected players)
+        // Get active player order (including disconnected players who haven't folded)
         const activePlayerOrder = this.playerOrder.filter(playerId => {
             const player = this.players.get(playerId);
-            return player && !player.disconnected;
+            return player && !player.folded;
         });
 
         const currentPlayerId = activePlayerOrder[this.currentPlayer];
@@ -735,10 +731,10 @@ class PokerGame {
     }
 
     nextPlayer() {
-        // Get active player order (excluding disconnected players)
+        // Get active player order (including disconnected players who haven't folded)
         const activePlayerOrder = this.playerOrder.filter(playerId => {
             const player = this.players.get(playerId);
-            return player && !player.disconnected;
+            return player && !player.folded;
         });
         
         let nextPlayer = (this.currentPlayer + 1) % activePlayerOrder.length;
@@ -875,10 +871,10 @@ class PokerGame {
             player.hasActed = false; // Reset action tracking for new betting round
         }
         
-        // Get active player order (excluding disconnected players)
+        // Get active player order (including disconnected players who haven't folded)
         const activePlayerOrder = this.playerOrder.filter(playerId => {
             const player = this.players.get(playerId);
-            return player && !player.disconnected;
+            return player && !player.folded;
         });
         
         // Set starting player

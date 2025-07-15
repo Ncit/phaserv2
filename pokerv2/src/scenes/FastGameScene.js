@@ -36,8 +36,7 @@ export class FastGameScene extends Phaser.Scene {
         this.allInButton = null;
         this.nextRoundButton = null;
         
-        // Lobby buttons
-        this.readyButton = null;
+        // Start game button
         this.startGameButton = null;
         
         // Button texts
@@ -47,8 +46,7 @@ export class FastGameScene extends Phaser.Scene {
         this.allInButtonText = null;
         this.nextRoundButtonText = null;
         
-        // Lobby button texts
-        this.readyButtonText = null;
+        // Start game button text
         this.startGameButtonText = null;
         
         // Connection status
@@ -116,11 +114,8 @@ export class FastGameScene extends Phaser.Scene {
         this.nextRoundButton = this.buttonManager.createButton('call', 1100, 640);
         this.nextRoundButton.setVisible(false);
 
-        // Create lobby buttons (moved to top of screen)
-        this.readyButton = this.buttonManager.createButton('call', 300, 100);
-        this.readyButton.setVisible(false);
-        
-        this.startGameButton = this.buttonManager.createButton('call', 500, 100);
+        // Create start game button only (no ready button)
+        this.startGameButton = this.buttonManager.createButton('call', 640, 100);
         this.startGameButton.setVisible(false);
 
         this.underline = this.add.image(640, 700, 'underline');
@@ -130,7 +125,7 @@ export class FastGameScene extends Phaser.Scene {
         this.createButtonLabels();
         this.createPokerActionLabels();
         this.createNextRoundButtonLabel();
-        this.createLobbyButtonLabels();
+        this.createStartGameButtonLabel();
 
         // Create chip bank display
         this.chipBank = this.add.image(600, 280, 'chip_button');
@@ -251,8 +246,11 @@ export class FastGameScene extends Phaser.Scene {
                 console.log('FastGameScene: Room reset!');
                 
                 // Handle different types of room resets
-                if (data.playerLeft) {
-                    // Room reset due to player leaving
+                if (data.lastPlayerLeft) {
+                    // Complete room reset due to last player leaving
+                    this.handleLastPlayerLeftReset(data.leavingPlayerName);
+                } else if (data.playerLeft) {
+                    // Room reset due to player leaving (but others remain)
                     this.handlePlayerLeftReset(data.leavingPlayerName);
                 } else if (data.newPlayerJoined) {
                     // Room reset due to new player joining
@@ -335,22 +333,18 @@ export class FastGameScene extends Phaser.Scene {
                     this.handRank.setFill('#00FF00'); // Green for successful reconnection
                 }
                 
-                // Update UI to restore lobby state if we're in lobby
-                if (this.gameState && this.gameState.status === 'lobby') {
-                    console.log('FastGameScene: Reconnected player - updating UI for lobby state');
+                // Update UI to restore appropriate state
+                if (this.gameState) {
+                    console.log('FastGameScene: Reconnected player - updating UI for current state:', this.gameState.status);
                     this.updateUI();
                     
-                    // Additional check for ready button state after UI update
-                    setTimeout(() => {
-                        console.log('FastGameScene: Ready button state after reconnection:', {
-                            visible: this.readyButton.visible,
-                            interactive: this.readyButton.input && this.readyButton.input.enabled,
-                            exists: !!this.readyButton,
-                            hasListeners: this.readyButton.listenerCount && this.readyButton.listenerCount('pointerdown')
-                        });
-                    }, 100);
+                    // If game is active and it's my turn, restore action buttons
+                    if (this.gameState.status === 'playing' && this.networkManager.isMyTurn()) {
+                        console.log('FastGameScene: Reconnected player - restoring action buttons for my turn');
+                        this.updateActionButtons();
+                    }
                 } else {
-                    console.log('FastGameScene: Reconnected player - not in lobby state, gameState:', this.gameState);
+                    console.log('FastGameScene: Reconnected player - no game state available');
                 }
             } else {
                 this.handRank.setText(`${playerName} переподключился!`);
@@ -605,14 +599,9 @@ export class FastGameScene extends Phaser.Scene {
         // Reset UI to lobby state
         this.updateUI();
         
-        // Ensure lobby buttons are interactive
-        if (this.gameState.status === 'lobby') {
-            this.readyButton.setInteractive();
-            this.readyButton.removeAllListeners('pointerdown');
-            this.readyButton.on('pointerdown', () => this.handleReady());
-            if (this.gameState.allPlayersReady) {
-                this.startGameButton.setInteractive();
-            }
+        // Ensure start game button is interactive if all players are ready
+        if (this.gameState.status === 'lobby' && this.gameState.allPlayersReady) {
+            this.startGameButton.setInteractive();
         }
         
         console.log('FastGameScene: Room reset complete - back to lobby state');
@@ -652,14 +641,9 @@ export class FastGameScene extends Phaser.Scene {
         // Reset UI to lobby state
         this.updateUI();
         
-        // Ensure lobby buttons are interactive
-        if (this.gameState.status === 'lobby') {
-            this.readyButton.setInteractive();
-            this.readyButton.removeAllListeners('pointerdown');
-            this.readyButton.on('pointerdown', () => this.handleReady());
-            if (this.gameState.allPlayersReady) {
-                this.startGameButton.setInteractive();
-            }
+        // Ensure start game button is interactive if all players are ready
+        if (this.gameState.status === 'lobby' && this.gameState.allPlayersReady) {
+            this.startGameButton.setInteractive();
         }
         
         console.log(`FastGameScene: Player left reset complete - ${playerName} left, cards hidden and room reset to lobby`);
@@ -699,17 +683,54 @@ export class FastGameScene extends Phaser.Scene {
         // Reset UI to lobby state
         this.updateUI();
         
-        // Ensure lobby buttons are interactive
-        if (this.gameState.status === 'lobby') {
-            this.readyButton.setInteractive();
-            this.readyButton.removeAllListeners('pointerdown');
-            this.readyButton.on('pointerdown', () => this.handleReady());
-            if (this.gameState.allPlayersReady) {
-                this.startGameButton.setInteractive();
-            }
+        // Ensure start game button is interactive if all players are ready
+        if (this.gameState.status === 'lobby' && this.gameState.allPlayersReady) {
+            this.startGameButton.setInteractive();
         }
         
         console.log(`FastGameScene: New player joined reset complete - ${playerName} joined, cards hidden and room reset to lobby`);
+    }
+
+    handleLastPlayerLeftReset(leavingPlayerName) {
+        console.log('FastGameScene: Handling complete room reset due to last player leaving');
+        
+        // Clear all cards immediately when the last player leaves
+        this.playerElements.forEach((elements, playerId) => {
+            this.cardManager.safeClearPlayerCards(elements.playerNumber);
+        });
+        
+        // Clear community cards
+        this.communityCardsContainer.removeAll(true);
+        
+        // Clear hand rank and card highlights
+        this.handRank.setText('');
+        this.clearCardHighlights();
+        
+        // Hide next round button
+        this.nextRoundButton.setVisible(false);
+        this.nextRoundButtonText.setVisible(false);
+        
+        // Show notification that the game was reset due to the last player leaving
+        const playerName = leavingPlayerName || 'Игрок';
+        this.handRank.setText(`${playerName} покинул игру. Комната сброшена.`);
+        this.handRank.setFill('#FFD700'); // Gold color for notification
+        
+        // Clear notification after 5 seconds
+        this.time.delayedCall(5000, () => {
+            if (this.handRank && this.gameState === null) { // Check if gameState is null
+                this.handRank.setText('');
+            }
+        });
+        
+        // Reset UI to lobby state
+        this.updateUI();
+        
+        // Ensure start game button is interactive if all players are ready
+        if (this.gameState === null) { // Check if gameState is null
+            this.startGameButton.setInteractive();
+        }
+        
+        console.log(`FastGameScene: Last player left reset complete - ${playerName} left, cards hidden and room reset to lobby`);
     }
 
     clearCardHighlights() {
@@ -887,7 +908,37 @@ export class FastGameScene extends Phaser.Scene {
     }
 
     updateUI() {
-        if (!this.gameState) return;
+        if (!this.gameState) {
+            // Game state is null - this means the room was completely reset
+            // Set UI to empty lobby state
+            this.chipBankText.setText('БАНК: 0');
+            this.phaseText.setText('Лобби (0/0 готовы)');
+            this.raiseCounterText.setText('');
+            
+            // Hide all game UI elements
+            this.foldButton.setVisible(false);
+            this.callButton.setVisible(false);
+            this.raiseButton.setVisible(false);
+            this.allInButton.setVisible(false);
+            this.foldButtonText.setVisible(false);
+            this.callButtonText.setVisible(false);
+            this.raiseButtonText.setVisible(false);
+            this.allInButtonText.setVisible(false);
+            
+            // Hide start game button
+            this.startGameButton.setVisible(false);
+            this.startGameButton.disableInteractive();
+            this.startGameButtonText.setVisible(false);
+            
+            // Hide next round button
+            this.nextRoundButton.setVisible(false);
+            this.nextRoundButtonText.setVisible(false);
+            
+            // Clear community cards
+            this.communityCardsContainer.removeAll(true);
+            
+            return;
+        }
         
         // Update pot display
         this.chipBankText.setText(`БАНК: ${this.gameState.pot}`);
@@ -932,26 +983,6 @@ export class FastGameScene extends Phaser.Scene {
         this.raiseButtonText.setVisible(false);
         this.allInButtonText.setVisible(false);
         
-        // Show lobby buttons and make them interactive
-        this.readyButton.setVisible(true);
-        this.readyButton.setInteractive();
-        this.readyButton.removeAllListeners('pointerdown');
-        this.readyButton.on('pointerdown', () => this.handleReady());
-        this.readyButtonText.setVisible(true);
-        
-        // Update ready button text to reflect current ready status
-        const myPlayer = this.networkManager.getMyPlayer();
-        if (myPlayer) {
-            this.updateReadyButtonText(myPlayer.ready);
-        }
-        
-        console.log('FastGameScene: Ready button state after setup:', {
-            visible: this.readyButton.visible,
-            interactive: this.readyButton.input && this.readyButton.input.enabled,
-            exists: !!this.readyButton,
-            hasListeners: this.readyButton.listenerCount && this.readyButton.listenerCount('pointerdown')
-        });
-        
         // Show start game button if all players are ready
         if (this.gameState.allPlayersReady) {
             this.startGameButton.setVisible(true);
@@ -971,10 +1002,7 @@ export class FastGameScene extends Phaser.Scene {
     }
 
     updateGameUI() {
-        // Hide lobby buttons and disable them
-        this.readyButton.setVisible(false);
-        this.readyButton.disableInteractive();
-        this.readyButtonText.setVisible(false);
+        // Hide start game button and disable it
         this.startGameButton.setVisible(false);
         this.startGameButton.disableInteractive();
         this.startGameButtonText.setVisible(false);
@@ -1046,15 +1074,8 @@ export class FastGameScene extends Phaser.Scene {
         // Update player name with current bet if applicable
         let displayName = player.name;
         
-        // Show ready status in lobby
-        if (this.gameState.status === 'lobby') {
-            if (player.ready) {
-                displayName += ' ✅';
-            } else {
-                displayName += ' ❌';
-            }
-        } else {
-            // Show game status
+        // Show game status (no ready status since players are auto-ready)
+        if (this.gameState.status === 'playing') {
             if (player.currentBet > 0) {
                 displayName += ` ($${player.currentBet})`;
             }
@@ -1192,20 +1213,9 @@ export class FastGameScene extends Phaser.Scene {
         this.nextRoundButtonText.setVisible(false);
     }
 
-    createLobbyButtonLabels() {
-        this.readyButtonText = this.add
-            .text(300, 88, 'ГОТОВ', {
-                fontFamily: 'Arial',
-                fontSize: '16px',
-                fill: '#ffffff',
-                stroke: '#000000',
-                strokeThickness: 1,
-            })
-            .setOrigin(0.5);
-        this.readyButtonText.setVisible(false);
-
+    createStartGameButtonLabel() {
         this.startGameButtonText = this.add
-            .text(500, 88, 'НАЧАТЬ ИГРУ', {
+            .text(640, 88, 'НАЧАТЬ ИГРУ', {
                 fontFamily: 'Arial',
                 fontSize: '16px',
                 fill: '#ffffff',
@@ -1227,8 +1237,7 @@ export class FastGameScene extends Phaser.Scene {
         this.chatButton.on('pointerdown', () => this.handleChat());
         this.nextRoundButton.on('pointerdown', () => this.handleNextRound());
         
-        // Lobby button handlers
-        this.readyButton.on('pointerdown', () => this.handleReady());
+        // Start game button handler only
         this.startGameButton.on('pointerdown', () => this.handleStartGame());
     }
 
@@ -1369,32 +1378,6 @@ export class FastGameScene extends Phaser.Scene {
 
     handleChat() {
         // Handle chat
-    }
-
-    handleReady() {
-        console.log('FastGameScene: handleReady called');
-        try {
-            const myPlayer = this.networkManager.getMyPlayer();
-            if (myPlayer) {
-                const isReady = !myPlayer.ready;
-                console.log('FastGameScene: Setting ready status to:', isReady);
-                this.networkManager.setReady(isReady);
-                
-                // Update button text and color based on ready status
-                this.updateReadyButtonText(isReady);
-            } else {
-                console.warn('FastGameScene: No myPlayer found in handleReady');
-            }
-        } catch (error) {
-            console.error('FastGameScene: Error setting ready status:', error);
-        }
-    }
-
-    updateReadyButtonText(isReady) {
-        if (this.readyButtonText) {
-            this.readyButtonText.setText('ГОТОВ');
-            this.readyButtonText.setFill(isReady ? '#00FF00' : '#ffffff'); // Green if ready, white if not ready
-        }
     }
 
     handleStartGame() {

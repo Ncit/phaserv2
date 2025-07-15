@@ -36,43 +36,65 @@ io.on('connection', (socket) => {
             
             // Check if this is a reconnection
             const existingPlayer = game.findPlayerByName(playerData.name);
-            const isReconnection = existingPlayer && existingPlayer.socketId !== socket.id;
             
-            if (isReconnection) {
-                // Handle reconnection
+            if (existingPlayer) {
+                // This is a reconnection
                 console.log(`🔄 Player ${playerData.name} reconnecting...`);
                 
                 // Update the existing player's socket ID
                 existingPlayer.socketId = socket.id;
                 existingPlayer.disconnected = false;
-
-                // Always reset the room on reconnection
-                console.log(`🔄 Player ${playerData.name} reconnected - resetting room to allow participation`);
-                game.resetRoom();
-                io.to('main-room').emit('gameStateUpdate', {
-                    gameState: game.getPublicState(),
-                    roomReset: true,
-                    playerReconnected: true,
-                    reconnectedPlayerName: playerData.name
-                });
-                console.log(`📢 Notified players about room reset due to ${playerData.name} reconnection`);
                 
-                // Send game state to the reconnecting player
-                socket.emit('gameJoined', {
-                    playerId: existingPlayer.id,
-                    gameId: game.id,
-                    gameState: game.getPublicState(),
-                    players: game.getPlayersList(),
-                    isReconnection: true
-                });
-                
-                // Notify other players about the reconnection
-                socket.to('main-room').emit('playerReconnected', {
-                    playerId: existingPlayer.id,
-                    playerName: existingPlayer.name
-                });
-                
-                console.log(`✅ Player ${playerData.name} reconnected successfully`);
+                // Check if game is in progress
+                if (game.status === 'playing') {
+                    // Game is in progress - allow reconnection without resetting room
+                    console.log(`🔄 Player ${playerData.name} reconnected during active game - allowing continuation`);
+                    
+                    // Send current game state to the reconnecting player
+                    socket.emit('gameJoined', {
+                        playerId: existingPlayer.id,
+                        gameId: game.id,
+                        gameState: game.getPublicState(),
+                        players: game.getPlayersList(),
+                        isReconnection: true
+                    });
+                    
+                    // Notify other players about the reconnection
+                    socket.to('main-room').emit('playerReconnected', {
+                        playerId: existingPlayer.id,
+                        playerName: existingPlayer.name
+                    });
+                    
+                    console.log(`✅ Player ${playerData.name} reconnected successfully during active game`);
+                } else {
+                    // Game is in lobby - reset room to allow participation
+                    console.log(`🔄 Player ${playerData.name} reconnected in lobby - resetting room to allow participation`);
+                    game.resetRoom();
+                    io.to('main-room').emit('gameStateUpdate', {
+                        gameState: game.getPublicState(),
+                        roomReset: true,
+                        playerReconnected: true,
+                        reconnectedPlayerName: playerData.name
+                    });
+                    console.log(`📢 Notified players about room reset due to ${playerData.name} reconnection`);
+                    
+                    // Send game state to the reconnecting player
+                    socket.emit('gameJoined', {
+                        playerId: existingPlayer.id,
+                        gameId: game.id,
+                        gameState: game.getPublicState(),
+                        players: game.getPlayersList(),
+                        isReconnection: true
+                    });
+                    
+                    // Notify other players about the reconnection
+                    socket.to('main-room').emit('playerReconnected', {
+                        playerId: existingPlayer.id,
+                        playerName: existingPlayer.name
+                    });
+                    
+                    console.log(`✅ Player ${playerData.name} reconnected successfully`);
+                }
             } else {
                 // New player joining
                 console.log(`🆕 New player ${playerData.name} joining...`);
@@ -158,35 +180,6 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Player sets ready status
-    socket.on('setReady', (ready) => {
-        try {
-            const game = gameManager.getGameByPlayerId(socket.id);
-            if (!game) {
-                socket.emit('error', { message: 'Game not found' });
-                return;
-            }
-
-            const playerId = game.getPlayerIdBySocketId(socket.id);
-            if (!playerId) {
-                socket.emit('error', { message: 'Player not found' });
-                return;
-            }
-
-            const result = ready ? game.setPlayerReady(playerId) : game.setPlayerNotReady(playerId);
-            
-            // Broadcast updated game state
-            io.to('main-room').emit('gameStateUpdate', {
-                gameState: game.getPublicState(),
-                readyUpdate: result
-            });
-            
-            console.log(`Player ${result.playerId} ${ready ? 'is ready' : 'is not ready'} (${result.readyCount}/${result.totalPlayers})`);
-        } catch (error) {
-            socket.emit('error', { message: error.message });
-        }
-    });
-
     // Player requests to start the game
     socket.on('startGame', () => {
         try {
@@ -266,37 +259,55 @@ io.on('connection', (socket) => {
             if (player) {
                 console.log(`👤 Player ${player.name} disconnected (${game.getPlayerCount()}/${game.maxPlayers} active players remaining)`);
                 
-                // Check if we need to reset the room
-                const shouldResetRoom = game.shouldResetRoomAfterDisconnect();
-                
-                if (shouldResetRoom) {
-                    console.log(`🔄 Resetting room due to player disconnect`);
-                    game.resetRoom();
+                // Check if this was the last player leaving
+                if (game.getPlayerCount() === 0) {
+                    console.log(`🏁 Last player left - completely resetting room and deleting all game data`);
                     
-                    // Notify all remaining players about the player leaving and room reset
-                    socket.to('main-room').emit('playerLeft', {
-                        playerId: player.id,
-                        playerName: player.name,
-                        removeCards: true // Signal to remove cards from UI
-                    });
+                    // Remove the game completely from GameManager
+                    gameManager.removeGame(game.id);
                     
-                    // Broadcast room reset state to all remaining players
+                    // Notify any remaining sockets about the complete reset
                     socket.to('main-room').emit('gameStateUpdate', {
-                        gameState: game.getPublicState(),
+                        gameState: null,
                         roomReset: true,
-                        playerLeft: true,
+                        lastPlayerLeft: true,
                         leavingPlayerName: player.name
                     });
                     
-                    console.log(`📢 Notified remaining players about room reset due to ${player.name} leaving`);
+                    console.log(`🗑️ Game room completely reset and deleted - all data cleared`);
                 } else {
-                    // Just notify about the disconnection (player may reconnect)
-                    socket.to('main-room').emit('playerDisconnected', {
-                        playerId: player.id,
-                        playerName: player.name
-                    });
+                    // Check if we need to reset the room (but not delete it)
+                    const shouldResetRoom = game.shouldResetRoomAfterDisconnect();
                     
-                    console.log(`📢 Notified players about ${player.name} disconnection (may reconnect)`);
+                    if (shouldResetRoom) {
+                        console.log(`🔄 Resetting room due to player disconnect`);
+                        game.resetRoom();
+                        
+                        // Notify all remaining players about the player leaving and room reset
+                        socket.to('main-room').emit('playerLeft', {
+                            playerId: player.id,
+                            playerName: player.name,
+                            removeCards: true // Signal to remove cards from UI
+                        });
+                        
+                        // Broadcast room reset state to all remaining players
+                        socket.to('main-room').emit('gameStateUpdate', {
+                            gameState: game.getPublicState(),
+                            roomReset: true,
+                            playerLeft: true,
+                            leavingPlayerName: player.name
+                        });
+                        
+                        console.log(`📢 Notified remaining players about room reset due to ${player.name} leaving`);
+                    } else {
+                        // Just notify about the disconnection (player may reconnect)
+                        socket.to('main-room').emit('playerDisconnected', {
+                            playerId: player.id,
+                            playerName: player.name
+                        });
+                        
+                        console.log(`📢 Notified players about ${player.name} disconnection (may reconnect)`);
+                    }
                 }
             }
         }
