@@ -38,6 +38,10 @@ jobs:
           cp index.html deploy/
           if [ -d "supabase" ]; then cp -r supabase deploy/; fi
           if [ -f "project.config" ]; then cp project.config deploy/; fi
+          # Copy .nojekyll to prevent Jekyll processing
+          cp .nojekyll deploy/
+          # Copy Jekyll config to disable processing
+          if [ -f "_config.yml" ]; then cp _config.yml deploy/; fi
           
       - name: Setup Pages
         uses: actions/configure-pages@v4

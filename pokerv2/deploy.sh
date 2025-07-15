@@ -38,6 +38,16 @@ if [ -f "project.config" ]; then
     cp project.config deploy/
 fi
 
+# Copy .nojekyll to prevent Jekyll processing
+echo "🚫 Copying .nojekyll file..."
+cp .nojekyll deploy/
+
+# Copy Jekyll config to disable processing
+if [ -f "_config.yml" ]; then
+    echo "⚙️ Copying Jekyll config..."
+    cp _config.yml deploy/
+fi
+
 # Create a simple index.html for the deployment root if it doesn't exist
 if [ ! -f "deploy/index.html" ]; then
     echo "📄 Creating index.html..."

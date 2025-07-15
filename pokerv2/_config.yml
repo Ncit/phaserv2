@@ -1,0 +1,18 @@
+# Disable Jekyll processing for GitHub Pages
+# This ensures static files are served directly
+
+# Disable Jekyll
+plugins: []
+
+# Don't process markdown files
+markdown: raw
+
+# Don't use any theme
+theme: null
+
+# Don't process any files
+include: []
+exclude: []
+
+# Disable all Jekyll features
+safe: false 

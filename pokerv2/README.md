@@ -13,7 +13,7 @@ A modern Texas Hold'em poker game built with Phaser.js, featuring AI bots, multi
 
 ## 🚀 Live Demo
 
-Play the game online: [https://yourusername.github.io/phaser-poker-game](https://yourusername.github.io/phaser-poker-game)
+Play the game online: [https://ncit.github.io/pokerv2/](https://ncit.github.io/pokerv2/)
 
 ## 🛠️ Local Development
 
@@ -27,8 +27,8 @@ Play the game online: [https://yourusername.github.io/phaser-poker-game](https:/
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/phaser-poker-game.git
-cd phaser-poker-game
+git clone https://github.com/Ncit/phaserv2.git
+cd pokerv2
 ```
 
 2. Start the local development server:
@@ -101,7 +101,7 @@ This project is automatically deployed to GitHub Pages using GitHub Actions. The
 1. Copies the `src/` directory contents to the deployment root
 2. Includes necessary dependencies and assets
 3. Deploys to the `gh-pages` branch
-4. Makes the game available at `https://yourusername.github.io/phaser-poker-game`
+4. Makes the game available at `https://ncit.github.io/pokerv2/`
 
 ### Manual Deployment
 
@@ -139,7 +139,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 If you encounter any issues or have questions:
 
-1. Check the [Issues](https://github.com/yourusername/phaser-poker-game/issues) page
+1. Check the [Issues](https://github.com/Ncit/phaserv2/issues) page
 2. Create a new issue with detailed information
 3. Contact the development team
 

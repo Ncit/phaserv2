@@ -39,6 +39,10 @@ jobs:
         cp index.html deploy/
         # Copy any other necessary files
         cp -r supabase deploy/ 2>/dev/null || true
+        # Copy .nojekyll to prevent Jekyll processing
+        cp .nojekyll deploy/
+        # Copy Jekyll config to disable processing
+        if [ -f "_config.yml" ]; then cp _config.yml deploy/; fi
         
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
