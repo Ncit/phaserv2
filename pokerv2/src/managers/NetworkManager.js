@@ -109,7 +109,7 @@ export class NetworkManager {
                 gameStarted: data.gameStarted,
                 roomReset: data.roomReset,
                 playerLeft: data.playerLeft,
-                playerDisconnected: data.playerDisconnected,
+                newPlayerJoined: data.newPlayerJoined,
                 leavingPlayerName: data.leavingPlayerName
             });
         });
@@ -148,8 +148,28 @@ export class NetworkManager {
 
         this.socket.on('playerDisconnected', (data) => {
             console.log('NetworkManager: Player disconnected (may reconnect):', data);
-            // Don't remove player from list, just mark as disconnected
+            // Mark player as disconnected but don't remove from list
+            if (data && data.playerId) {
+                const player = this.players.find(p => p.id === data.playerId);
+                if (player) {
+                    player.disconnected = true;
+                }
+            }
+            
             this.eventManager.emit('playerDisconnected', data);
+        });
+
+        this.socket.on('playerReconnected', (data) => {
+            console.log('NetworkManager: Player reconnected:', data);
+            // Mark player as reconnected
+            if (data && data.playerId) {
+                const player = this.players.find(p => p.id === data.playerId);
+                if (player) {
+                    player.disconnected = false;
+                }
+            }
+            
+            this.eventManager.emit('playerReconnected', data);
         });
 
         this.socket.on('error', (data) => {

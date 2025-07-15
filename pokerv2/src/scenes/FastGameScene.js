@@ -247,21 +247,18 @@ export class FastGameScene extends Phaser.Scene {
                 this.handleGameStarted();
             } else if (data.newHand) {
                 this.handleNewHand();
-            } else if (data.newPlayerJoined) {
-                // New player joined during lobby - show notification but don't reset
-                console.log('FastGameScene: New player joined during lobby');
-                this.handleNewPlayerJoined(data.newPlayerName, data.readyPlayersCount, data.totalPlayers);
             } else if (data.roomReset) {
                 console.log('FastGameScene: Room reset!');
                 
-                // If room reset was due to player leaving, handle it specially
+                // Handle different types of room resets
                 if (data.playerLeft) {
+                    // Room reset due to player leaving
                     this.handlePlayerLeftReset(data.leavingPlayerName);
-                } else if (data.playerDisconnected) {
-                    // Player disconnected but may reconnect - don't reset room
-                    this.handlePlayerDisconnected();
+                } else if (data.newPlayerJoined) {
+                    // Room reset due to new player joining
+                    this.handleNewPlayerJoinedReset(data.newPlayerName);
                 } else {
-                    // Regular room reset (not due to player leaving)
+                    // Regular room reset (Next Round button or other reset)
                     this.handleRoomReset();
                 }
             }
@@ -284,20 +281,53 @@ export class FastGameScene extends Phaser.Scene {
         // Player left event
         this.networkManager.on('playerLeft', (data) => {
             console.log('FastGameScene: Player left:', data);
-            this.removePlayer(data.playerId);
             
             // Remove player's cards from the table if specified
             if (data.removeCards) {
                 this.removePlayerCards(data.playerId);
             }
+            
+            // Note: The server will handle the room reset automatically
+            // We don't need to remove the player here as the room reset will handle that
         });
 
         // Player disconnected event (but may reconnect)
         this.networkManager.on('playerDisconnected', (data) => {
             console.log('FastGameScene: Player disconnected (may reconnect):', data);
-            // Don't remove the player completely, just hide their cards temporarily
-            this.hidePlayerCards(data.playerId);
+            
+            // Show notification that player disconnected but may reconnect
+            const playerName = data.playerName || 'Игрок';
+            this.handRank.setText(`${playerName} отключился. Ожидание переподключения...`);
+            this.handRank.setFill('#FFA500'); // Orange color for disconnection
+            
+            // Clear notification after 5 seconds
+            this.time.delayedCall(5000, () => {
+                if (this.handRank && this.gameState && this.gameState.status === 'playing') {
+                    this.handRank.setText('');
+                }
+            });
         });
+
+        // Player reconnected event
+        this.networkManager.on('playerReconnected', (data) => {
+            console.log('FastGameScene: Player reconnected:', data);
+            
+            // Show notification that player reconnected
+            const playerName = data.playerName || 'Игрок';
+            this.handRank.setText(`${playerName} переподключился!`);
+            this.handRank.setFill('#00FF00'); // Green color for reconnection
+            
+            // Clear notification after 3 seconds
+            this.time.delayedCall(3000, () => {
+                if (this.handRank && this.gameState && this.gameState.status === 'playing') {
+                    this.handRank.setText('');
+                }
+            });
+        });
+
+        // Note: Player disconnection is now handled by the server automatically
+        // When a player disconnects, the server removes them and resets the room
+        // No need for separate disconnection handling in the client
 
         // Network error event
         this.networkManager.on('networkError', (data) => {
@@ -476,17 +506,6 @@ export class FastGameScene extends Phaser.Scene {
         }
     }
 
-    hidePlayerCards(playerId) {
-        console.log('FastGameScene: Hiding cards for disconnected player:', playerId);
-        
-        const playerElements = this.playerElements.get(playerId);
-        if (playerElements && playerElements.playerNumber) {
-            // Hide cards but don't remove them completely (for reconnection)
-            this.cardManager.safeClearPlayerCards(playerElements.playerNumber);
-            console.log(`FastGameScene: Hidden cards for player ${playerId} (player number: ${playerElements.playerNumber})`);
-        }
-    }
-
     handleGameStarted() {
         console.log('FastGameScene: Handling game started');
         // Clear any lobby-specific UI
@@ -621,23 +640,6 @@ export class FastGameScene extends Phaser.Scene {
         this.updateUI();
         
         console.log(`FastGameScene: New player joined reset complete - ${playerName} joined, cards hidden and room reset to lobby`);
-    }
-
-    handlePlayerDisconnected() {
-        console.log('FastGameScene: Handling player disconnected (may reconnect)');
-        
-        // Show notification that player disconnected but may reconnect
-        this.handRank.setText('Игрок отключился. Ожидание переподключения...');
-        this.handRank.setFill('#FFA500'); // Orange color for disconnection
-        
-        // Clear notification after 5 seconds
-        this.time.delayedCall(5000, () => {
-            if (this.handRank && this.gameState && this.gameState.status === 'playing') {
-                this.handRank.setText('');
-            }
-        });
-        
-        console.log('FastGameScene: Player disconnected notification displayed');
     }
 
     clearCardHighlights() {

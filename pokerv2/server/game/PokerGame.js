@@ -131,6 +131,60 @@ class PokerGame {
         return player;
     }
 
+    handlePlayerDisconnect(socketId) {
+        const playerId = this.getPlayerIdBySocketId(socketId);
+        if (!playerId) return null;
+
+        const player = this.players.get(playerId);
+        if (player) {
+            // Mark player as disconnected
+            player.socketId = null;
+            player.disconnected = true;
+            
+            // Remove player from ready players set
+            this.readyPlayers.delete(playerId);
+            player.ready = false;
+            
+            // Recalculate allPlayersReady status
+            this.allPlayersReady = this.readyPlayers.size >= this.minPlayers && 
+                                  this.readyPlayers.size === this.getPlayerCount();
+            
+            console.log(`🔄 Player ${player.name} marked as disconnected`);
+            
+            // If game is in progress, handle differently
+            if (this.status === 'playing') {
+                // Mark as folded but keep them in the game for potential reconnection
+                player.folded = true;
+                console.log(`🔄 Player ${player.name} folded due to disconnection`);
+                
+                // Check if we need to end the game
+                const activePlayers = this.getActivePlayers();
+                if (activePlayers.length < this.minPlayers) {
+                    console.log(`🛑 Not enough active players (${activePlayers.length}/${this.minPlayers}), ending game`);
+                    this.endGame();
+                }
+            }
+        }
+
+        return player;
+    }
+
+    shouldResetRoomAfterDisconnect() {
+        // Don't reset room if game is in progress (allow reconnection)
+        if (this.status === 'playing') {
+            return false;
+        }
+        
+        // Don't reset room if we have enough players for a game
+        const activePlayers = this.getPlayerCount();
+        if (activePlayers >= this.minPlayers) {
+            return false;
+        }
+        
+        // Reset room if we don't have enough players for a game
+        return true;
+    }
+
     getPlayerIdBySocketId(socketId) {
         for (const [playerId, player] of this.players.entries()) {
             if (player.socketId === socketId) {
