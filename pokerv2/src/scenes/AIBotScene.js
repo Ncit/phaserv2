@@ -25,7 +25,11 @@ export class AIBotScene extends Phaser.Scene {
             bigBlind: 20,
             minBet: 20,
             bettingRoundStartPlayer: 0, // Track who started the betting round
-            hasEveryoneActed: false // Track if everyone has acted
+            hasEveryoneActed: false, // Track if everyone has acted
+            // Raise limit tracking
+            maxRaisesPerRound: 3,
+            currentRaisesInRound: 0,
+            lastRaisePlayerId: null
         };
         this.aiPlayers = [];
         this.humanPlayer = null;
@@ -269,6 +273,8 @@ export class AIBotScene extends Phaser.Scene {
         this.gameState.pot = 0;
         this.gameState.currentBet = 0;
         this.gameState.communityCards = [];
+        this.gameState.currentRaisesInRound = 0;
+        this.gameState.lastRaisePlayerId = null;
         
         // Clear community cards from UI
         this.communityCardsContainer.removeAll(true);
@@ -561,6 +567,15 @@ export class AIBotScene extends Phaser.Scene {
 
     raisePlayer(playerId, amount) {
         const player = this.gameState.players[playerId];
+        
+        // Check if we've reached the maximum raises for this round
+        if (this.gameState.currentRaisesInRound >= this.gameState.maxRaisesPerRound) {
+            console.log(`AIBotScene: Maximum raises reached (${this.gameState.currentRaisesInRound}/${this.gameState.maxRaisesPerRound}), forcing call`);
+            // Force a call instead of raise
+            this.callPlayer(playerId, amount);
+            return;
+        }
+        
         const raiseAmount = Math.min(amount, player.bank);
         
         console.log(`AIBotScene: Player ${player.name} is raising with amount: ${raiseAmount}`);
@@ -569,6 +584,12 @@ export class AIBotScene extends Phaser.Scene {
         player.bank -= raiseAmount;
         this.gameState.pot += raiseAmount;
         this.gameState.currentBet = player.currentBet;
+        
+        // Increment raise counter and track last raiser
+        this.gameState.currentRaisesInRound++;
+        this.gameState.lastRaisePlayerId = playerId;
+        
+        console.log(`AIBotScene: Player ${player.name} raised. Raises this round: ${this.gameState.currentRaisesInRound}/${this.gameState.maxRaisesPerRound}`);
         
         // Mark that this player has acted in this betting round
         player.hasActed = true;
@@ -700,6 +721,9 @@ export class AIBotScene extends Phaser.Scene {
         
         // Reset betting for new phase
         this.gameState.currentBet = 0;
+        this.gameState.currentRaisesInRound = 0;
+        this.gameState.lastRaisePlayerId = null;
+        
         this.gameState.players.forEach(player => {
             player.currentBet = 0;
             player.hasActed = false; // Reset action tracking for new betting round
@@ -1075,6 +1099,12 @@ export class AIBotScene extends Phaser.Scene {
     handleRaise() {
         const currentPlayer = this.gameState.players[this.gameState.currentPlayer];
         if (!currentPlayer.isAI) {
+            // Check if we can still raise
+            if (this.gameState.currentRaisesInRound >= this.gameState.maxRaisesPerRound) {
+                console.log('AIBotScene: Cannot raise - limit reached');
+                return;
+            }
+            
             // Calculate proper raise amount
             let raiseAmount;
             if (this.gameState.currentBet === 0) {

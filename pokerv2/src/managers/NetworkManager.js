@@ -217,8 +217,21 @@ export class NetworkManager {
     }
 
     getActivePlayers() {
-        if (!this.players) return [];
-        return this.players.filter(p => !p.folded);
+        if (!this.gameState) return [];
+        return this.gameState.players.filter(p => !p.folded);
+    }
+
+    getRaiseInfo() {
+        if (!this.gameState) return { currentRaises: 0, maxRaises: 3 };
+        return {
+            currentRaises: this.gameState.currentRaisesInRound || 0,
+            maxRaises: this.gameState.maxRaisesPerRound || 3
+        };
+    }
+
+    canRaise() {
+        const raiseInfo = this.getRaiseInfo();
+        return raiseInfo.currentRaises < raiseInfo.maxRaises;
     }
 
     // Event subscription methods

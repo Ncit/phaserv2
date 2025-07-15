@@ -21,6 +21,11 @@ class PokerGame {
         this.bigBlind = 20;
         this.minBet = 20;
         
+        // Raise limit tracking
+        this.maxRaisesPerRound = 3;
+        this.currentRaisesInRound = 0;
+        this.lastRaisePlayerId = null;
+        
         // Players
         this.players = new Map(); // playerId -> Player
         this.playerOrder = []; // Array of player IDs in order
@@ -203,6 +208,10 @@ class PokerGame {
         this.currentBet = 0;
         this.showdownResults = null;
         this.communityCards = [];
+        
+        // Reset raise tracking
+        this.currentRaisesInRound = 0;
+        this.lastRaisePlayerId = null;
         
         // Reset all players
         for (const player of this.players.values()) {
@@ -445,6 +454,11 @@ class PokerGame {
     raisePlayer(playerId, amount) {
         const player = this.players.get(playerId);
         
+        // Check if we've reached the maximum raises for this round
+        if (this.currentRaisesInRound >= this.maxRaisesPerRound) {
+            throw new Error('Maximum number of raises reached for this betting round');
+        }
+        
         // The amount parameter is the total bet amount the player wants to bet
         const totalBetAmount = Math.min(amount, player.bank);
         
@@ -463,6 +477,12 @@ class PokerGame {
         this.currentBet = totalBetAmount;
         player.hasActed = true;
         
+        // Increment raise counter and track last raiser
+        this.currentRaisesInRound++;
+        this.lastRaisePlayerId = playerId;
+        
+        console.log(`PokerGame: Player ${player.name} raised. Raises this round: ${this.currentRaisesInRound}/${this.maxRaisesPerRound}`);
+        
         // Reset action tracking for other players
         for (const p of this.players.values()) {
             if (p.id !== playerId) {
@@ -478,7 +498,9 @@ class PokerGame {
             action: 'raise',
             playerId,
             playerName: player.name,
-            amount: additionalAmount
+            amount: additionalAmount,
+            raisesInRound: this.currentRaisesInRound,
+            maxRaises: this.maxRaisesPerRound
         };
     }
 
@@ -496,6 +518,16 @@ class PokerGame {
         if (player.currentBet > this.currentBet) {
             this.currentBet = player.currentBet;
             
+            // Check if this all-in acts as a raise and enforce raise limit
+            if (this.currentRaisesInRound >= this.maxRaisesPerRound) {
+                console.log(`PokerGame: All-in by ${player.name} would exceed raise limit, but all-in is always allowed`);
+            } else {
+                // Increment raise counter and track last raiser
+                this.currentRaisesInRound++;
+                this.lastRaisePlayerId = playerId;
+                console.log(`PokerGame: Player ${player.name} all-in acts as raise. Raises this round: ${this.currentRaisesInRound}/${this.maxRaisesPerRound}`);
+            }
+            
             // Reset action tracking for other players since this is a raise
             for (const p of this.players.values()) {
                 if (p.id !== playerId) {
@@ -511,7 +543,9 @@ class PokerGame {
             action: 'allIn',
             playerId,
             playerName: player.name,
-            amount: allInAmount
+            amount: allInAmount,
+            raisesInRound: this.currentRaisesInRound,
+            maxRaises: this.maxRaisesPerRound
         };
     }
 
@@ -642,9 +676,12 @@ class PokerGame {
         
         // Reset betting for new phase
         this.currentBet = 0;
+        this.currentRaisesInRound = 0;
+        this.lastRaisePlayerId = null;
+        
         for (const player of this.players.values()) {
             player.currentBet = 0;
-            player.hasActed = false;
+            player.hasActed = false; // Reset action tracking for new betting round
         }
         
         // Set starting player
@@ -768,6 +805,10 @@ class PokerGame {
             smallBlind: this.smallBlind,
             bigBlind: this.bigBlind,
             minBet: this.minBet,
+            // Raise tracking
+            currentRaisesInRound: this.currentRaisesInRound,
+            maxRaisesPerRound: this.maxRaisesPerRound,
+            lastRaisePlayerId: this.lastRaisePlayerId,
             // Lobby information
             readyPlayers: Array.from(this.readyPlayers),
             allPlayersReady: this.allPlayersReady,

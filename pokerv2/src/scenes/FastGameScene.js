@@ -178,9 +178,19 @@ export class FastGameScene extends Phaser.Scene {
             })
             .setOrigin(0.5);
 
+        // Create raise counter display
+        this.raiseCounterText = this.add
+            .text(640, 110, '', {
+                fontFamily: 'Arial',
+                fontSize: '14px',
+                fill: '#FFD700',
+                strokeThickness: 1,
+            })
+            .setOrigin(0.5);
+
         // Create connection status text
         this.connectionStatusText = this.add
-            .text(640, 110, 'Connecting to server...', {
+            .text(640, 140, 'Connecting to server...', {
                 fontFamily: 'Arial',
                 fontSize: '14px',
                 fill: '#00FF00',
@@ -191,7 +201,7 @@ export class FastGameScene extends Phaser.Scene {
         // Create player info text (debug mode)
         if (window.isDebug && window.appData) {
             this.playerInfoText = this.add
-                .text(640, 140, `Playing as: ${window.appData.first_name} (ID: ${window.appData.vk_user_id})`, {
+                .text(640, 170, `Playing as: ${window.appData.first_name} (ID: ${window.appData.vk_user_id})`, {
                     fontFamily: 'Arial',
                     fontSize: '12px',
                     fill: '#FFD700',
@@ -591,9 +601,18 @@ export class FastGameScene extends Phaser.Scene {
         // Update phase text based on game status
         if (this.gameState.status === 'lobby') {
             this.phaseText.setText(`Лобби (${this.gameState.readyCount}/${this.gameState.totalPlayers} готовы)`);
+            this.raiseCounterText.setText(''); // Hide raise counter in lobby
             this.updateLobbyUI();
         } else {
             this.phaseText.setText(this.gameState.phase.charAt(0).toUpperCase() + this.gameState.phase.slice(1));
+            
+            // Update raise counter display
+            if (this.gameState.currentRaisesInRound !== undefined && this.gameState.maxRaisesPerRound !== undefined) {
+                this.raiseCounterText.setText(`Raises: ${this.gameState.currentRaisesInRound}/${this.gameState.maxRaisesPerRound}`);
+            } else {
+                this.raiseCounterText.setText('');
+            }
+            
             this.updateGameUI();
         }
         
@@ -772,6 +791,17 @@ export class FastGameScene extends Phaser.Scene {
         
         if (isMyTurn && myPlayer && !myPlayer.folded && !myPlayer.allIn) {
             this.enablePlayerActions();
+            
+            // Check raise limit and disable raise button if limit reached
+            const canRaise = this.networkManager.canRaise();
+            if (!canRaise) {
+                this.raiseButton.disableInteractive();
+                this.raiseButtonText.setFill('#888888'); // Gray out the text
+                console.log('FastGameScene: Raise limit reached, raise button disabled');
+            } else {
+                this.raiseButton.setInteractive();
+                this.raiseButtonText.setFill('#ffffff'); // Normal text color
+            }
         } else {
             this.disablePlayerActions();
         }
@@ -932,6 +962,12 @@ export class FastGameScene extends Phaser.Scene {
         if (!this.networkManager.isMyTurn()) return;
         if (this.gameState.phase === 'showdown') return;
         
+        // Check if we can still raise
+        if (!this.networkManager.canRaise()) {
+            console.log('FastGameScene: Cannot raise - limit reached');
+            return;
+        }
+        
         try {
             const myPlayer = this.networkManager.getMyPlayer();
             let totalBetAmount;
@@ -1065,7 +1101,7 @@ export class FastGameScene extends Phaser.Scene {
         if (this.uiManager) {
             this.uiManager.cleanup();
         }
-        
+
         // Clean up UI elements
         this.playerElements.forEach(elements => {
             Object.values(elements).forEach(element => {
@@ -1074,7 +1110,7 @@ export class FastGameScene extends Phaser.Scene {
                 }
             });
         });
-        
+
         // Clear all timers and intervals
         if (this.actionTimer) {
             clearTimeout(this.actionTimer);
