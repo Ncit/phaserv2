@@ -206,6 +206,7 @@ export class AIBotScene extends Phaser.Scene {
             currentBet: 0,
             folded: false,
             allIn: false,
+            hasActed: false,
             isAI: data.isAI,
             aiLevel: data.aiLevel,
             hand: [],
@@ -504,7 +505,22 @@ export class AIBotScene extends Phaser.Scene {
 
     foldPlayer(playerId) {
         const player = this.gameState.players[playerId];
+        console.log(`AIBotScene: Player ${player.name} is folding`);
         player.folded = true;
+        
+        // Mark that this player has acted in this betting round
+        player.hasActed = true;
+        
+        this.nextPlayer();
+    }
+
+    checkPlayer(playerId) {
+        const player = this.gameState.players[playerId];
+        console.log(`AIBotScene: Player ${player.name} is checking`);
+        
+        // Mark that this player has acted in this betting round
+        player.hasActed = true;
+        
         this.nextPlayer();
     }
 
@@ -512,12 +528,16 @@ export class AIBotScene extends Phaser.Scene {
         const player = this.gameState.players[playerId];
         const callAmount = Math.min(amount, player.bank);
         
-        // If callAmount is 0, this is a check (no bet to call)
-        if (callAmount > 0) {
-            player.currentBet += callAmount;
-            player.bank -= callAmount;
-            this.gameState.pot += callAmount;
-        }
+        console.log(`AIBotScene: Player ${player.name} is calling with amount: ${callAmount}`);
+        
+        // Update player's bet to match the current bet
+        const additionalBet = callAmount;
+        player.currentBet += additionalBet;
+        player.bank -= additionalBet;
+        this.gameState.pot += additionalBet;
+        
+        // Mark that this player has acted in this betting round
+        player.hasActed = true;
         
         if (player.bank === 0) {
             player.allIn = true;
@@ -530,10 +550,15 @@ export class AIBotScene extends Phaser.Scene {
         const player = this.gameState.players[playerId];
         const raiseAmount = Math.min(amount, player.bank);
         
+        console.log(`AIBotScene: Player ${player.name} is raising with amount: ${raiseAmount}`);
+        
         player.currentBet += raiseAmount;
         player.bank -= raiseAmount;
         this.gameState.pot += raiseAmount;
         this.gameState.currentBet = player.currentBet;
+        
+        // Mark that this player has acted in this betting round
+        player.hasActed = true;
         
         if (player.bank === 0) {
             player.allIn = true;
@@ -598,13 +623,22 @@ export class AIBotScene extends Phaser.Scene {
         // Check if all active players have equal bets or are all-in
         const allBetsEqual = activePlayers.every(p => p.currentBet === this.gameState.currentBet || p.allIn);
         
+        // Check if all active players have acted in this betting round
+        const allHaveActed = activePlayers.every(p => p.hasActed || p.allIn);
+        
         console.log('AIBotScene: Betting round check:', {
             phase: this.gameState.phase,
             currentBet: this.gameState.currentBet,
             activePlayers: activePlayers.length,
             allBetsEqual,
-            hasEveryoneActed: this.gameState.hasEveryoneActed,
-            playerBets: activePlayers.map(p => ({ id: p.id, bet: p.currentBet, allIn: p.allIn }))
+            allHaveActed,
+            playerBets: activePlayers.map(p => ({ 
+                id: p.id, 
+                name: p.name,
+                bet: p.currentBet, 
+                allIn: p.allIn,
+                hasActed: p.hasActed 
+            }))
         });
         
         // For preflop, complete if all bets are equal
@@ -615,7 +649,7 @@ export class AIBotScene extends Phaser.Scene {
         }
         
         // For post-flop phases, check if everyone has acted AND all bets are equal
-        const shouldComplete = allBetsEqual && this.gameState.hasEveryoneActed;
+        const shouldComplete = allBetsEqual && allHaveActed;
         console.log('AIBotScene: Post-flop betting complete:', shouldComplete);
         return shouldComplete;
     }
@@ -655,6 +689,7 @@ export class AIBotScene extends Phaser.Scene {
         this.gameState.currentBet = 0;
         this.gameState.players.forEach(player => {
             player.currentBet = 0;
+            player.hasActed = false; // Reset action tracking for new betting round
         });
         
         // Set starting player for this betting round, ensuring it's an active player
@@ -998,15 +1033,25 @@ export class AIBotScene extends Phaser.Scene {
         const currentPlayer = this.gameState.players[this.gameState.currentPlayer];
         if (!currentPlayer.isAI) {
             const callAmount = this.gameState.currentBet - currentPlayer.currentBet;
-            // If callAmount is 0 or negative, this is a check
-            const actualCallAmount = Math.max(0, callAmount);
+            
             console.log('AIBotScene: Call details:', {
                 currentBet: this.gameState.currentBet,
                 playerCurrentBet: currentPlayer.currentBet,
                 callAmount,
-                actualCallAmount
+                playerBank: currentPlayer.bank
             });
-            this.callPlayer(currentPlayer.id, actualCallAmount);
+            
+            // If callAmount is 0 or negative, this is a check
+            if (callAmount <= 0) {
+                console.log('AIBotScene: Player is checking (no bet to call)');
+                this.checkPlayer(currentPlayer.id);
+            } else {
+                // Player is calling a bet
+                const actualCallAmount = Math.min(callAmount, currentPlayer.bank);
+                console.log('AIBotScene: Player is calling with amount:', actualCallAmount);
+                this.callPlayer(currentPlayer.id, actualCallAmount);
+            }
+            
             this.disablePlayerActions();
         }
     }
