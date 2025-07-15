@@ -91,8 +91,15 @@ export class NetworkManager {
 
         this.socket.on('gameStateUpdate', (data) => {
             console.log('NetworkManager: Game state update:', data);
+            
+            // Validate game state data
+            if (!data || !data.gameState) {
+                console.warn('NetworkManager: Received invalid gameStateUpdate data:', data);
+                return;
+            }
+            
             this.gameState = data.gameState;
-            this.players = data.gameState.players;
+            this.players = data.gameState.players || [];
             
             // Emit directly to scene without going through handleGameStateUpdate
             this.eventManager.emit('gameStateChanged', {
@@ -102,7 +109,8 @@ export class NetworkManager {
                 gameStarted: data.gameStarted,
                 roomReset: data.roomReset,
                 playerLeft: data.playerLeft,
-                playerDisconnected: data.playerDisconnected
+                playerDisconnected: data.playerDisconnected,
+                leavingPlayerName: data.leavingPlayerName
             });
         });
 
@@ -110,6 +118,13 @@ export class NetworkManager {
             console.log('NetworkManager: Player joined:', data);
             // Update players list
             const newPlayer = data.player;
+            
+            // Check if newPlayer exists and has an id
+            if (!newPlayer || !newPlayer.id) {
+                console.warn('NetworkManager: Received playerJoined event with invalid player data:', data);
+                return;
+            }
+            
             const existingPlayerIndex = this.players.findIndex(p => p.id === newPlayer.id);
             
             if (existingPlayerIndex >= 0) {
@@ -124,7 +139,9 @@ export class NetworkManager {
         this.socket.on('playerLeft', (data) => {
             console.log('NetworkManager: Player left:', data);
             // Remove player from list
-            this.players = this.players.filter(p => p.id !== data.playerId);
+            if (data && data.playerId) {
+                this.players = this.players.filter(p => p.id !== data.playerId);
+            }
             
             this.eventManager.emit('playerLeft', data);
         });

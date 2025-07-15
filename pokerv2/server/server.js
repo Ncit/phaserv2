@@ -45,9 +45,12 @@ io.on('connection', (socket) => {
             });
             
             // Notify other players
-            socket.to('main-room').emit('playerJoined', {
-                player: game.getPlayerInfo(player.id)
-            });
+            const playerInfo = game.getPlayerInfo(player.id);
+            if (playerInfo) {
+                socket.to('main-room').emit('playerJoined', {
+                    player: playerInfo
+                });
+            }
             
             // Join the main game room
             socket.join('main-room');
@@ -188,35 +191,33 @@ io.on('connection', (socket) => {
         if (game) {
             const player = game.removePlayer(socket.id);
             if (player) {
-                // Notify other players with card removal info
-                socket.to('main-room').emit('playerLeft', {
-                    playerId: player.id,
-                    playerName: player.name,
-                    removeCards: true // Signal to remove cards from UI
-                });
+                console.log(`👤 Player ${player.name} left the room (${game.getPlayerCount()}/${game.maxPlayers} active players remaining)`);
                 
-                console.log(`👤 Player ${player.name} disconnected from main room (${game.getPlayerCount()}/${game.maxPlayers} active players remaining)`);
-                
-                // Only reset room if there are no active players left
-                if (game.getPlayerCount() === 0) {
-                    console.log(`🔄 Resetting room due to no active players`);
+                // Always reset the room when a player leaves (if there are still other players)
+                if (game.getPlayerCount() > 0) {
+                    console.log(`🔄 Resetting room due to player leaving`);
                     game.resetRoom();
                     
-                    // Broadcast room reset state to remaining players
+                    // Notify all remaining players about the player leaving and room reset
+                    socket.to('main-room').emit('playerLeft', {
+                        playerId: player.id,
+                        playerName: player.name,
+                        removeCards: true // Signal to remove cards from UI
+                    });
+                    
+                    // Broadcast room reset state to all remaining players
                     socket.to('main-room').emit('gameStateUpdate', {
                         gameState: game.getPublicState(),
                         roomReset: true,
-                        playerLeft: true
+                        playerLeft: true,
+                        leavingPlayerName: player.name
                     });
-                } else if (game.status === 'playing') {
-                    // If game is in progress and there are still active players, continue the game
-                    console.log(`🎮 Game continues with ${game.getPlayerCount()} active players`);
                     
-                    // Broadcast updated game state
-                    socket.to('main-room').emit('gameStateUpdate', {
-                        gameState: game.getPublicState(),
-                        playerDisconnected: true
-                    });
+                    console.log(`📢 Notified remaining players about room reset due to ${player.name} leaving`);
+                } else {
+                    // No players left, just reset the room
+                    console.log(`🔄 Resetting room due to no active players`);
+                    game.resetRoom();
                 }
             }
         }

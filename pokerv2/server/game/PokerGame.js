@@ -273,22 +273,35 @@ class PokerGame {
             player.hasActed = false;
         }
 
-        // Move dealer button
-        this.dealerPosition = (this.dealerPosition + 1) % this.playerOrder.length;
+        // Get active player order (excluding disconnected players)
+        const activePlayerOrder = this.playerOrder.filter(playerId => {
+            const player = this.players.get(playerId);
+            return player && !player.disconnected;
+        });
+        
+        // Move dealer button (use active player count)
+        this.dealerPosition = (this.dealerPosition + 1) % activePlayerOrder.length;
         
         // Initialize and shuffle deck
         this.initializeDeck();
         this.shuffleDeck();
 
-        // Post blinds
-        const smallBlindPos = (this.dealerPosition + 1) % this.playerOrder.length;
-        const bigBlindPos = (this.dealerPosition + 2) % this.playerOrder.length;
+        // Post blinds (use active player positions)
+        const smallBlindPos = (this.dealerPosition + 1) % activePlayerOrder.length;
+        const bigBlindPos = (this.dealerPosition + 2) % activePlayerOrder.length;
         
-        this.postBlind(smallBlindPos, this.smallBlind);
-        this.postBlind(bigBlindPos, this.bigBlind);
+        // Get the actual player IDs for blind positions
+        const smallBlindPlayerId = activePlayerOrder[smallBlindPos];
+        const bigBlindPlayerId = activePlayerOrder[bigBlindPos];
+        
+        // Post blinds using player IDs
+        this.postBlindById(smallBlindPlayerId, this.smallBlind);
+        this.postBlindById(bigBlindPlayerId, this.bigBlind);
         
         this.currentBet = this.bigBlind;
-        this.currentPlayer = (bigBlindPos + 1) % this.playerOrder.length;
+        
+        // Set current player to the position after big blind
+        this.currentPlayer = (bigBlindPos + 1) % activePlayerOrder.length;
 
         // Deal hole cards
         this.dealHoleCards();
@@ -311,6 +324,12 @@ class PokerGame {
         this.showdownResults = null;
         this.currentRaisesInRound = 0;
         this.lastRaisePlayerId = null;
+        
+        // Reset player tracking
+        this.currentPlayer = 0;
+        this.dealerPosition = 0;
+        this.bettingRoundStartPlayer = 0;
+        this.hasEveryoneActed = false;
         
         // Reset all players to lobby state
         for (const player of this.players.values()) {
@@ -373,10 +392,31 @@ class PokerGame {
         }
     }
 
+    postBlindById(playerId, amount) {
+        const player = this.players.get(playerId);
+        if (!player) return;
+        
+        const actualBet = Math.min(amount, player.bank);
+        
+        player.currentBet = actualBet;
+        player.bank -= actualBet;
+        this.pot += actualBet;
+        
+        if (player.bank === 0) {
+            player.allIn = true;
+        }
+    }
+
     dealHoleCards() {
-        // Deal 2 cards to each player
+        // Get active player order (excluding disconnected players)
+        const activePlayerOrder = this.playerOrder.filter(playerId => {
+            const player = this.players.get(playerId);
+            return player && !player.disconnected;
+        });
+        
+        // Deal 2 cards to each active player
         for (let i = 0; i < 2; i++) {
-            for (const playerId of this.playerOrder) {
+            for (const playerId of activePlayerOrder) {
                 const card = this.dealCard();
                 if (card) {
                     const player = this.players.get(playerId);
@@ -436,7 +476,13 @@ class PokerGame {
     }
 
     isCurrentPlayerFoldedOrAllIn() {
-        const currentPlayerId = this.playerOrder[this.currentPlayer];
+        // Get active player order (excluding disconnected players)
+        const activePlayerOrder = this.playerOrder.filter(playerId => {
+            const player = this.players.get(playerId);
+            return player && !player.disconnected;
+        });
+        
+        const currentPlayerId = activePlayerOrder[this.currentPlayer];
         const player = this.players.get(currentPlayerId);
         return player.folded || player.allIn;
     }
@@ -451,7 +497,13 @@ class PokerGame {
             throw new Error('Player not found');
         }
 
-        const currentPlayerId = this.playerOrder[this.currentPlayer];
+        // Get active player order (excluding disconnected players)
+        const activePlayerOrder = this.playerOrder.filter(playerId => {
+            const player = this.players.get(playerId);
+            return player && !player.disconnected;
+        });
+
+        const currentPlayerId = activePlayerOrder[this.currentPlayer];
         if (playerId !== currentPlayerId) {
             throw new Error('Not your turn');
         }
@@ -638,14 +690,20 @@ class PokerGame {
     }
 
     nextPlayer() {
-        let nextPlayer = (this.currentPlayer + 1) % this.playerOrder.length;
+        // Get active player order (excluding disconnected players)
+        const activePlayerOrder = this.playerOrder.filter(playerId => {
+            const player = this.players.get(playerId);
+            return player && !player.disconnected;
+        });
+        
+        let nextPlayer = (this.currentPlayer + 1) % activePlayerOrder.length;
         let iterations = 0;
         
         // Skip folded players
-        while (this.players.get(this.playerOrder[nextPlayer]).folded && 
+        while (this.players.get(activePlayerOrder[nextPlayer]).folded && 
                nextPlayer !== this.currentPlayer && 
-               iterations < this.playerOrder.length) {
-            nextPlayer = (nextPlayer + 1) % this.playerOrder.length;
+               iterations < activePlayerOrder.length) {
+            nextPlayer = (nextPlayer + 1) % activePlayerOrder.length;
             iterations++;
         }
         
@@ -772,10 +830,16 @@ class PokerGame {
             player.hasActed = false; // Reset action tracking for new betting round
         }
         
+        // Get active player order (excluding disconnected players)
+        const activePlayerOrder = this.playerOrder.filter(playerId => {
+            const player = this.players.get(playerId);
+            return player && !player.disconnected;
+        });
+        
         // Set starting player
-        let startingPlayer = (this.dealerPosition + 1) % this.playerOrder.length;
-        while (this.players.get(this.playerOrder[startingPlayer]).folded) {
-            startingPlayer = (startingPlayer + 1) % this.playerOrder.length;
+        let startingPlayer = (this.dealerPosition + 1) % activePlayerOrder.length;
+        while (this.players.get(activePlayerOrder[startingPlayer]).folded) {
+            startingPlayer = (startingPlayer + 1) % activePlayerOrder.length;
         }
         
         this.currentPlayer = startingPlayer;

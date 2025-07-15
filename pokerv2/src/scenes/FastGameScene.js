@@ -262,7 +262,7 @@ export class FastGameScene extends Phaser.Scene {
                 
                 // If room reset was due to player leaving, handle it specially
                 if (data.playerLeft) {
-                    this.handlePlayerLeftReset();
+                    this.handlePlayerLeftReset(data.leavingPlayerName);
                 } else if (data.playerDisconnected) {
                     // Player disconnected but may reconnect - don't reset room
                     this.handlePlayerDisconnected();
@@ -555,7 +555,7 @@ export class FastGameScene extends Phaser.Scene {
         console.log('FastGameScene: Room reset complete - back to lobby state');
     }
 
-    handlePlayerLeftReset() {
+    handlePlayerLeftReset(leavingPlayerName) {
         console.log('FastGameScene: Handling room reset due to player leaving');
         
         // Clear all cards immediately when player leaves
@@ -575,11 +575,12 @@ export class FastGameScene extends Phaser.Scene {
         this.nextRoundButtonText.setVisible(false);
         
         // Show notification that room was reset due to player leaving
-        this.handRank.setText('Игрок покинул игру. Комната сброшена.');
+        const playerName = leavingPlayerName || 'Игрок';
+        this.handRank.setText(`${playerName} покинул игру. Комната сброшена.`);
         this.handRank.setFill('#FFD700'); // Gold color for notification
         
-        // Clear notification after 3 seconds
-        this.time.delayedCall(3000, () => {
+        // Clear notification after 5 seconds
+        this.time.delayedCall(5000, () => {
             if (this.handRank && this.gameState && this.gameState.status === 'lobby') {
                 this.handRank.setText('');
             }
@@ -588,7 +589,7 @@ export class FastGameScene extends Phaser.Scene {
         // Reset UI to lobby state
         this.updateUI();
         
-        console.log('FastGameScene: Player left reset complete - cards hidden and room reset to lobby');
+        console.log(`FastGameScene: Player left reset complete - ${playerName} left, cards hidden and room reset to lobby`);
     }
 
     handlePlayerDisconnected() {
