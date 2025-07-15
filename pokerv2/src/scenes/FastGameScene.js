@@ -117,10 +117,10 @@ export class FastGameScene extends Phaser.Scene {
         this.nextRoundButton.setVisible(false);
 
         // Create lobby buttons (moved to top of screen)
-        this.readyButton = this.buttonManager.createButton('call', 400, 100);
+        this.readyButton = this.buttonManager.createButton('call', 300, 100);
         this.readyButton.setVisible(false);
         
-        this.startGameButton = this.buttonManager.createButton('call', 600, 100);
+        this.startGameButton = this.buttonManager.createButton('call', 500, 100);
         this.startGameButton.setVisible(false);
 
         this.underline = this.add.image(640, 700, 'underline');
@@ -333,6 +333,24 @@ export class FastGameScene extends Phaser.Scene {
                 } else {
                     this.handRank.setText(`${playerName} переподключился!`);
                     this.handRank.setFill('#00FF00'); // Green for successful reconnection
+                }
+                
+                // Update UI to restore lobby state if we're in lobby
+                if (this.gameState && this.gameState.status === 'lobby') {
+                    console.log('FastGameScene: Reconnected player - updating UI for lobby state');
+                    this.updateUI();
+                    
+                    // Additional check for ready button state after UI update
+                    setTimeout(() => {
+                        console.log('FastGameScene: Ready button state after reconnection:', {
+                            visible: this.readyButton.visible,
+                            interactive: this.readyButton.input && this.readyButton.input.enabled,
+                            exists: !!this.readyButton,
+                            hasListeners: this.readyButton.listenerCount && this.readyButton.listenerCount('pointerdown')
+                        });
+                    }, 100);
+                } else {
+                    console.log('FastGameScene: Reconnected player - not in lobby state, gameState:', this.gameState);
                 }
             } else {
                 this.handRank.setText(`${playerName} переподключился!`);
@@ -921,16 +939,25 @@ export class FastGameScene extends Phaser.Scene {
         this.readyButton.on('pointerdown', () => this.handleReady());
         this.readyButtonText.setVisible(true);
         
-        console.log('FastGameScene: Ready button state:', {
+        // Update ready button text to reflect current ready status
+        const myPlayer = this.networkManager.getMyPlayer();
+        if (myPlayer) {
+            this.updateReadyButtonText(myPlayer.ready);
+        }
+        
+        console.log('FastGameScene: Ready button state after setup:', {
             visible: this.readyButton.visible,
             interactive: this.readyButton.input && this.readyButton.input.enabled,
-            exists: !!this.readyButton
+            exists: !!this.readyButton,
+            hasListeners: this.readyButton.listenerCount && this.readyButton.listenerCount('pointerdown')
         });
         
         // Show start game button if all players are ready
         if (this.gameState.allPlayersReady) {
             this.startGameButton.setVisible(true);
             this.startGameButton.setInteractive();
+            this.startGameButton.removeAllListeners('pointerdown');
+            this.startGameButton.on('pointerdown', () => this.handleStartGame());
             this.startGameButtonText.setVisible(true);
         } else {
             this.startGameButton.setVisible(false);
@@ -946,7 +973,7 @@ export class FastGameScene extends Phaser.Scene {
     updateGameUI() {
         // Hide lobby buttons and disable them
         this.readyButton.setVisible(false);
-        this.readyButton.disableInteractive();
+        // this.readyButton.disableInteractive();
         this.readyButtonText.setVisible(false);
         this.startGameButton.setVisible(false);
         this.startGameButton.disableInteractive();
@@ -1353,14 +1380,20 @@ export class FastGameScene extends Phaser.Scene {
                 console.log('FastGameScene: Setting ready status to:', isReady);
                 this.networkManager.setReady(isReady);
                 
-                // Update button text
-                this.readyButtonText.setText(isReady ? 'ГОТОВ' : 'ГОТОВ');
-                this.readyButtonText.setFill(isReady ? '#00FF00' : '#00FF00');
+                // Update button text and color based on ready status
+                this.updateReadyButtonText(isReady);
             } else {
                 console.warn('FastGameScene: No myPlayer found in handleReady');
             }
         } catch (error) {
             console.error('FastGameScene: Error setting ready status:', error);
+        }
+    }
+
+    updateReadyButtonText(isReady) {
+        if (this.readyButtonText) {
+            this.readyButtonText.setText('ГОТОВ');
+            this.readyButtonText.setFill(isReady ? '#00FF00' : '#ffffff'); // Green if ready, white if not ready
         }
     }
 
