@@ -1,0 +1,32 @@
+{
+  "name": "phaser-poker-game",
+  "version": "1.0.0",
+  "description": "A Phaser.js based poker game with AI bots and multiplayer functionality",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "python3 -m http.server 8000",
+    "dev": "python3 -m http.server 8000",
+    "build": "echo 'No build step required for static files'",
+    "deploy": "echo 'Deployment handled by GitHub Actions'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ncit/phaserv2.git"
+  },
+  "keywords": [
+    "phaser",
+    "poker",
+    "game",
+    "multiplayer",
+    "ai",
+    "javascript"
+  ],
+  "author": "Ncit",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Ncit/phaserv2/issues"
+  },
+  "homepage": "https://ncit.github.io/pokerv2/",
+  "devDependencies": {},
+  "dependencies": {}
+} 
