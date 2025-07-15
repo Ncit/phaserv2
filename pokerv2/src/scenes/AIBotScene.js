@@ -10,8 +10,8 @@ import { AssetHelper } from '../utils/AssetHelper.js';
 import { HandEvaluator } from '../utils/HandEvaluator.js';
 
 export class AIBotScene extends Phaser.Scene {
-    constructor() {
-        super('AIBotScene');
+    constructor(sceneKey = 'AIBotScene') {
+        super(sceneKey);
         this.gameState = {
             phase: 'preflop', // preflop, flop, turn, river, showdown
             pot: 0,
@@ -44,6 +44,11 @@ export class AIBotScene extends Phaser.Scene {
     }
 
     create() {
+        console.log(`AIBotScene: Creating scene with key: ${this.scene.key}`);
+        
+        // Reset scene state
+        this.resetScene();
+        
         // Initialize all managers
         this.buttonManager = new ButtonManager(this);
         this.playerManager = new PlayerManager(this);
@@ -55,14 +60,14 @@ export class AIBotScene extends Phaser.Scene {
             const loadedCards = this.cardManager.loadAllCards();
             console.log(`AIBotScene: Found ${loadedCards} loaded cards`);
             
-                    // Debug: Check specific cards
-        console.log('AIBotScene: Checking card textures...');
-        console.log('back_card exists:', this.textures.exists('back_card'));
-        console.log('ace_of_hearts exists:', this.textures.exists('ace_of_hearts'));
-        console.log('2_of_spades exists:', this.textures.exists('2_of_spades'));
-        
-        // Debug: Check card scale configuration
-        console.log('AIBotScene: Card scale configuration:', PlayerConfig.cardContainer.cardScale);
+            // Debug: Check specific cards
+            console.log('AIBotScene: Checking card textures...');
+            console.log('back_card exists:', this.textures.exists('back_card'));
+            console.log('ace_of_hearts exists:', this.textures.exists('ace_of_hearts'));
+            console.log('2_of_spades exists:', this.textures.exists('2_of_spades'));
+            
+            // Debug: Check card scale configuration
+            console.log('AIBotScene: Card scale configuration:', PlayerConfig.cardContainer.cardScale);
             
             // Initialize game after cards are confirmed loaded
             this.initializeGame();
@@ -162,11 +167,69 @@ export class AIBotScene extends Phaser.Scene {
         // Setup button handlers
         this.setupButtonHandlers();
         
-        // Add scene shutdown event listener
+        // Add scene lifecycle event listeners
         this.events.on('shutdown', () => {
             console.log('AIBotScene: Scene shutdown event triggered');
             this.shutdown();
         });
+        
+        this.events.on('wake', () => {
+            console.log('AIBotScene: Scene wake event triggered');
+            this.resetScene();
+        });
+        
+        this.events.on('sleep', () => {
+            console.log('AIBotScene: Scene sleep event triggered');
+        });
+    }
+    
+    resetScene() {
+        console.log('AIBotScene: Resetting scene state');
+        
+        // Reset game state
+        this.gameState = {
+            phase: 'preflop',
+            pot: 0,
+            currentBet: 0,
+            dealerPosition: 0,
+            currentPlayer: 0,
+            players: [],
+            communityCards: [],
+            deck: [],
+            smallBlind: 10,
+            bigBlind: 20,
+            minBet: 20,
+            bettingRoundStartPlayer: 0,
+            hasEveryoneActed: false,
+            maxRaisesPerRound: 3,
+            currentRaisesInRound: 0,
+            lastRaisePlayerId: null
+        };
+        
+        // Reset player arrays
+        this.aiPlayers = [];
+        this.humanPlayer = null;
+        
+        // Reset managers
+        if (this.cardManager) {
+            this.cardManager.cleanup();
+        }
+        if (this.uiManager) {
+            this.uiManager.cleanup();
+        }
+        
+        // Clear any existing timers
+        if (this.aiTimer) {
+            clearTimeout(this.aiTimer);
+            this.aiTimer = null;
+        }
+        
+        // Clear any existing UI elements
+        if (this.communityCardsContainer) {
+            this.communityCardsContainer.removeAll(true);
+        }
+        
+        console.log('AIBotScene: Scene state reset completed');
     }
 
     initializeGame() {
@@ -1271,88 +1334,110 @@ export class AIBotScene extends Phaser.Scene {
     }
 
     shutdown() {
-        console.log('AIBotScene: Shutting down and cleaning up resources');
+        console.log(`AIBotScene: Shutting down scene ${this.scene.key} and cleaning up resources`);
         
         // Remove all event listeners from buttons
         if (this.foldButton) {
             this.foldButton.off('pointerdown');
             this.foldButton.destroy();
+            this.foldButton = null;
         }
         if (this.callButton) {
             this.callButton.off('pointerdown');
             this.callButton.destroy();
+            this.callButton = null;
         }
         if (this.raiseButton) {
             this.raiseButton.off('pointerdown');
             this.raiseButton.destroy();
+            this.raiseButton = null;
         }
         if (this.allInButton) {
             this.allInButton.off('pointerdown');
             this.allInButton.destroy();
+            this.allInButton = null;
         }
         if (this.menuGame) {
             this.menuGame.off('pointerdown');
             this.menuGame.destroy();
+            this.menuGame = null;
         }
         if (this.settingsGame) {
             this.settingsGame.off('pointerdown');
             this.settingsGame.destroy();
+            this.settingsGame = null;
         }
         if (this.chatButton) {
             this.chatButton.off('pointerdown');
             this.chatButton.destroy();
+            this.chatButton = null;
         }
         if (this.nextRoundButton) {
             this.nextRoundButton.off('pointerdown');
             this.nextRoundButton.destroy();
+            this.nextRoundButton = null;
         }
 
         // Remove all event listeners from text objects
         if (this.foldButtonText) {
             this.foldButtonText.destroy();
+            this.foldButtonText = null;
         }
         if (this.callButtonText) {
             this.callButtonText.destroy();
+            this.callButtonText = null;
         }
         if (this.raiseButtonText) {
             this.raiseButtonText.destroy();
+            this.raiseButtonText = null;
         }
         if (this.allInButtonText) {
             this.allInButtonText.destroy();
+            this.allInButtonText = null;
         }
         if (this.nextRoundButtonText) {
             this.nextRoundButtonText.destroy();
+            this.nextRoundButtonText = null;
         }
         if (this.foldButtonValueX) {
             this.foldButtonValueX.destroy();
+            this.foldButtonValueX = null;
         }
 
         // Clean up UI elements
         if (this.chipBankText) {
             this.chipBankText.destroy();
+            this.chipBankText = null;
         }
         if (this.phaseText) {
             this.phaseText.destroy();
+            this.phaseText = null;
         }
         if (this.handRank) {
             this.handRank.destroy();
+            this.handRank = null;
         }
 
         // Clean up background images
         if (this.background) {
             this.background.destroy();
+            this.background = null;
         }
         if (this.gamingTable) {
             this.gamingTable.destroy();
+            this.gamingTable = null;
         }
         if (this.underline) {
             this.underline.destroy();
+            this.underline = null;
         }
         if (this.chipBank) {
             this.chipBank.destroy();
+            this.chipBank = null;
         }
         if (this.gameInfo) {
             this.gameInfo.destroy();
+            this.gameInfo = null;
         }
 
         // Clean up player elements
@@ -1362,6 +1447,7 @@ export class AIBotScene extends Phaser.Scene {
                     element.destroy();
                 }
             });
+            this.humanPlayer = null;
         }
 
         this.aiPlayers.forEach(aiPlayer => {
@@ -1373,18 +1459,28 @@ export class AIBotScene extends Phaser.Scene {
                 });
             }
         });
+        this.aiPlayers = [];
 
         // Clean up community cards container
         if (this.communityCardsContainer) {
             this.communityCardsContainer.destroy();
+            this.communityCardsContainer = null;
         }
 
         // Clean up managers
         if (this.cardManager) {
             this.cardManager.cleanup();
+            this.cardManager = null;
         }
         if (this.uiManager) {
             this.uiManager.cleanup();
+            this.uiManager = null;
+        }
+        if (this.buttonManager) {
+            this.buttonManager = null;
+        }
+        if (this.playerManager) {
+            this.playerManager = null;
         }
 
         // Remove all loaded avatar textures
@@ -1403,8 +1499,6 @@ export class AIBotScene extends Phaser.Scene {
 
         // Reset game state
         this.gameState = null;
-        this.aiPlayers = [];
-        this.humanPlayer = null;
 
         // Remove all scene events
         this.events.removeAllListeners();
@@ -1412,6 +1506,6 @@ export class AIBotScene extends Phaser.Scene {
         // Clear any remaining game objects
         this.children.removeAll(true);
 
-        console.log('AIBotScene: Cleanup completed');
+        console.log(`AIBotScene: Cleanup completed for scene ${this.scene.key}`);
     }
 } 

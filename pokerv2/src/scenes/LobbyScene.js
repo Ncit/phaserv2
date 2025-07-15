@@ -157,7 +157,42 @@ export class LobbyScene extends Phaser.Scene {
                 } else if (data.key === 'ai_bot_btn') {
                     this.time.delayedCall(150, () => {
                         button.clearTint();
-                        this.scene.start('AIBotScene');
+                        // Create a unique scene key for this AI bot session
+                        const sessionId = Date.now();
+                        const sceneKey = `AIBotScene_${sessionId}`;
+                        
+                        console.log(`LobbyScene: Creating new AI Bot scene with key: ${sceneKey}`);
+                        
+                        // Import and create a new AIBotScene instance with unique key
+                        import('./AIBotScene.js').then(({ AIBotScene }) => {
+                            try {
+                                // Check if scene already exists and remove it
+                                if (this.scene.isActive(sceneKey)) {
+                                    console.log(`LobbyScene: Stopping existing scene: ${sceneKey}`);
+                                    this.scene.stop(sceneKey);
+                                }
+                                
+                                // Try to remove the scene if it exists (this is safe even if it doesn't exist)
+                                try {
+                                    this.scene.remove(sceneKey);
+                                    console.log(`LobbyScene: Removed existing scene: ${sceneKey}`);
+                                } catch (removeError) {
+                                    console.log(`LobbyScene: Scene ${sceneKey} didn't exist, continuing...`);
+                                }
+                                
+                                // Add the new scene instance with unique key
+                                this.scene.add(sceneKey, new AIBotScene(sceneKey), false);
+                                console.log(`LobbyScene: Added new AI Bot scene: ${sceneKey}`);
+                                
+                                // Start the new scene
+                                this.scene.start(sceneKey);
+                                console.log(`LobbyScene: Started AI Bot scene: ${sceneKey}`);
+                            } catch (error) {
+                                console.error('LobbyScene: Error during scene creation:', error);
+                            }
+                        }).catch(error => {
+                            console.error('LobbyScene: Failed to load AIBotScene:', error);
+                        });
                     });
                 } else if (data.key === 'fast_game_btn') {
                     this.time.delayedCall(150, () => {
