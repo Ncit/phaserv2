@@ -4,7 +4,7 @@ import { FriendsGameScene } from './scenes/FriendsGameScene.js';
 import { AIBotScene } from './scenes/AIBotScene.js';
 
 // Global debug variable accessible in all files
-window.isDebug = true; // Set to true for development
+window.isDebug = false; // Set to true for development
 
 const config = {
     type: Phaser.AUTO,
