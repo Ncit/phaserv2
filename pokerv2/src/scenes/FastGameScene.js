@@ -973,7 +973,7 @@ export class FastGameScene extends Phaser.Scene {
     updateGameUI() {
         // Hide lobby buttons and disable them
         this.readyButton.setVisible(false);
-        // this.readyButton.disableInteractive();
+        this.readyButton.disableInteractive();
         this.readyButtonText.setVisible(false);
         this.startGameButton.setVisible(false);
         this.startGameButton.disableInteractive();
