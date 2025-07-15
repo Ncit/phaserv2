@@ -6,7 +6,7 @@ import { FastGameScene } from './scenes/FastGameScene.js';
 
 // Global debug variable accessible in all files
 window.isDebug = true; // Set to true for development
-
+window.firstFlop = false;
 
 const config = {
     type: Phaser.AUTO,

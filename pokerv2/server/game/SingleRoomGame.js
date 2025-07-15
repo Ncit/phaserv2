@@ -72,6 +72,14 @@ class SingleRoomGame {
                 
                 // Check if all players are ready
                 this.checkAllPlayersReady();
+            } else if (this.status === 'playing') {
+                // Player reconnecting during active game
+                // Don't auto-ready them, but allow them to continue playing
+                console.log(`🔄 Player ${playerData.name} reconnected during active game`);
+                
+                // If they were folded, keep them folded
+                // If they were all-in, keep them all-in
+                // If they were active, they can continue playing
             }
             
             return {
@@ -84,9 +92,10 @@ class SingleRoomGame {
         // New player joining
         console.log(`🆕 New player ${playerData.name} joining...`);
         
-        // Check if game is in progress
-        if (this.status === 'playing') {
-            throw new Error('Game is in progress. Please wait for the current game to finish.');
+        // Check if game is in progress or any active phase
+        if (this.status === 'playing' || this.phase !== 'lobby') {
+            const currentPhase = this.phase.charAt(0).toUpperCase() + this.phase.slice(1);
+            throw new Error(`Game is in progress (${currentPhase} phase). Please wait for the current game to finish.`);
         }
         
         // Check if room is full
@@ -399,6 +408,13 @@ class SingleRoomGame {
         const activePlayers = Array.from(this.players.values()).filter(p => !p.disconnected);
         this.allPlayersReady = this.readyPlayers.size >= this.minPlayers && 
                               this.readyPlayers.size === activePlayers.length;
+    }
+
+    isAcceptingNewPlayers() {
+        // Game accepts new players only when in lobby phase and not full
+        return this.status === 'lobby' && 
+               this.phase === 'lobby' && 
+               this.getPlayerCount() < this.maxPlayers;
     }
 
     // Game logic methods (simplified from original PokerGame)

@@ -41,6 +41,7 @@ export class AIBotScene extends Phaser.Scene {
         AssetHelper.loadGameAssets(this);
         AssetHelper.loadCardAssets(this);
         AssetHelper.loadPlayerAssets(this);
+        window.firstFlop = false;
     }
 
     create() {
@@ -476,7 +477,8 @@ export class AIBotScene extends Phaser.Scene {
         }
         
         if (currentPlayer.isAI) {
-            console.log('AIBotScene: AI player turn');
+            console.log('AIBotScene: AI player turn - disabling player actions');
+            this.disablePlayerActions();
             this.makeAIDecision(currentPlayer);
         } else {
             console.log('AIBotScene: Human player turn - enabling actions');
@@ -811,17 +813,20 @@ export class AIBotScene extends Phaser.Scene {
     }
 
     showdown() {
-        console.log('AIBotScene: Starting showdown - revealing all players\' cards');
+        console.log('AIBotScene: Starting showdown - revealing AI players\' cards only');
         
-        // Reveal all players' cards (both active and folded)
+        // Reveal only AI players' cards (both active and folded) with rotation
         this.gameState.players.forEach((player, playerIndex) => {
-            if (player.hand && player.hand.length > 0) {
-                console.log(`AIBotScene: Revealing cards for ${player.name}:`, player.hand);
+            if (player.hand && player.hand.length > 0 && player.isAI) {
+                console.log(`AIBotScene: Revealing cards for AI player ${player.name}:`, player.hand);
                 
-                // Flip both cards face up for all players
+                // Flip both cards face up for AI players with rotation
                 for (let cardIndex = 0; cardIndex < player.hand.length; cardIndex++) {
                     this.cardManager.flipCard(playerIndex + 1, cardIndex);
                 }
+            } else if (player.hand && player.hand.length > 0 && !player.isAI) {
+                console.log(`AIBotScene: Keeping human player ${player.name} cards face down`);
+                // Human player cards remain face down during showdown
             }
         });
         
@@ -1129,15 +1134,20 @@ export class AIBotScene extends Phaser.Scene {
         const currentPlayer = this.gameState.players[this.gameState.currentPlayer];
         if (!currentPlayer.isAI) {
             this.foldPlayer(currentPlayer.id);
-            this.disablePlayerActions();
+            // Don't disable actions here - let the game flow handle it
+            // The nextPlayer() method will call startBettingRound() which will
+            // properly enable/disable actions based on whose turn it is
         }
     }
-
     handleCall() {
         console.log('AIBotScene: handleCall called');
         const currentPlayer = this.gameState.players[this.gameState.currentPlayer];
         if (!currentPlayer.isAI) {
-            const callAmount = this.gameState.currentBet - currentPlayer.currentBet;
+            if (window.firstFlop == false) {
+                window.firstFlop = true;
+                this.handleCall();
+            }
+            var callAmount = this.gameState.currentBet - currentPlayer.currentBet;
             
             console.log('AIBotScene: Call details:', {
                 currentBet: this.gameState.currentBet,
@@ -1145,7 +1155,6 @@ export class AIBotScene extends Phaser.Scene {
                 callAmount,
                 playerBank: currentPlayer.bank
             });
-            
             // If callAmount is 0 or negative, this is a check
             if (callAmount <= 0) {
                 console.log('AIBotScene: Player is checking (no bet to call)');
@@ -1157,7 +1166,9 @@ export class AIBotScene extends Phaser.Scene {
                 this.callPlayer(currentPlayer.id, actualCallAmount);
             }
             
-            this.disablePlayerActions();
+            // Don't disable actions here - let the game flow handle it
+            // The nextPlayer() method will call startBettingRound() which will
+            // properly enable/disable actions based on whose turn it is
         }
     }
 
@@ -1193,7 +1204,9 @@ export class AIBotScene extends Phaser.Scene {
                 this.raisePlayer(currentPlayer.id, raiseAmount);
             }
             
-            this.disablePlayerActions();
+            // Don't disable actions here - let the game flow handle it
+            // The nextPlayer() method will call startBettingRound() which will
+            // properly enable/disable actions based on whose turn it is
         }
     }
 
@@ -1203,7 +1216,9 @@ export class AIBotScene extends Phaser.Scene {
             // All in means betting the player's entire bank
             const allInAmount = currentPlayer.bank;
             this.raisePlayer(currentPlayer.id, allInAmount);
-            this.disablePlayerActions();
+            // Don't disable actions here - let the game flow handle it
+            // The nextPlayer() method will call startBettingRound() which will
+            // properly enable/disable actions based on whose turn it is
         }
     }
 
