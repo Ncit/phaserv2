@@ -28,7 +28,6 @@ export class FastGameScene extends Phaser.Scene {
         this.chipBankText = null;
         this.phaseText = null;
         this.handRank = null;
-        this.gameInfo = null;
         
         // Action buttons
         this.foldButton = null;
@@ -159,18 +158,9 @@ export class FastGameScene extends Phaser.Scene {
             })
             .setOrigin(0.5);
 
-        // Create game info display
-        this.gameInfo = this.add
-            .text(640, 50, 'Texas Hold\'em - Multiplayer Game', {
-                fontFamily: 'Arial',
-                fontSize: '24px',
-                fill: '#ffffff',
-                strokeThickness: 1,
-            })
-            .setOrigin(0.5);
 
         this.phaseText = this.add
-            .text(640, 80, 'Connecting...', {
+            .text(940, 80, 'Connecting...', {
                 fontFamily: 'Arial',
                 fontSize: '18px',
                 fill: '#FFD700',
@@ -180,7 +170,7 @@ export class FastGameScene extends Phaser.Scene {
 
         // Create raise counter display
         this.raiseCounterText = this.add
-            .text(640, 110, '', {
+            .text(940, 110, '', {
                 fontFamily: 'Arial',
                 fontSize: '14px',
                 fill: '#FFD700',
@@ -190,7 +180,7 @@ export class FastGameScene extends Phaser.Scene {
 
         // Create connection status text
         this.connectionStatusText = this.add
-            .text(640, 140, 'Connecting to server...', {
+            .text(940, 140, 'Connecting to server...', {
                 fontFamily: 'Arial',
                 fontSize: '14px',
                 fill: '#00FF00',
