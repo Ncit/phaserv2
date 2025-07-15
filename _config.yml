@@ -1,0 +1,18 @@
+# Completely disable Jekyll processing
+plugins: []
+markdown: raw
+theme: null
+include: []
+exclude: ["*"]
+safe: false
+# Disable all Jekyll features
+permalink: none
+relative_links:
+  enabled: false
+readme_index:
+  enabled: false
+titles_from_headings:
+  enabled: false
+# Force static file serving
+baseurl: ""
+url: ""
