@@ -242,13 +242,14 @@ export class NetworkManager {
     isMyTurn() {
         if (!this.gameState || !this.playerId) return false;
         
-        const currentPlayer = this.gameState.players[this.gameState.currentPlayer];
+        // Find the current player by checking the isCurrentPlayer property
+        const currentPlayer = this.gameState.players.find(p => p.isCurrentPlayer);
         return currentPlayer && currentPlayer.id === this.playerId;
     }
 
     getCurrentPlayer() {
         if (!this.gameState) return null;
-        return this.gameState.players[this.gameState.currentPlayer];
+        return this.gameState.players.find(p => p.isCurrentPlayer);
     }
 
     getMyPlayer() {

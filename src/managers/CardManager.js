@@ -155,6 +155,44 @@ export class CardManager {
         return cardData;
     }
 
+    // Reveal a card (show face up without rotation) - for showdown
+    revealCard(playerNumber, cardIndex) {
+        const containerKey = `player${playerNumber}_cards`;
+        const containerData = this.cardContainers.get(containerKey);
+        
+        if (!containerData || !containerData.cards[cardIndex]) {
+            console.error(`CardManager: Card not found for player ${playerNumber}, index ${cardIndex}`);
+            return false;
+        }
+
+        const cardData = containerData.cards[cardIndex];
+        
+        // Only reveal if not already face up
+        if (!cardData.faceUp) {
+            cardData.faceUp = true;
+
+            // Update card texture to face up
+            const newCardKey = AssetConfig.cards.getCardKey(cardData.value, cardData.suit);
+            cardData.sprite.setTexture(newCardKey);
+            
+            // Set scale for face up card without rotation
+            const cardScale = 0.1;
+            cardData.sprite.setScale(cardScale);
+            
+            // Keep the card at 0 rotation (no rotation)
+            cardData.sprite.setRotation(0);
+
+            if (this.isDebug) {
+                console.log(`CardManager: Revealed card for player ${playerNumber} without rotation`);
+            }
+
+            // Emit card revealed event
+            eventManager.emit('card_revealed', playerNumber, cardIndex);
+        }
+
+        return true;
+    }
+
     // Flip a card (change from face down to face up or vice versa)
     flipCard(playerNumber, cardIndex) {
         const containerKey = `player${playerNumber}_cards`;

@@ -183,6 +183,16 @@ export class FastGameScene extends Phaser.Scene {
             })
             .setOrigin(0.5);
 
+        // Create turn indicator text
+        this.turnIndicatorText = this.add
+            .text(940, 170, '', {
+                fontFamily: 'Arial',
+                fontSize: '16px',
+                fill: '#FFD700',
+                strokeThickness: 1,
+            })
+            .setOrigin(0.5);
+
         // Create player info text (debug mode)
         if (window.isDebug && window.appData) {
             this.playerInfoText = this.add
@@ -934,6 +944,9 @@ export class FastGameScene extends Phaser.Scene {
             this.nextRoundButton.setVisible(false);
             this.nextRoundButtonText.setVisible(false);
             
+            // Clear turn indicator
+            this.turnIndicatorText.setText('');
+            
             // Clear community cards
             this.communityCardsContainer.removeAll(true);
             
@@ -947,6 +960,7 @@ export class FastGameScene extends Phaser.Scene {
         if (this.gameState.status === 'lobby') {
             this.phaseText.setText(`Лобби (${this.gameState.readyCount}/${this.gameState.totalPlayers} готовы)`);
             this.raiseCounterText.setText(''); // Hide raise counter in lobby
+            this.turnIndicatorText.setText(''); // Hide turn indicator in lobby
             this.updateLobbyUI();
         } else {
             this.phaseText.setText(this.gameState.phase.charAt(0).toUpperCase() + this.gameState.phase.slice(1));
@@ -958,6 +972,9 @@ export class FastGameScene extends Phaser.Scene {
                 this.raiseCounterText.setText('');
             }
             
+            // Update turn indicator
+            this.updateTurnIndicator();
+            
             this.updateGameUI();
         }
         
@@ -968,6 +985,38 @@ export class FastGameScene extends Phaser.Scene {
         this.players.forEach(player => {
             this.updatePlayerDisplay(player.id);
         });
+    }
+
+    updateTurnIndicator() {
+        if (!this.gameState || this.gameState.status !== 'playing') {
+            this.turnIndicatorText.setText('');
+            return;
+        }
+
+        // Check if game is in showdown phase
+        if (this.gameState.phase === 'showdown') {
+            this.turnIndicatorText.setText('Showdown - Game ended');
+            this.turnIndicatorText.setFill('#FF6B6B');
+            return;
+        }
+
+        // Get current player
+        const currentPlayer = this.players.find(p => p.isCurrentPlayer);
+        
+        if (currentPlayer) {
+            // Check if it's the current player's turn
+            if (currentPlayer.id === this.myPlayerId) {
+                this.turnIndicatorText.setText('🎯 YOUR TURN!');
+                this.turnIndicatorText.setFill('#00FF00'); // Green for your turn
+            } else {
+                this.turnIndicatorText.setText(`Waiting for: ${currentPlayer.name}`);
+                this.turnIndicatorText.setFill('#FFD700'); // Gold for other player's turn
+            }
+        } else {
+            // No current player found
+            this.turnIndicatorText.setText('Waiting for players...');
+            this.turnIndicatorText.setFill('#FFD700');
+        }
     }
 
     updateLobbyUI() {
@@ -1215,7 +1264,7 @@ export class FastGameScene extends Phaser.Scene {
 
     createStartGameButtonLabel() {
         this.startGameButtonText = this.add
-            .text(640, 88, 'НАЧАТЬ ИГРУ', {
+            .text(440, 88, 'НАЧАТЬ РАЗДАЧУ', {
                 fontFamily: 'Arial',
                 fontSize: '16px',
                 fill: '#ffffff',
