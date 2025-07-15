@@ -7,7 +7,7 @@ export class NetworkManager {
         this.isConnected = false;
         this.gameId = null;
         this.playerId = null;
-        this.serverUrl = 'https://490e5998d9b7.ngrok-free.app';
+        this.serverUrl = 'https://4494c12ef08e.ngrok-free.app';
         this.eventManager = new EventManager();
         
         // Connection state
