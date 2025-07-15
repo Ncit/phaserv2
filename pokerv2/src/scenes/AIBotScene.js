@@ -1066,13 +1066,27 @@ export class AIBotScene extends Phaser.Scene {
         const hasPlayerWithZeroMoney = this.gameState.players.some(player => player.bank <= 0);
         
         if (hasPlayerWithZeroMoney) {
-            console.log('AIBotScene: Player with 0 money detected, restarting room from scratch');
-            // Restart the room from scratch by going back to lobby
-            this.scene.start('LobbyScene');
-        } else {
-            // Start new hand
-            this.startNewHand();
+            console.log('AIBotScene: Player with 0 money detected, resetting game data');
+            // Reset all players' money to starting amount
+            this.gameState.players.forEach(player => {
+                player.bank = 1000;
+                player.currentBet = 0;
+                player.folded = false;
+                player.allIn = false;
+            });
+            
+            // Reset pot and game state
+            this.gameState.pot = 0;
+            this.gameState.currentBet = 0;
+            this.gameState.currentPlayer = 0;
+            this.gameState.phase = 'preflop';
+            
+            // Update UI to reflect reset
+            this.updateUI();
         }
+        
+        // Start new hand (whether reset was needed or not)
+        this.startNewHand();
     }
 
     createCustomPlayer(playerNumber, playerData) {
