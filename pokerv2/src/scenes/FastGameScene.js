@@ -260,6 +260,11 @@ export class FastGameScene extends Phaser.Scene {
             } else if (data.roomReset) {
                 console.log('FastGameScene: Room reset!');
                 this.handleRoomReset();
+                
+                // If room reset was due to player leaving, show notification
+                if (data.playerLeft) {
+                    this.handlePlayerLeftReset();
+                }
             }
             
             // Handle showdown results
@@ -281,6 +286,11 @@ export class FastGameScene extends Phaser.Scene {
         this.networkManager.on('playerLeft', (data) => {
             console.log('FastGameScene: Player left:', data);
             this.removePlayer(data.playerId);
+            
+            // Remove player's cards from the table if specified
+            if (data.removeCards) {
+                this.removePlayerCards(data.playerId);
+            }
         });
 
         // Network error event
@@ -429,6 +439,19 @@ export class FastGameScene extends Phaser.Scene {
         this.players = this.players.filter(p => p.id !== playerId);
     }
 
+    removePlayerCards(playerId) {
+        console.log('FastGameScene: Removing cards for player:', playerId);
+        
+        const playerElements = this.playerElements.get(playerId);
+        if (playerElements && playerElements.playerNumber) {
+            // Clear all cards for this player
+            this.cardManager.safeClearPlayerCards(playerElements.playerNumber);
+            console.log(`FastGameScene: Cleared cards for player ${playerId} (player number: ${playerElements.playerNumber})`);
+        } else {
+            console.warn('FastGameScene: Could not find player elements for card removal:', playerId);
+        }
+    }
+
     handleGameStarted() {
         console.log('FastGameScene: Handling game started');
         // Clear any lobby-specific UI
@@ -481,6 +504,23 @@ export class FastGameScene extends Phaser.Scene {
         this.updateUI();
         
         console.log('FastGameScene: Room reset complete - back to lobby state');
+    }
+
+    handlePlayerLeftReset() {
+        console.log('FastGameScene: Handling room reset due to player leaving');
+        
+        // Show notification that room was reset due to player leaving
+        this.handRank.setText('Игрок покинул игру. Комната сброшена.');
+        this.handRank.setFill('#FFD700'); // Gold color for notification
+        
+        // Clear notification after 3 seconds
+        this.time.delayedCall(3000, () => {
+            if (this.handRank && this.gameState && this.gameState.status === 'lobby') {
+                this.handRank.setText('');
+            }
+        });
+        
+        console.log('FastGameScene: Player left reset notification displayed');
     }
 
     clearCardHighlights() {
@@ -597,6 +637,12 @@ export class FastGameScene extends Phaser.Scene {
     }
 
     dealHoleCards() {
+        // Only deal cards if game has started
+        if (this.gameState.status !== 'playing') {
+            console.log('FastGameScene: Game not started yet, skipping card dealing');
+            return;
+        }
+        
         this.players.forEach((player, index) => {
             if (player.hand && player.hand.length > 0) {
                 const playerElements = this.playerElements.get(player.id);
@@ -823,6 +869,13 @@ export class FastGameScene extends Phaser.Scene {
     }
 
     updatePlayerCards(player, elements) {
+        // Only update cards if game has started and player has cards
+        if (this.gameState.status !== 'playing' || !player.hand || player.hand.length === 0) {
+            // Clear any existing cards if game is not started
+            this.cardManager.safeClearPlayerCards(elements.playerNumber);
+            return;
+        }
+        
         // Clear existing cards
         this.cardManager.safeClearPlayerCards(elements.playerNumber);
         
@@ -1182,4 +1235,4 @@ export class FastGameScene extends Phaser.Scene {
 
         console.log('FastGameScene: Cleanup completed');
     }
-} 
+}

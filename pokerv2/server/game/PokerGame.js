@@ -877,7 +877,7 @@ class PokerGame {
     getPlayersList() {
         return this.playerOrder.map(playerId => {
             const player = this.players.get(playerId);
-            return {
+            const playerData = {
                 id: player.id,
                 name: player.name,
                 avatarUrl: player.avatarUrl,
@@ -886,12 +886,18 @@ class PokerGame {
                 folded: player.folded,
                 allIn: player.allIn,
                 hasActed: player.hasActed,
-                hand: player.hand,
                 handRank: player.handRank,
                 position: player.position,
                 isCurrentPlayer: playerId === this.playerOrder[this.currentPlayer],
                 ready: player.ready
             };
+            
+            // Only include hand information if game has started (not in lobby)
+            if (this.status === 'playing') {
+                playerData.hand = player.hand;
+            }
+            
+            return playerData;
         });
     }
 
