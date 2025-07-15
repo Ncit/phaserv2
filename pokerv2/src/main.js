@@ -2,6 +2,7 @@ import { LoadingScene } from './scenes/LoadingScene.js';
 import { LobbyScene } from './scenes/LobbyScene.js';
 import { FriendsGameScene } from './scenes/FriendsGameScene.js';
 import { AIBotScene } from './scenes/AIBotScene.js';
+import { FastGameScene } from './scenes/FastGameScene.js';
 
 // Global debug variable accessible in all files
 window.isDebug = false; // Set to true for development
@@ -15,7 +16,7 @@ const config = {
     height: 720,
     backgroundColor: '#000000',
     pixelArt: false,
-            scene: [LoadingScene, LobbyScene, FriendsGameScene, AIBotScene],
+            scene: [LoadingScene, LobbyScene, FriendsGameScene, AIBotScene, FastGameScene],
     scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,

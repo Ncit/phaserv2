@@ -159,6 +159,11 @@ export class LobbyScene extends Phaser.Scene {
                         button.clearTint();
                         this.scene.start('AIBotScene');
                     });
+                } else if (data.key === 'fast_game_btn') {
+                    this.time.delayedCall(150, () => {
+                        button.clearTint();
+                        this.scene.start('FastGameScene');
+                    });
                 } else {
                     this.time.delayedCall(150, () => {
                         button.clearTint();
