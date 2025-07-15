@@ -98,6 +98,11 @@ export const ButtonConfig = {
             key: 'raise_button',
             action: 'raise',
         },
+        allIn: {
+            pattern: 'poker_action',
+            key: 'raise_button',
+            action: 'allIn',
+        },
 
 
 

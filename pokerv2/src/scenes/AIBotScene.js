@@ -82,12 +82,13 @@ export class AIBotScene extends Phaser.Scene {
         this.foldButton = this.buttonManager.createButton('fold', 310, 640);
         this.callButton = this.buttonManager.createButton('call', 510, 640);
         this.raiseButton = this.buttonManager.createButton('raise', 710, 640);
+        this.allInButton = this.buttonManager.createButton('allIn', 910, 640);
         
         
         // Quick action buttons removed
         
         // Create Next Round button (initially hidden)
-        this.nextRoundButton = this.buttonManager.createButton('call', 1100, 628);
+        this.nextRoundButton = this.buttonManager.createButton('call', 1100, 640);
         this.nextRoundButton.setVisible(false);
 
         this.underline = this.add.image(640, 700, 'underline');
@@ -931,11 +932,21 @@ export class AIBotScene extends Phaser.Scene {
                 strokeThickness: 1,
             })
             .setOrigin(0.5);
+
+        this.allInButtonText = this.add
+            .text(910, 628, 'ВА-БАНК', {
+                fontFamily: 'Arial',
+                fontSize: '14px',
+                fill: '#ffffff',
+                stroke: '#000000',
+                strokeThickness: 1,
+            })
+            .setOrigin(0.5);
     }
 
     createNextRoundButtonLabel() {
         this.nextRoundButtonText = this.add
-            .text(1100, 628, 'СЛЕДУЮЩИЙ РАУНД', {
+            .text(1100, 640, 'СЛЕДУЮЩИЙ РАУНД', {
                 fontFamily: 'Arial',
                 fontSize: '16px',
                 fill: '#ffffff',
@@ -951,6 +962,7 @@ export class AIBotScene extends Phaser.Scene {
         this.foldButton.on('pointerdown', () => this.handleFold());
         this.callButton.on('pointerdown', () => this.handleCall());
         this.raiseButton.on('pointerdown', () => this.handleRaise());
+        this.allInButton.on('pointerdown', () => this.handleAllIn());
         this.menuGame.on('pointerdown', () => this.handleMenu());
         this.settingsGame.on('pointerdown', () => this.handleSettings());
         this.chatButton.on('pointerdown', () => this.handleChat());
@@ -962,6 +974,7 @@ export class AIBotScene extends Phaser.Scene {
         this.foldButton.setInteractive();
         this.callButton.setInteractive();
         this.raiseButton.setInteractive();
+        this.allInButton.setInteractive();
     }
 
     disablePlayerActions() {
@@ -969,6 +982,7 @@ export class AIBotScene extends Phaser.Scene {
         this.foldButton.disableInteractive();
         this.callButton.disableInteractive();
         this.raiseButton.disableInteractive();
+        this.allInButton.disableInteractive();
     }
 
     handleFold() {
@@ -1014,6 +1028,16 @@ export class AIBotScene extends Phaser.Scene {
             raiseAmount = Math.min(raiseAmount, currentPlayer.bank);
             
             this.raisePlayer(currentPlayer.id, raiseAmount);
+            this.disablePlayerActions();
+        }
+    }
+
+    handleAllIn() {
+        const currentPlayer = this.gameState.players[this.gameState.currentPlayer];
+        if (!currentPlayer.isAI) {
+            // All in means betting the player's entire bank
+            const allInAmount = currentPlayer.bank;
+            this.raisePlayer(currentPlayer.id, allInAmount);
             this.disablePlayerActions();
         }
     }
@@ -1146,6 +1170,10 @@ export class AIBotScene extends Phaser.Scene {
             this.raiseButton.off('pointerdown');
             this.raiseButton.destroy();
         }
+        if (this.allInButton) {
+            this.allInButton.off('pointerdown');
+            this.allInButton.destroy();
+        }
         if (this.menuGame) {
             this.menuGame.off('pointerdown');
             this.menuGame.destroy();
@@ -1172,6 +1200,9 @@ export class AIBotScene extends Phaser.Scene {
         }
         if (this.raiseButtonText) {
             this.raiseButtonText.destroy();
+        }
+        if (this.allInButtonText) {
+            this.allInButtonText.destroy();
         }
         if (this.nextRoundButtonText) {
             this.nextRoundButtonText.destroy();
