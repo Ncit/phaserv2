@@ -748,14 +748,14 @@ export class AIBotScene extends Phaser.Scene {
     }
 
     showdown() {
-        console.log('AIBotScene: Starting showdown - revealing AI players\' cards');
+        console.log('AIBotScene: Starting showdown - revealing all players\' cards');
         
-        // Only reveal AI players' cards (both active and folded)
+        // Reveal all players' cards (both active and folded)
         this.gameState.players.forEach((player, playerIndex) => {
-            if (player.hand && player.hand.length > 0 && player.isAI) {
-                console.log(`AIBotScene: Revealing cards for AI ${player.name}:`, player.hand);
+            if (player.hand && player.hand.length > 0) {
+                console.log(`AIBotScene: Revealing cards for ${player.name}:`, player.hand);
                 
-                // Flip both cards face up for this AI player
+                // Flip both cards face up for all players
                 for (let cardIndex = 0; cardIndex < player.hand.length; cardIndex++) {
                     this.cardManager.flipCard(playerIndex + 1, cardIndex);
                 }
@@ -883,19 +883,21 @@ export class AIBotScene extends Phaser.Scene {
             }
         });
         
-        // Highlight winning AI players' cards only
+        // Highlight winning players' cards (all players, not just AI)
         winners.forEach(({ player }) => {
             const playerIndex = this.gameState.players.indexOf(player);
-            if (player.hand && player.hand.length > 0 && player.isAI) {
+            if (player.hand && player.hand.length > 0) {
                 for (let cardIndex = 0; cardIndex < player.hand.length; cardIndex++) {
                     const cardData = this.cardManager.getCard(playerIndex + 1, cardIndex);
                     if (cardData && cardData.sprite) {
-                        // Add golden tint to winning AI cards
+                        // Add golden tint to winning cards
                         cardData.sprite.setTint(0xFFD700);
                     }
                 }
             }
         });
+        
+        console.log('AIBotScene: Highlighted winning cards for players:', winners.map(w => w.player.name));
     }
 
     updateUI() {

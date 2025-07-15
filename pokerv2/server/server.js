@@ -157,6 +157,29 @@ io.on('connection', (socket) => {
         }
     });
 
+    // Player requests to reset the room (Next Round button)
+    socket.on('resetRoom', () => {
+        try {
+            const game = gameManager.getGameByPlayerId(socket.id);
+            if (!game) {
+                socket.emit('error', { message: 'Game not found' });
+                return;
+            }
+
+            game.resetRoom();
+            
+            // Broadcast room reset state
+            io.to('main-room').emit('gameStateUpdate', {
+                gameState: game.getPublicState(),
+                roomReset: true
+            });
+            
+            console.log(`🔄 Room reset in main room`);
+        } catch (error) {
+            socket.emit('error', { message: error.message });
+        }
+    });
+
     // Player disconnects
     socket.on('disconnect', () => {
         console.log(`👋 Player disconnected: ${socket.id}`);

@@ -190,6 +190,15 @@ export class NetworkManager {
         this.socket.emit('startNewHand');
     }
 
+    resetRoom() {
+        if (!this.isConnected || !this.socket) {
+            throw new Error('Not connected to server');
+        }
+
+        console.log('NetworkManager: Requesting room reset');
+        this.socket.emit('resetRoom');
+    }
+
     // Event handlers - Remove these as they create circular references
     // handleGameStateUpdate, handlePlayerJoined, handlePlayerLeft, handleError are no longer needed
 

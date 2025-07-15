@@ -257,6 +257,9 @@ export class FastGameScene extends Phaser.Scene {
                 this.handleGameStarted();
             } else if (data.newHand) {
                 this.handleNewHand();
+            } else if (data.roomReset) {
+                console.log('FastGameScene: Room reset!');
+                this.handleRoomReset();
             }
             
             // Handle showdown results
@@ -455,6 +458,31 @@ export class FastGameScene extends Phaser.Scene {
         this.dealHoleCards();
     }
 
+    handleRoomReset() {
+        console.log('FastGameScene: Handling room reset');
+        
+        // Clear community cards
+        this.communityCardsContainer.removeAll(true);
+        
+        // Clear all player cards
+        this.playerElements.forEach((elements, playerId) => {
+            this.cardManager.safeClearPlayerCards(elements.playerNumber);
+        });
+        
+        // Clear hand rank and card highlights
+        this.handRank.setText('');
+        this.clearCardHighlights();
+        
+        // Hide next round button
+        this.nextRoundButton.setVisible(false);
+        this.nextRoundButtonText.setVisible(false);
+        
+        // Reset UI to lobby state
+        this.updateUI();
+        
+        console.log('FastGameScene: Room reset complete - back to lobby state');
+    }
+
     clearCardHighlights() {
         // Clear all card highlights
         this.playerElements.forEach((elements, playerId) => {
@@ -481,6 +509,11 @@ export class FastGameScene extends Phaser.Scene {
         // Show hand rankings in console
         this.showHandRankings(showdownResults.playerHands);
         
+        // Reveal all players' cards
+        if (showdownResults.revealedCards) {
+            this.revealAllPlayersCards(showdownResults.revealedCards);
+        }
+        
         // Highlight winning players' cards
         this.highlightWinningCards(showdownResults.winners);
         
@@ -489,6 +522,30 @@ export class FastGameScene extends Phaser.Scene {
         this.nextRoundButtonText.setVisible(true);
         
         console.log('FastGameScene: Showdown results displayed');
+    }
+    
+    revealAllPlayersCards(revealedCards) {
+        console.log('FastGameScene: Revealing all players\' cards:', revealedCards);
+        
+        revealedCards.forEach(playerCardData => {
+            const elements = this.playerElements.get(playerCardData.playerId);
+            if (elements && elements.playerNumber && playerCardData.cards) {
+                // Clear existing cards first
+                this.cardManager.safeClearPlayerCards(elements.playerNumber);
+                
+                // Add cards face up for all players
+                playerCardData.cards.forEach((card, cardIndex) => {
+                    this.cardManager.addCardToPlayer(
+                        elements.playerNumber,
+                        card.value,
+                        card.suit,
+                        true // Always show face up during showdown
+                    );
+                });
+                
+                console.log(`FastGameScene: Revealed cards for ${playerCardData.playerName}:`, playerCardData.cards);
+            }
+        });
     }
 
     showHandRankings(playerHands) {
@@ -535,6 +592,8 @@ export class FastGameScene extends Phaser.Scene {
                 }
             }
         });
+        
+        console.log('FastGameScene: Highlighted winning cards for players:', winnerIds);
     }
 
     dealHoleCards() {
@@ -822,8 +881,6 @@ export class FastGameScene extends Phaser.Scene {
             })
             .setOrigin(0.5);
 
-        this.foldButtonValueX = this.add.image(310, 650, 'fold_x');
-        this.foldButtonValueX.scale = 0.3;
 
         this.callButtonText = this.add
             .text(510, 628, 'УРАВНЯТЬ', {
@@ -1074,11 +1131,11 @@ export class FastGameScene extends Phaser.Scene {
 
     handleNextRound() {
         try {
-            this.networkManager.requestNewHand();
+            this.networkManager.resetRoom();
             this.nextRoundButton.setVisible(false);
             this.nextRoundButtonText.setVisible(false);
         } catch (error) {
-            console.error('FastGameScene: Error requesting new hand:', error);
+            console.error('FastGameScene: Error resetting room:', error);
         }
     }
 

@@ -130,6 +130,9 @@ class PokerGame {
         player.ready = true;
         this.readyPlayers.add(playerId);
 
+        // Give player 1000 money when they click ready
+        player.bank = 1000;
+
         // Check if all players are ready and we have enough players
         if (this.readyPlayers.size >= this.minPlayers && 
             this.readyPlayers.size === this.players.size) {
@@ -191,6 +194,8 @@ class PokerGame {
             player.allIn = false;
             player.hand = [];
             player.handRank = null;
+            // Reset bank to 1000 for next game
+            player.bank = 1000;
         }
         
         // Clear game state
@@ -245,6 +250,44 @@ class PokerGame {
 
         // Start betting round
         this.startBettingRound();
+    }
+
+    resetRoom() {
+        console.log('PokerGame: Resetting entire room state');
+        
+        // Reset game status to lobby
+        this.status = 'lobby';
+        this.phase = 'lobby';
+        
+        // Clear all game state
+        this.pot = 0;
+        this.currentBet = 0;
+        this.communityCards = [];
+        this.showdownResults = null;
+        this.currentRaisesInRound = 0;
+        this.lastRaisePlayerId = null;
+        
+        // Reset all players to lobby state
+        for (const player of this.players.values()) {
+            player.currentBet = 0;
+            player.folded = false;
+            player.allIn = false;
+            player.hand = [];
+            player.handRank = null;
+            player.hasActed = false;
+            player.ready = false;
+            // Reset bank to 1000 for next game
+            player.bank = 1000;
+        }
+        
+        // Clear ready status
+        this.readyPlayers.clear();
+        this.allPlayersReady = false;
+        
+        // Clear timers
+        this.clearTimers();
+        
+        console.log('PokerGame: Room reset complete - back to lobby state');
     }
 
     initializeDeck() {
@@ -695,14 +738,11 @@ class PokerGame {
         this.hasEveryoneActed = false;
         
         console.log(`PokerGame: Starting new betting round for ${this.phase}, starting player: ${startingPlayer}`);
-        // Only start betting round if we're not transitioning to showdown
-        if (this.phase !== 'showdown') {
-            this.startBettingRound();
-        }
+        this.startBettingRound();
     }
 
     showdown() {
-        console.log('PokerGame: Starting showdown - evaluating hands');
+        console.log('PokerGame: Starting showdown - evaluating hands and revealing all cards');
         
         const activePlayers = this.getActivePlayers();
         
@@ -711,6 +751,18 @@ class PokerGame {
             this.startNewHand();
             return;
         }
+        
+        // Reveal all players' cards (both active and folded)
+        const allPlayers = Array.from(this.players.values());
+        const revealedCards = allPlayers.map(player => ({
+            playerId: player.id,
+            playerName: player.name,
+            cards: player.hand,
+            folded: player.folded,
+            allIn: player.allIn
+        }));
+        
+        console.log('PokerGame: Revealing all players\' cards:', revealedCards);
         
         // Evaluate hands
         const playerHands = activePlayers.map(player => {
@@ -761,7 +813,9 @@ class PokerGame {
                 playerName: player.name,
                 handRank: hand.rankName,
                 handScore: hand.score
-            }))
+            })),
+            // Add revealed cards information
+            revealedCards: revealedCards
         };
         
         console.log('PokerGame: Showdown complete:', this.showdownResults);
