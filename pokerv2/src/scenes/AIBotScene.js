@@ -143,6 +143,18 @@ export class AIBotScene extends Phaser.Scene {
             })
             .setOrigin(0.5);
 
+        // Create player info text (debug mode)
+        if (window.isDebug && window.appData) {
+            this.playerInfoText = this.add
+                .text(640, 110, `Playing as: ${window.appData.first_name} (ID: ${window.appData.vk_user_id})`, {
+                    fontFamily: 'Arial',
+                    fontSize: '12px',
+                    fill: '#FFD700',
+                    strokeThickness: 1,
+                })
+                .setOrigin(0.5);
+        }
+
         // Setup button handlers
         this.setupButtonHandlers();
         
@@ -177,7 +189,8 @@ export class AIBotScene extends Phaser.Scene {
                 bank: 1000,
                 position: { x: 670, y: 520 },
                 avatarUrl: window.appData?.photo_200 || 'https://gravatar.com/avatar/3?s=400&d=robohash&r=x',
-                isAI: false
+                isAI: false,
+                vk_user_id: window.appData?.vk_user_id || 0
             },
             {
                 name: 'AI Bot 3',
