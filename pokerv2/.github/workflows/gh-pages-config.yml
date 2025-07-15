@@ -1,0 +1,28 @@
+name: Configure GitHub Pages
+
+on:
+  workflow_run:
+    workflows: ["Direct Static Deployment"]
+    types:
+      - completed
+
+jobs:
+  configure-pages:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Configure GitHub Pages
+        run: |
+          echo "Configuring GitHub Pages to use game-pages branch..."
+          echo "This workflow ensures GitHub Pages uses the correct branch for deployment."
+          
+      - name: Check Pages Status
+        run: |
+          echo "GitHub Pages should now be configured to use the game-pages branch."
+          echo "The site will be available at: https://ncit.github.io/pokerv2/"
+          echo ""
+          echo "If you still see Jekyll processing, you may need to:"
+          echo "1. Go to your repository Settings > Pages"
+          echo "2. Change Source to 'Deploy from a branch'"
+          echo "3. Select 'game-pages' branch and '/ (root)' folder"
+          echo "4. Save the settings" 

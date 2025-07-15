@@ -1,0 +1,138 @@
+name: Direct Static Deployment
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          
+      - name: Create game-only deployment
+        run: |
+          # Create a completely clean deployment directory
+          rm -rf game-deploy
+          mkdir -p game-deploy
+          
+          # Copy ONLY the game files (no documentation, no markdown, no memory-bank)
+          echo "📁 Copying game files..."
+          cp -r src/* game-deploy/
+          cp -r dependencies game-deploy/
+          cp -r assets game-deploy/
+          cp index.html game-deploy/
+          
+          # Copy optional files if they exist
+          if [ -d "supabase" ]; then 
+            echo "🗄️ Copying Supabase files..."
+            cp -r supabase game-deploy/
+          fi
+          if [ -f "project.config" ]; then 
+            echo "⚙️ Copying project config..."
+            cp project.config game-deploy/
+          fi
+          
+          # Create .nojekyll file to disable Jekyll processing
+          echo "🚫 Creating .nojekyll file..."
+          touch game-deploy/.nojekyll
+          
+          # Create a minimal _config.yml that completely disables Jekyll
+          echo "⚙️ Creating aggressive Jekyll config..."
+          cat > game-deploy/_config.yml << 'EOF'
+# Completely disable Jekyll processing
+plugins: []
+markdown: raw
+theme: null
+include: []
+exclude: ["*"]
+safe: false
+EOF
+          
+          # Create a simple README for the deployment
+          echo "📄 Creating deployment README..."
+          cat > game-deploy/README.md << 'EOF'
+# Phaser Poker Game
+
+This is the deployed version of the Phaser Poker Game.
+
+Visit: https://ncit.github.io/pokerv2/
+
+## Game Features
+- Texas Hold'em Poker
+- AI Bot opponents
+- Multiplayer functionality
+- Beautiful UI with animations
+- Mobile-friendly design
+EOF
+          
+          echo "✅ Game deployment files created successfully!"
+          ls -la game-deploy/
+          
+      - name: Deploy to game-pages branch
+        run: |
+          # Configure git
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          # Create or update game-pages branch
+          if git show-ref --verify --quiet refs/remotes/origin/game-pages; then
+            echo "🔄 Updating existing game-pages branch..."
+            git checkout game-pages
+            git pull origin game-pages
+          else
+            echo "🆕 Creating new game-pages branch..."
+            git checkout --orphan game-pages
+          fi
+          
+          # Remove all existing files
+          echo "🧹 Cleaning existing files..."
+          git rm -rf . || true
+          
+          # Copy deployment files
+          echo "📋 Copying game files..."
+          cp -r game-deploy/* .
+          
+          # Add all files
+          echo "➕ Adding files to git..."
+          git add .
+          
+          # Commit and push
+          echo "💾 Committing and pushing..."
+          git commit -m "Deploy game files - $(date)" || exit 0
+          git push origin game-pages
+          
+          echo "✅ Successfully deployed to game-pages branch!"
+          
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+        
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './game-deploy'
+
+  deploy-pages:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build-and-deploy
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4 
