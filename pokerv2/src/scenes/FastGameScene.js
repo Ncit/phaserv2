@@ -115,7 +115,7 @@ export class FastGameScene extends Phaser.Scene {
         this.nextRoundButton.setVisible(false);
 
         // Create start game button only (no ready button)
-        this.startGameButton = this.buttonManager.createButton('call', 640, 100);
+        this.startGameButton = this.buttonManager.createButton('call', 440, 100);
         this.startGameButton.setVisible(false);
 
         this.underline = this.add.image(640, 700, 'underline');

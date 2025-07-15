@@ -46,7 +46,8 @@ io.on('connection', (socket) => {
             if (result.isReconnection) {
                 socket.to('main-room').emit('playerReconnected', {
                     playerId: result.playerId,
-                    playerName: result.playerName
+                    playerName: result.playerName,
+                    wasAutoFolded: result.wasAutoFolded
                 });
             } else {
                 socket.to('main-room').emit('playerJoined', {
