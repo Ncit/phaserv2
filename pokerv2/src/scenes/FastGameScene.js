@@ -426,8 +426,16 @@ export class FastGameScene extends Phaser.Scene {
     }
 
     removePlayer(playerId) {
+        console.log('FastGameScene: Removing player:', playerId);
+        
         const playerElements = this.playerElements.get(playerId);
         if (playerElements) {
+            // Always remove cards when player is removed
+            if (playerElements.playerNumber) {
+                this.cardManager.safeClearPlayerCards(playerElements.playerNumber);
+                console.log(`FastGameScene: Removed cards for player ${playerId} during player removal`);
+            }
+            
             // Remove UI elements
             Object.values(playerElements).forEach(element => {
                 if (element && element.destroy) {
@@ -439,6 +447,8 @@ export class FastGameScene extends Phaser.Scene {
         
         // Remove from players list
         this.players = this.players.filter(p => p.id !== playerId);
+        
+        console.log('FastGameScene: Player removal complete for:', playerId);
     }
 
     removePlayerCards(playerId) {
@@ -451,6 +461,14 @@ export class FastGameScene extends Phaser.Scene {
             console.log(`FastGameScene: Cleared cards for player ${playerId} (player number: ${playerElements.playerNumber})`);
         } else {
             console.warn('FastGameScene: Could not find player elements for card removal:', playerId);
+            
+            // Fallback: try to find player by ID in the players array and clear cards
+            const playerIndex = this.players.findIndex(p => p.id === playerId);
+            if (playerIndex !== -1) {
+                const playerNumber = playerIndex + 1;
+                this.cardManager.safeClearPlayerCards(playerNumber);
+                console.log(`FastGameScene: Fallback - cleared cards for player ${playerId} using player number: ${playerNumber}`);
+            }
         }
     }
 
