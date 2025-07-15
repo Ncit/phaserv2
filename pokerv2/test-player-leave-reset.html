@@ -3,27 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Player Leave Room Reset Test</title>
+    <title>Test Player Leave Reset - Multiplayer Poker</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
-            background-color: #040218;
-            color: white;
+            background-color: #1a1a1a;
+            color: #ffffff;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
         }
         .test-section {
-            background-color: #1a1a2e;
+            background-color: #2a2a2a;
             padding: 20px;
             margin: 20px 0;
-            border-radius: 10px;
-            border: 1px solid #333;
+            border-radius: 8px;
         }
         .test-button {
             background-color: #4CAF50;
             color: white;
             padding: 10px 20px;
             border: none;
-            border-radius: 5px;
+            border-radius: 4px;
             cursor: pointer;
             margin: 5px;
         }
@@ -31,13 +34,13 @@
             background-color: #45a049;
         }
         .test-button:disabled {
-            background-color: #666;
+            background-color: #cccccc;
             cursor: not-allowed;
         }
         .status {
-            padding: 10px;
             margin: 10px 0;
-            border-radius: 5px;
+            padding: 10px;
+            border-radius: 4px;
         }
         .status.success {
             background-color: #4CAF50;
@@ -49,322 +52,232 @@
             background-color: #2196F3;
         }
         .status.warning {
-            background-color: #FF9800;
+            background-color: #ff9800;
         }
-        .log {
-            background-color: #000;
-            color: #00ff00;
-            padding: 10px;
-            border-radius: 5px;
-            font-family: monospace;
-            max-height: 300px;
-            overflow-y: auto;
-            white-space: pre-wrap;
+        .game-frame {
+            width: 100%;
+            height: 600px;
+            border: 2px solid #4CAF50;
+            border-radius: 8px;
         }
         .instructions {
-            background-color: #2a2a4e;
+            background-color: #333;
             padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-        .game-state {
-            background-color: #1a1a2e;
-            padding: 15px;
-            border-radius: 5px;
+            border-radius: 4px;
             margin: 10px 0;
-            border-left: 4px solid #4CAF50;
+        }
+        .step {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #444;
+            border-radius: 4px;
+        }
+        .test-scenario {
+            background-color: #3a3a3a;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border-left: 4px solid #ff9800;
         }
     </style>
 </head>
 <body>
-    <h1>🔄 Player Leave Room Reset Test</h1>
-    
-    <div class="instructions">
-        <h3>Test Instructions:</h3>
-        <ol>
-            <li>Start the server: <code>cd pokerv2/server && npm run dev</code></li>
-            <li>Open this test page in multiple browser tabs/windows (3-4 tabs)</li>
-            <li>Join the game from each tab (each represents a different player)</li>
-            <li>Click "Ready" in each tab to start the game</li>
-            <li>Wait for the game to start and cards to be dealt</li>
-            <li>Close one of the browser tabs (simulating player disconnect)</li>
-            <li>Check that the remaining tabs show:
-                <ul>
-                    <li>Room reset to lobby state</li>
-                    <li>Notification about player leaving</li>
-                    <li>All cards cleared from the table</li>
-                    <li>Ready buttons available again</li>
-                </ul>
-            </li>
-        </ol>
-    </div>
+    <div class="container">
+        <h1>🎰 Test Player Leave Reset - Multiplayer Poker</h1>
+        
+        <div class="test-section">
+            <h2>Test Instructions</h2>
+            <div class="instructions">
+                <p><strong>Objective:</strong> Verify that when a player leaves the room, the room state is reset and all cards are hidden.</p>
+                
+                <div class="test-scenario">
+                    <h3>Scenario 1: Player Leaves During Lobby</h3>
+                    <div class="step">
+                        <strong>Step 1:</strong> Open 3 game instances (use "Open Multiple Tabs" button)
+                    </div>
+                    <div class="step">
+                        <strong>Step 2:</strong> Have all players click "Ready"
+                    </div>
+                    <div class="step">
+                        <strong>Step 3:</strong> Close one of the game tabs
+                    </div>
+                    <div class="step">
+                        <strong>Step 4:</strong> Verify that remaining players see "Игрок покинул игру. Комната сброшена." message
+                    </div>
+                    <div class="step">
+                        <strong>Step 5:</strong> Verify that room returns to lobby state with ready buttons visible
+                    </div>
+                </div>
+                
+                <div class="test-scenario">
+                    <h3>Scenario 2: Player Leaves During Active Game</h3>
+                    <div class="step">
+                        <strong>Step 1:</strong> Open 3 game instances and start a game
+                    </div>
+                    <div class="step">
+                        <strong>Step 2:</strong> Let the game progress to see cards dealt
+                    </div>
+                    <div class="step">
+                        <strong>Step 3:</strong> Close one of the game tabs during active play
+                    </div>
+                    <div class="step">
+                        <strong>Step 4:</strong> Verify that remaining players see the reset message
+                    </div>
+                    <div class="step">
+                        <strong>Step 5:</strong> Verify that all cards are hidden and room returns to lobby
+                    </div>
+                </div>
+                
+                <div class="test-scenario">
+                    <h3>Scenario 3: Player Leaves During Showdown</h3>
+                    <div class="step">
+                        <strong>Step 1:</strong> Play a hand to showdown
+                    </div>
+                    <div class="step">
+                        <strong>Step 2:</strong> Close one tab during showdown (before clicking "Next Round")
+                    </div>
+                    <div class="step">
+                        <strong>Step 3:</strong> Verify that remaining players see reset message and cards are hidden
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <div class="test-section">
-        <h3>Connection Status</h3>
-        <div id="connectionStatus" class="status info">Not connected</div>
-        <button id="connectBtn" class="test-button">Connect to Server</button>
-        <button id="disconnectBtn" class="test-button" disabled>Disconnect</button>
-    </div>
+        <div class="test-section">
+            <h2>Game Interface</h2>
+            <div id="status" class="status info">
+                Ready to test player leave reset functionality
+            </div>
+            
+            <button class="test-button" onclick="openGame()">🎮 Open Single Game</button>
+            <button class="test-button" onclick="openMultipleTabs()">🔄 Open Multiple Tabs (3)</button>
+            <button class="test-button" onclick="openManyTabs()">👥 Open Many Tabs (5)</button>
+            <button class="test-button" onclick="clearStatus()">🗑️ Clear Status</button>
+        </div>
 
-    <div class="test-section">
-        <h3>Game Actions</h3>
-        <button id="joinBtn" class="test-button" disabled>Join Game</button>
-        <button id="readyBtn" class="test-button" disabled>Set Ready</button>
-        <button id="startBtn" class="test-button" disabled>Start Game</button>
-    </div>
+        <div class="test-section">
+            <h2>Expected Behavior</h2>
+            <ul>
+                <li>✅ When a player leaves, remaining players see reset notification</li>
+                <li>✅ All cards are immediately hidden when player leaves</li>
+                <li>✅ Room returns to lobby state</li>
+                <li>✅ Ready buttons become visible again</li>
+                <li>✅ Community cards are cleared</li>
+                <li>✅ Hand rank display is cleared</li>
+                <li>✅ Next Round button is hidden</li>
+                <li>✅ Game can be restarted with remaining players</li>
+            </ul>
+        </div>
 
-    <div class="test-section">
-        <h3>Current Game State</h3>
-        <div id="gameState" class="game-state">
-            <strong>Status:</strong> <span id="gameStatus">Not connected</span><br>
-            <strong>Phase:</strong> <span id="gamePhase">-</span><br>
-            <strong>Players:</strong> <span id="playerCount">0</span><br>
-            <strong>Ready Players:</strong> <span id="readyCount">0</span><br>
-            <strong>Pot:</strong> <span id="potAmount">$0</span>
+        <div class="test-section">
+            <h2>Test Results</h2>
+            <div id="testResults">
+                <p>No tests run yet. Open multiple game instances and follow the test scenarios above.</p>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>Debug Information</h2>
+            <div id="debugInfo">
+                <p>Server status: <span id="serverStatus">Checking...</span></p>
+                <p>Active connections: <span id="activeConnections">-</span></p>
+                <p>Last event: <span id="lastEvent">None</span></p>
+            </div>
         </div>
     </div>
 
-    <div class="test-section">
-        <h3>Test Results</h3>
-        <div id="testResults" class="status info">Waiting for test to begin...</div>
-    </div>
-
-    <div class="test-section">
-        <h3>Event Log</h3>
-        <div id="eventLog" class="log"></div>
-        <button id="clearLogBtn" class="test-button">Clear Log</button>
-    </div>
-
     <script>
-        let socket = null;
-        let gameState = null;
-        let playerId = null;
-        let isConnected = false;
-        let testResults = [];
-        let playerLeftDetected = false;
-        let roomResetDetected = false;
-
-        // Test player data
-        const testPlayers = [
-            { name: 'Test Player 1', avatarUrl: 'https://gravatar.com/avatar/1?s=400&d=robohash&r=x' },
-            { name: 'Test Player 2', avatarUrl: 'https://gravatar.com/avatar/2?s=400&d=robohash&r=x' },
-            { name: 'Test Player 3', avatarUrl: 'https://gravatar.com/avatar/3?s=400&d=robohash&r=x' },
-            { name: 'Test Player 4', avatarUrl: 'https://gravatar.com/avatar/4?s=400&d=robohash&r=x' }
-        ];
-
-        // Get random test player
-        const currentPlayer = testPlayers[Math.floor(Math.random() * testPlayers.length)];
-
-        function log(message) {
-            const logElement = document.getElementById('eventLog');
-            const timestamp = new Date().toLocaleTimeString();
-            logElement.textContent += `[${timestamp}] ${message}\n`;
-            logElement.scrollTop = logElement.scrollHeight;
-            console.log(message);
-        }
-
         function updateStatus(message, type = 'info') {
-            const statusElement = document.getElementById('connectionStatus');
-            statusElement.textContent = message;
-            statusElement.className = `status ${type}`;
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
         }
 
-        function updateTestResults(message, type = 'info') {
-            const resultsElement = document.getElementById('testResults');
-            resultsElement.textContent = message;
-            resultsElement.className = `status ${type}`;
+        function clearStatus() {
+            updateStatus('Status cleared', 'info');
         }
 
-        function addTestResult(result) {
-            testResults.push(result);
-            log(`✅ Test Result: ${result}`);
+        function updateDebugInfo(field, value) {
+            const element = document.getElementById(field);
+            if (element) {
+                element.textContent = value;
+            }
         }
 
-        function updateGameStateDisplay() {
-            if (!gameState) return;
+        function openGame() {
+            const gameWindow = window.open('index.html', '_blank', 'width=1280,height=720');
             
-            document.getElementById('gameStatus').textContent = gameState.status || 'Unknown';
-            document.getElementById('gamePhase').textContent = gameState.phase || 'Unknown';
-            document.getElementById('playerCount').textContent = gameState.players ? gameState.players.length : 0;
-            document.getElementById('readyCount').textContent = gameState.readyCount || 0;
-            document.getElementById('potAmount').textContent = `$${gameState.pot || 0}`;
+            if (gameWindow) {
+                updateStatus('Single game opened. Use this for testing basic functionality.', 'success');
+            } else {
+                updateStatus('Failed to open game window. Please allow popups.', 'error');
+            }
         }
 
-        // Socket event handlers
-        function setupSocketListeners() {
-            socket.on('connect', () => {
-                isConnected = true;
-                updateStatus('Connected to server', 'success');
-                document.getElementById('connectBtn').disabled = true;
-                document.getElementById('disconnectBtn').disabled = false;
-                document.getElementById('joinBtn').disabled = false;
-                log('Connected to server');
-            });
-
-            socket.on('disconnect', () => {
-                isConnected = false;
-                updateStatus('Disconnected from server', 'error');
-                document.getElementById('connectBtn').disabled = false;
-                document.getElementById('disconnectBtn').disabled = true;
-                document.getElementById('joinBtn').disabled = true;
-                document.getElementById('readyBtn').disabled = true;
-                document.getElementById('startBtn').disabled = true;
-                log('Disconnected from server');
-            });
-
-            socket.on('gameJoined', (data) => {
-                gameState = data.gameState;
-                playerId = data.playerId;
-                log(`Joined game as ${currentPlayer.name} (ID: ${playerId})`);
-                updateGameStateDisplay();
-                
-                if (gameState.status === 'lobby') {
-                    document.getElementById('readyBtn').disabled = false;
-                    log('Game is in lobby - ready to set ready status');
+        function openMultipleTabs() {
+            const tabs = 3;
+            let openedCount = 0;
+            
+            for (let i = 0; i < tabs; i++) {
+                const gameWindow = window.open('index.html', `game_${i}`, 'width=1280,height=720');
+                if (gameWindow) {
+                    openedCount++;
                 }
-            });
-
-            socket.on('gameStateUpdate', (data) => {
-                gameState = data.gameState;
-                log(`Game state updated: ${data.gameState.status} - Phase: ${data.gameState.phase}`);
-                updateGameStateDisplay();
-                
-                if (data.gameStarted) {
-                    log('🎮 Game started!');
-                    addTestResult('Game started successfully');
-                    document.getElementById('readyBtn').disabled = true;
-                    document.getElementById('startBtn').disabled = true;
-                }
-                
-                if (data.newHand) {
-                    log('🃏 New hand dealt');
-                    addTestResult('Cards dealt to players');
-                }
-                
-                if (data.roomReset) {
-                    log('🔄 Room reset');
-                    roomResetDetected = true;
-                    addTestResult('Room reset completed');
-                    
-                    // Re-enable ready button if back to lobby
-                    if (gameState.status === 'lobby') {
-                        document.getElementById('readyBtn').disabled = false;
-                        document.getElementById('startBtn').disabled = true;
-                        log('Back to lobby - ready button enabled');
-                    }
-                    
-                    // Check if reset was due to player leaving
-                    if (data.playerLeft) {
-                        log('🔄 Room reset due to player leaving');
-                        addTestResult('Room reset due to player leaving');
-                        updateTestResults('✅ Room reset due to player leaving detected!', 'success');
-                    }
-                }
-                
-                // Check if cards are present
-                if (gameState.players) {
-                    const playersWithCards = gameState.players.filter(p => p.hand && p.hand.length > 0);
-                    log(`Players with cards: ${playersWithCards.length}/${gameState.players.length}`);
-                }
-            });
-
-            socket.on('playerJoined', (data) => {
-                log(`Player joined: ${data.player.name}`);
-                addTestResult(`Player ${data.player.name} joined`);
-            });
-
-            socket.on('playerLeft', (data) => {
-                log(`Player left: ${data.playerName} (ID: ${data.playerId})`);
-                playerLeftDetected = true;
-                addTestResult(`Player ${data.playerName} left the game`);
-                
-                if (data.removeCards) {
-                    log('🗑️ Cards should be removed for this player');
-                    addTestResult(`Cards removed for ${data.playerName}`);
-                }
-                
-                // Check if both player left and room reset happened
-                if (playerLeftDetected && roomResetDetected) {
-                    updateTestResults('✅ SUCCESS: Player left and room reset detected!', 'success');
-                }
-            });
-
-            socket.on('error', (data) => {
-                log(`❌ Error: ${data.message}`);
-                updateTestResults(`Error: ${data.message}`, 'error');
-            });
+            }
+            
+            if (openedCount > 0) {
+                updateStatus(`Opened ${openedCount} game tabs. Test player leave scenarios.`, 'success');
+                updateDebugInfo('activeConnections', openedCount);
+            } else {
+                updateStatus('Failed to open game tabs. Please allow popups.', 'error');
+            }
         }
 
-        // Button event handlers
-        document.getElementById('connectBtn').addEventListener('click', () => {
-            log('Connecting to server...');
-            socket = io('http://localhost:3000');
-            setupSocketListeners();
-        });
-
-        document.getElementById('disconnectBtn').addEventListener('click', () => {
-            if (socket) {
-                socket.disconnect();
+        function openManyTabs() {
+            const tabs = 5;
+            let openedCount = 0;
+            
+            for (let i = 0; i < tabs; i++) {
+                const gameWindow = window.open('index.html', `game_many_${i}`, 'width=1280,height=720');
+                if (gameWindow) {
+                    openedCount++;
+                }
             }
-        });
-
-        document.getElementById('joinBtn').addEventListener('click', () => {
-            if (!socket || !isConnected) {
-                log('❌ Not connected to server');
-                return;
+            
+            if (openedCount > 0) {
+                updateStatus(`Opened ${openedCount} game tabs. Test with more players.`, 'success');
+                updateDebugInfo('activeConnections', openedCount);
+            } else {
+                updateStatus('Failed to open game tabs. Please allow popups.', 'error');
             }
+        }
 
-            const playerData = {
-                name: currentPlayer.name,
-                avatarUrl: currentPlayer.avatarUrl,
-                bank: 1000,
-                vk_user_id: Math.floor(Math.random() * 1000000)
-            };
-
-            log(`Joining game as ${playerData.name}...`);
-            socket.emit('joinGame', playerData);
-        });
-
-        document.getElementById('readyBtn').addEventListener('click', () => {
-            if (!socket || !isConnected) {
-                log('❌ Not connected to server');
-                return;
+        // Check server status
+        async function checkServerStatus() {
+            try {
+                const response = await fetch('http://localhost:3000/api/games');
+                if (response.ok) {
+                    const games = await response.json();
+                    updateDebugInfo('serverStatus', 'Running');
+                    updateDebugInfo('lastEvent', `Found ${games.length} game(s)`);
+                } else {
+                    updateDebugInfo('serverStatus', 'Error');
+                    updateDebugInfo('lastEvent', `HTTP ${response.status}`);
+                }
+            } catch (error) {
+                updateDebugInfo('serverStatus', 'Not responding');
+                updateDebugInfo('lastEvent', error.message);
             }
+        }
 
-            log('Setting ready status...');
-            socket.emit('setReady', true);
-            document.getElementById('readyBtn').disabled = true;
-        });
-
-        document.getElementById('startBtn').addEventListener('click', () => {
-            if (!socket || !isConnected) {
-                log('❌ Not connected to server');
-                return;
-            }
-
-            log('Starting game...');
-            socket.emit('startGame');
-        });
-
-        document.getElementById('clearLogBtn').addEventListener('click', () => {
-            document.getElementById('eventLog').textContent = '';
-        });
-
-        // Auto-connect on page load
-        window.addEventListener('load', () => {
-            log('Page loaded - ready to test player leave room reset');
-            updateTestResults('Ready to test - connect to server and join game', 'info');
-        });
-
-        // Handle page unload (simulate player disconnect)
-        window.addEventListener('beforeunload', () => {
-            if (socket && isConnected) {
-                log('Page closing - simulating player disconnect');
-                // The disconnect event will be handled by the server
-            }
+        // Add some helpful tips
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStatus('Test page loaded. Click "Open Multiple Tabs" to start testing player leave scenarios.', 'info');
+            
+            // Check server status periodically
+            checkServerStatus();
+            setInterval(checkServerStatus, 5000);
         });
     </script>
-
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 </body>
 </html> 

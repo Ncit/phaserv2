@@ -259,11 +259,13 @@ export class FastGameScene extends Phaser.Scene {
                 this.handleNewHand();
             } else if (data.roomReset) {
                 console.log('FastGameScene: Room reset!');
-                this.handleRoomReset();
                 
-                // If room reset was due to player leaving, show notification
+                // If room reset was due to player leaving, handle it specially
                 if (data.playerLeft) {
                     this.handlePlayerLeftReset();
+                } else {
+                    // Regular room reset (not due to player leaving)
+                    this.handleRoomReset();
                 }
             }
             
@@ -457,7 +459,13 @@ export class FastGameScene extends Phaser.Scene {
         // Clear any lobby-specific UI
         this.handRank.setText('');
         
+        // Clear any existing cards from lobby state
+        this.playerElements.forEach((elements, playerId) => {
+            this.cardManager.safeClearPlayerCards(elements.playerNumber);
+        });
+        
         // The game will automatically deal cards and start the first hand
+        // Cards will be dealt when the first hand starts
     }
 
     handleNewHand() {
@@ -477,8 +485,10 @@ export class FastGameScene extends Phaser.Scene {
         this.nextRoundButton.setVisible(false);
         this.nextRoundButtonText.setVisible(false);
         
-        // Deal hole cards to players
-        this.dealHoleCards();
+        // Only deal hole cards if game has started
+        if (this.gameState.status === 'playing') {
+            this.dealHoleCards();
+        }
     }
 
     handleRoomReset() {
@@ -509,6 +519,22 @@ export class FastGameScene extends Phaser.Scene {
     handlePlayerLeftReset() {
         console.log('FastGameScene: Handling room reset due to player leaving');
         
+        // Clear all cards immediately when player leaves
+        this.playerElements.forEach((elements, playerId) => {
+            this.cardManager.safeClearPlayerCards(elements.playerNumber);
+        });
+        
+        // Clear community cards
+        this.communityCardsContainer.removeAll(true);
+        
+        // Clear hand rank and card highlights
+        this.handRank.setText('');
+        this.clearCardHighlights();
+        
+        // Hide next round button
+        this.nextRoundButton.setVisible(false);
+        this.nextRoundButtonText.setVisible(false);
+        
         // Show notification that room was reset due to player leaving
         this.handRank.setText('Игрок покинул игру. Комната сброшена.');
         this.handRank.setFill('#FFD700'); // Gold color for notification
@@ -520,7 +546,10 @@ export class FastGameScene extends Phaser.Scene {
             }
         });
         
-        console.log('FastGameScene: Player left reset notification displayed');
+        // Reset UI to lobby state
+        this.updateUI();
+        
+        console.log('FastGameScene: Player left reset complete - cards hidden and room reset to lobby');
     }
 
     clearCardHighlights() {
@@ -862,8 +891,8 @@ export class FastGameScene extends Phaser.Scene {
             elements.avatar.clearTint();
         }
         
-        // Update cards if this is a new hand
-        if (player.hand && player.hand.length > 0) {
+        // Update cards if this is a new hand and game has started
+        if (this.gameState.status === 'playing' && player.hand && player.hand.length > 0) {
             this.updatePlayerCards(player, elements);
         }
     }
@@ -1166,8 +1195,8 @@ export class FastGameScene extends Phaser.Scene {
                 this.networkManager.setReady(isReady);
                 
                 // Update button text
-                this.readyButtonText.setText(isReady ? 'НЕ ГОТОВ' : 'ГОТОВ');
-                this.readyButtonText.setFill(isReady ? '#FF0000' : '#00FF00');
+                this.readyButtonText.setText(isReady ? 'ГОТОВ' : 'ГОТОВ');
+                this.readyButtonText.setFill(isReady ? '#00FF00' : '#00FF00');
             }
         } catch (error) {
             console.error('FastGameScene: Error setting ready status:', error);
