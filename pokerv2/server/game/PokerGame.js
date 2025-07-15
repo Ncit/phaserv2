@@ -54,7 +54,27 @@ class PokerGame {
             throw new Error('Game is full');
         }
 
-        // Allow joining only in lobby state
+        // Check if this is a reconnection (player with same name already exists)
+        const existingPlayer = this.findPlayerByName(player.name);
+        
+        if (existingPlayer) {
+            // This is a reconnection - update the socket ID and restore the player
+            console.log(`🔄 Player ${player.name} reconnecting...`);
+            existingPlayer.socketId = player.socketId;
+            existingPlayer.avatarUrl = player.avatarUrl; // Update avatar if changed
+            
+            // If game is in progress, mark player as not folded and not all-in
+            if (this.status === 'playing') {
+                existingPlayer.folded = false;
+                existingPlayer.allIn = false;
+                existingPlayer.hasActed = false;
+                // Don't reset hand - keep existing cards
+            }
+            
+            return existingPlayer;
+        }
+
+        // Allow joining only in lobby state for new players
         if (this.status === 'playing') {
             throw new Error('Game is already in progress. Please wait for the current game to finish.');
         }
@@ -82,12 +102,28 @@ class PokerGame {
 
         const player = this.players.get(playerId);
         if (player) {
-            this.players.delete(playerId);
-            this.playerOrder = this.playerOrder.filter(id => id !== playerId);
+            // Mark player as disconnected instead of removing them completely
+            player.socketId = null;
+            player.disconnected = true;
             
-            // If not enough players, end the game
-            if (this.players.size < this.minPlayers && this.status === 'playing') {
-                console.log(`🛑 Not enough players (${this.players.size}/${this.minPlayers}), ending game`);
+            // Remove player from ready players set when they disconnect
+            this.readyPlayers.delete(playerId);
+            player.ready = false;
+            
+            // Recalculate allPlayersReady status
+            this.allPlayersReady = this.readyPlayers.size >= this.minPlayers && 
+                                  this.readyPlayers.size === this.getPlayerCount();
+            
+            // If game is in progress, mark player as folded
+            if (this.status === 'playing') {
+                player.folded = true;
+                console.log(`🔄 Player ${player.name} marked as disconnected and folded`);
+            }
+            
+            // If not enough active players, end the game
+            const activePlayers = this.getActivePlayers();
+            if (activePlayers.length < this.minPlayers && this.status === 'playing') {
+                console.log(`🛑 Not enough active players (${activePlayers.length}/${this.minPlayers}), ending game`);
                 this.endGame();
             }
         }
@@ -117,8 +153,17 @@ class PokerGame {
         return false;
     }
 
+    findPlayerByName(name) {
+        for (const [playerId, player] of this.players.entries()) {
+            if (player.name === name) {
+                return player;
+            }
+        }
+        return null;
+    }
+
     getPlayerCount() {
-        return this.players.size;
+        return Array.from(this.players.values()).filter(p => !p.disconnected).length;
     }
 
     setPlayerReady(playerId) {
@@ -135,7 +180,7 @@ class PokerGame {
 
         // Check if all players are ready and we have enough players
         if (this.readyPlayers.size >= this.minPlayers && 
-            this.readyPlayers.size === this.players.size) {
+            this.readyPlayers.size === this.getPlayerCount()) {
             this.allPlayersReady = true;
         }
 
@@ -144,7 +189,7 @@ class PokerGame {
             ready: true,
             allPlayersReady: this.allPlayersReady,
             readyCount: this.readyPlayers.size,
-            totalPlayers: this.players.size
+            totalPlayers: this.getPlayerCount()
         };
     }
 
@@ -163,7 +208,7 @@ class PokerGame {
             ready: false,
             allPlayersReady: false,
             readyCount: this.readyPlayers.size,
-            totalPlayers: this.players.size
+            totalPlayers: this.getPlayerCount()
         };
     }
 
@@ -172,7 +217,7 @@ class PokerGame {
             throw new Error('Not all players are ready');
         }
 
-        if (this.players.size < this.minPlayers) {
+        if (this.getPlayerCount() < this.minPlayers) {
             throw new Error('Not enough players to start');
         }
 
@@ -397,7 +442,7 @@ class PokerGame {
     }
 
     getActivePlayers() {
-        return Array.from(this.players.values()).filter(p => !p.folded);
+        return Array.from(this.players.values()).filter(p => !p.folded && !p.disconnected);
     }
 
     handlePlayerAction(socketId, actionData) {
@@ -867,7 +912,7 @@ class PokerGame {
             readyPlayers: Array.from(this.readyPlayers),
             allPlayersReady: this.allPlayersReady,
             readyCount: this.readyPlayers.size,
-            totalPlayers: this.players.size,
+            totalPlayers: this.getPlayerCount(), // Use active player count instead of total players
             minPlayers: this.minPlayers,
             // Showdown results
             showdownResults: this.showdownResults
@@ -877,6 +922,12 @@ class PokerGame {
     getPlayersList() {
         return this.playerOrder.map(playerId => {
             const player = this.players.get(playerId);
+            
+            // Skip disconnected players
+            if (player.disconnected) {
+                return null;
+            }
+            
             const playerData = {
                 id: player.id,
                 name: player.name,
@@ -898,7 +949,7 @@ class PokerGame {
             }
             
             return playerData;
-        });
+        }).filter(player => player !== null); // Remove null entries for disconnected players
     }
 
     getPlayerInfo(playerId) {
