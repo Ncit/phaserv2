@@ -99,43 +99,9 @@ export const ButtonConfig = {
             action: 'raise',
         },
 
-        // Progress control buttons
-        minus: {
-            pattern: 'quick_action',
-            key: 'minus_button',
-            action: 'decreaseProgress',
-        },
-        plus: {
-            pattern: 'quick_action',
-            key: 'plus_button',
-            action: 'increaseProgress',
-        },
 
-        // Quick betting buttons
-        min: {
-            pattern: 'quick_action',
-            key: 'button_placeholder',
-            action: 'setProgress',
-            value: 0,
-        },
-        half: {
-            pattern: 'quick_action',
-            key: 'button_placeholder',
-            action: 'setProgress',
-            value: 50,
-        },
-        bank: {
-            pattern: 'quick_action',
-            key: 'button_placeholder',
-            action: 'setProgress',
-            value: 75,
-        },
-        max: {
-            pattern: 'quick_action',
-            key: 'button_placeholder',
-            action: 'setProgress',
-            value: 100,
-        },
+
+        // Quick betting buttons removed
 
         // Game mode buttons
         fastGame: {
@@ -152,7 +118,7 @@ export const ButtonConfig = {
         },
         trainGame: {
             pattern: 'game_mode',
-            key: 'train_game',
+            key: 'ai_bot_btn',
             label: 'Train Game',
             index: 2,
         },
@@ -219,16 +185,6 @@ export const ButtonConfig = {
             scale: 0.35,
         },
 
-        // Progress bar control buttons
-        plusButton: {
-            pattern: 'quick_action',
-            key: 'plus_button',
-            action: 'increaseProgress',
-        },
-        minusButton: {
-            pattern: 'quick_action',
-            key: 'minus_button',
-            action: 'decreaseProgress',
-        },
+
     },
 } 

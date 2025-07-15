@@ -103,7 +103,7 @@ export class LobbyScene extends Phaser.Scene {
         const buttonData = [
             { key: 'fast_game_btn', label: 'Fast Game' },
             { key: 'high_bid_btn', label: 'High Bid' },
-            { key: 'train_game_btn', label: 'Train Game' },
+            { key: 'ai_bot_btn', label: 'Train Game' },
             { key: 'random_match_btn', label: 'Random Match' },
             { key: 'friends_game_btn', label: 'Friends Game' },
         ];
@@ -153,6 +153,11 @@ export class LobbyScene extends Phaser.Scene {
                     this.time.delayedCall(150, () => {
                         button.clearTint();
                         this.scene.start('FriendsGameScene');
+                    });
+                } else if (data.key === 'ai_bot_btn') {
+                    this.time.delayedCall(150, () => {
+                        button.clearTint();
+                        this.scene.start('AIBotScene');
                     });
                 } else {
                     this.time.delayedCall(150, () => {

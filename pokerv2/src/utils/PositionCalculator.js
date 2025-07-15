@@ -112,28 +112,7 @@ export class PositionCalculator {
         return Math.min(scaleX, scaleY); // Maintain aspect ratio
     }
 
-    // Calculate progress bar dimensions and positions
-    getProgressBarLayout(progress = 0, maxWidth = GameConfig.layout.progressBar.width) {
-        const fillWidth = (maxWidth * progress) / 100;
-        const barX = GameConfig.layout.progressBar.x;
-        const barY = GameConfig.layout.progressBar.y;
 
-        return {
-            background: {
-                x: barX,
-                y: barY,
-                width: maxWidth,
-                height: GameConfig.layout.progressBar.height,
-            },
-            fill: {
-                x: barX - maxWidth / 2, // Align to left edge
-                y: barY,
-                width: fillWidth,
-                height: GameConfig.layout.progressBar.height,
-            },
-            progress,
-        };
-    }
 
     // Calculate card positioning within a container
     getCardLayout(containerX, containerY, cardCount, cardSpacing = 10, cardWidth = 80) {
@@ -144,7 +123,7 @@ export class PositionCalculator {
         for (let i = 0; i < cardCount; i++) {
             positions.push({
                 x: startX + i * (cardWidth + cardSpacing) + cardWidth / 2,
-                y: containerY,
+                y: containerY + (i * 2), // Slight vertical offset for each card
                 index: i,
             });
         }

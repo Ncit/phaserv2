@@ -16,7 +16,7 @@ export const PlayerConfig = {
         nameBackground: { x: 0, y: -60 },
         playerName: { x: 0, y: -60 },
         handRank: { x: 0, y: -30 },
-        cardContainer: { x: 0, y: 30 },
+        cardContainer: { x: 0, y: 40 }, // Moved cards slightly lower
     },
 
     // Player styling
@@ -151,9 +151,9 @@ export const PlayerConfig = {
     // Card container configuration for players
     cardContainer: {
         size: { width: 120, height: 80 },
-        cardSpacing: 10,
+        cardSpacing: -40, // Increased spacing between cards
         maxCards: 2, // Poker hand size
-        cardScale: 0.3,
+        cardScale: 0.36,
     },
 
     // Default player data structure

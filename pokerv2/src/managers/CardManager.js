@@ -18,29 +18,26 @@ export class CardManager {
         let loadedCount = 0;
         const { suits, values } = AssetConfig.cards;
 
+        // Check if cards are already loaded by AssetHelper
         suits.forEach(suit => {
             values.forEach(value => {
                 const key = AssetConfig.cards.getCardKey(value, suit);
-                const path = AssetConfig.cards.getCardPath(value, suit);
-                
-                try {
-                    this.scene.load.image(key, path);
+                if (this.scene.textures.exists(key)) {
                     this.loadedCards.add(key);
                     loadedCount++;
-                } catch (error) {
-                    console.error(`CardManager: Failed to load card ${key}:`, error);
                 }
             });
         });
 
-        // Load back card
+        // Check back card
         const backCard = AssetConfig.cards.backCard;
-        this.scene.load.image(backCard.key, backCard.path);
-        this.loadedCards.add(backCard.key);
-        loadedCount++;
+        if (this.scene.textures.exists(backCard.key)) {
+            this.loadedCards.add(backCard.key);
+            loadedCount++;
+        }
 
         if (this.isDebug) {
-            console.log(`CardManager: Loaded ${loadedCount} card assets`);
+            console.log(`CardManager: Found ${loadedCount} already loaded card assets`);
         }
 
         return loadedCount;
@@ -95,11 +92,8 @@ export class CardManager {
             cardKey = AssetConfig.cards.backCard.key;
         }
 
-        // Check if card asset is loaded
-        if (!this.loadedCards.has(cardKey)) {
-            console.error(`CardManager: Card asset '${cardKey}' not loaded`);
-            return null;
-        }
+        // Try to create the card sprite - Phaser will handle missing textures gracefully
+        // The loadedCards check is not reliable during preload phase
 
         // Calculate card position within container
         const cardIndex = containerData.cards.length;
@@ -113,8 +107,30 @@ export class CardManager {
         const cardPosition = cardPositions[cardIndex];
         
         // Create card sprite
-        const card = this.scene.add.image(cardPosition.x, cardPosition.y, cardKey);
-        card.setScale(PlayerConfig.cardContainer.cardScale);
+        let card;
+        try {
+            // Check if texture exists
+            if (!this.scene.textures.exists(cardKey)) {
+                console.error(`CardManager: Card texture '${cardKey}' not found`);
+                return null;
+            }
+            
+            card = this.scene.add.image(cardPosition.x, cardPosition.y, cardKey);
+            // Use different scales for front and back cards
+            const cardScale = faceUp ? 0.1 : 0.36;
+            card.setScale(cardScale);
+            
+            // Apply rotation based on card index (first card: -8°, second card: 8°)
+            const rotation = cardIndex === 0 ? -8 : 8;
+            card.setRotation(Phaser.Math.DegToRad(rotation));
+            
+            if (this.isDebug) {
+                console.log(`CardManager: Created card with scale ${PlayerConfig.cardContainer.cardScale}`);
+            }
+        } catch (error) {
+            console.error(`CardManager: Failed to create card sprite for ${cardKey}:`, error);
+            return null;
+        }
 
         // Store card data
         const cardData = {
@@ -161,9 +177,17 @@ export class CardManager {
         }
 
         cardData.sprite.setTexture(newCardKey);
+        
+        // Update card scale based on face up/down state
+        const cardScale = cardData.faceUp ? 0.1 : 0.36;
+        cardData.sprite.setScale(cardScale);
+        
+        // Maintain rotation when flipping cards
+        const rotation = cardData.index === 0 ? -12 : 12;
+        cardData.sprite.setRotation(Phaser.Math.DegToRad(rotation));
 
         if (this.isDebug) {
-            console.log(`CardManager: Flipped card for player ${playerNumber}, now ${cardData.faceUp ? 'face up' : 'face down'}`);
+            console.log(`CardManager: Flipped card for player ${playerNumber}, now ${cardData.faceUp ? 'face up' : 'face down'} with scale ${cardScale}`);
         }
 
         // Emit card flipped event
@@ -251,6 +275,10 @@ export class CardManager {
             const position = cardPositions[index];
             cardData.sprite.setPosition(position.x, position.y);
             cardData.index = index;
+            
+            // Maintain rotation when repositioning cards
+            const rotation = index === 0 ? -12 : 12;
+            cardData.sprite.setRotation(Phaser.Math.DegToRad(rotation));
         });
     }
 

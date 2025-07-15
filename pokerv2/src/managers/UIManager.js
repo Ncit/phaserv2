@@ -5,7 +5,6 @@ import { eventManager } from '../utils/EventManager.js';
 import { ButtonManager } from './ButtonManager.js';
 import { PlayerManager } from './PlayerManager.js';
 import { CardManager } from './CardManager.js';
-import { ProgressBarManager } from './ProgressBarManager.js';
 
 export class UIManager {
     constructor(scene) {
@@ -16,7 +15,6 @@ export class UIManager {
         this.buttonManager = new ButtonManager(scene);
         this.playerManager = new PlayerManager(scene);
         this.cardManager = new CardManager(scene);
-        this.progressBarManager = null; // Will be set by scene
         this.assetHelper = new AssetHelper(scene);
         
         // UI state tracking
@@ -28,13 +26,6 @@ export class UIManager {
         this.setupEventListeners();
     }
 
-    // Set the progress bar manager instance (called by scene)
-    setProgressBarManager(progressBarManager) {
-        this.progressBarManager = progressBarManager;
-        if (this.isDebug) {
-            console.log('UIManager: Progress bar manager set');
-        }
-    }
 
     // Initialize the UI system for the current scene
     initialize() {
@@ -52,6 +43,8 @@ export class UIManager {
             this.initializeLobbyScene();
         } else if (this.currentScene === 'FriendsGameScene') {
             this.initializeFriendsGameScene();
+        } else if (this.currentScene === 'AIBotScene') {
+            this.initializeAIBotScene();
         }
 
         this.initialized = true;
@@ -94,26 +87,22 @@ export class UIManager {
         // Create players
         this.createAllPlayers();
         
-        // Create progress bar
-        if (!this.progressBarManager) {
-            console.error('UIManager: Progress bar manager not set!');
-            return;
-        }
-        
-        const progressBarElements = this.progressBarManager.createGameProgressBar();
-        this.progressBarManager.setupProgressBarControls('main');
-        
-        if (this.isDebug) {
-            console.log('UIManager: Progress bar created and controls set up');
-            console.log('UIManager: Progress bar elements:', progressBarElements);
-            console.log('UIManager: Progress bar stats after creation:', this.progressBarManager.getStats());
-        }
-        
         // Note: Buttons are created by FriendsGameScene to preserve exact positioning
-        // UIManager handles event coordination and progress bar management
+        // UIManager handles event coordination
 
         if (this.isDebug) {
             console.log('UIManager: Game scene UI initialized');
+        }
+    }
+
+    // Initialize AI Bot scene UI
+    initializeAIBotScene() {
+        // Create background elements
+        this.createGameBackgroundElements();
+        
+      
+        if (this.isDebug) {
+            console.log('UIManager: AI Bot scene UI initialized');
         }
     }
 
@@ -231,22 +220,6 @@ export class UIManager {
         });
     }
 
-    // Create betting control buttons
-    createBettingControlButtons() {
-        const bettingButtons = [
-            { key: 'min', x: 200, y: 600 },
-            { key: 'half', x: 300, y: 600 },
-            { key: 'bank', x: 980, y: 600 },
-            { key: 'max', x: 1080, y: 600 },
-            { key: 'plusButton', x: 750, y: 600 },
-            { key: 'minusButton', x: 530, y: 600 },
-        ];
-
-        bettingButtons.forEach(({ key, x, y }) => {
-            this.buttonManager.createButton(key, x, y);
-        });
-    }
-
     // Create game interface buttons
     createGameInterfaceButtons() {
         const interfaceButtons = [
@@ -293,12 +266,7 @@ export class UIManager {
             }
         });
 
-        // Progress bar events
-        eventManager.on('progress_updated', (key, value) => {
-            if (this.isDebug) {
-                console.log(`UIManager: Progress bar '${key}' updated to ${value}%`);
-            }
-        });
+
     }
 
     // Handle poker actions
@@ -309,35 +277,20 @@ export class UIManager {
         
         switch (action) {
             case 'fold':
-                // Reset progress bar and handle fold logic
-                if (!this.progressBarManager) {
-                    console.error('UIManager: Progress bar manager not available for fold action!');
-                    return;
-                }
-                
+                // Handle fold logic
                 if (this.isDebug) {
-                    console.log('UIManager: Handling fold action - resetting progress bar');
-                    console.log('UIManager: Progress bar stats:', this.progressBarManager.getStats());
+                    console.log('UIManager: Handling fold action');
                 }
-                
-                // Check if progress bar exists before trying to set it
-                const currentProgress = this.progressBarManager.getProgress('main');
-                if (currentProgress === null) {
-                    console.error('UIManager: Progress bar "main" does not exist! Creating it now...');
-                    this.progressBarManager.createGameProgressBar();
-                }
-                
-                this.progressBarManager.setProgress('main', 0);
-                // Additional fold logic here
                 break;
                 
             case 'call':
                 // Handle call logic
+                if (this.isDebug) {
+                    console.log('UIManager: Handling call action');
+                }
                 break;
                 
             case 'raise':
-                // Get current progress value for raise amount
-                const raiseAmount = this.progressBarManager.getProgress('main');
                 // Handle raise logic with amount
                 break;
         }
@@ -410,9 +363,6 @@ export class UIManager {
             });
         }
 
-        if (updates.progress !== undefined) {
-            this.progressBarManager.setProgress('main', updates.progress);
-        }
 
         if (updates.buttons) {
             Object.entries(updates.buttons).forEach(([buttonKey, state]) => {
@@ -429,7 +379,6 @@ export class UIManager {
             buttons: this.buttonManager.getStats(),
             players: this.playerManager.getStats(),
             cards: this.cardManager.getStats(),
-            progressBars: this.progressBarManager.getStats(),
             uiElements: this.uiElements.size,
         };
     }
@@ -440,7 +389,7 @@ export class UIManager {
         this.buttonManager.removeAllButtons();
         this.playerManager.removeAllPlayers();
         this.cardManager.cleanup();
-        this.progressBarManager.removeAllProgressBars();
+   
         
         // Clear UI elements
         this.uiElements.clear();

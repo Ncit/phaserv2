@@ -2,7 +2,7 @@ import { ButtonManager } from '../managers/ButtonManager.js';
 import { UIManager } from '../managers/UIManager.js';
 import { PlayerManager } from '../managers/PlayerManager.js';
 import { CardManager } from '../managers/CardManager.js';
-import { ProgressBarManager } from '../managers/ProgressBarManager.js';
+
 import { GameConfig } from '../config/GameConfig.js';
 import { ButtonConfig } from '../config/ButtonConfig.js';
 import { PlayerConfig } from '../config/PlayerConfig.js';
@@ -26,11 +26,8 @@ export class FriendsGameScene extends Phaser.Scene {
         this.buttonManager = new ButtonManager(this);
         this.playerManager = new PlayerManager(this);
         this.cardManager = new CardManager(this);
-        this.progressBarManager = new ProgressBarManager(this);
-        
-        // Initialize UI Manager for Game Scene (pass the progressBarManager instance)
+        // Initialize UI Manager for Game Scene
         this.uiManager = new UIManager(this);
-        this.uiManager.setProgressBarManager(this.progressBarManager);
         this.uiManager.initializeFriendsGameScene();
 
         // Create background elements (preserved exactly)
@@ -48,14 +45,11 @@ export class FriendsGameScene extends Phaser.Scene {
         this.raiseButton = this.buttonManager.createButton('raise', 710, 640);
         
         // Create progress control buttons using ButtonManager (preserved functionality)
-        this.minusButton = this.buttonManager.createButton('minus', 850, 640);
-        this.plusButton = this.buttonManager.createButton('plus', 1180, 640);
+        // this.minusButton = this.buttonManager.createButton('minus', 850, 640);
+        // this.plusButton = this.buttonManager.createButton('plus', 1180, 640);
         
         // Create quick action buttons using ButtonManager (preserved functionality)
-        this.minButton = this.buttonManager.createButton('min', 910, 624);
-        this.halfButton = this.buttonManager.createButton('half', 980, 624);
-        this.bankButton = this.buttonManager.createButton('bank', 1050, 624);
-        this.maxButton = this.buttonManager.createButton('max', 1120, 624);
+        // Quick action buttons removed
 
         this.underline = this.add.image(640, 700, 'underline');
 
@@ -82,8 +76,7 @@ export class FriendsGameScene extends Phaser.Scene {
 
         this.chipBank.scale = 0.2;
 
-        // Create card container using CardManager (preserved functionality)
-        this.cardManager.createCardContainer();
+        // Card containers will be created per player in createCustomPlayer
 
         // Create hand rank display (preserved exactly)
         this.handRank = this.add
@@ -129,53 +122,21 @@ export class FriendsGameScene extends Phaser.Scene {
             },
         ];
 
-        // Create each player using custom positions and avatar loading
-        playerData.forEach((player, index) => {
-            this.createCustomPlayer(index + 1, player);
+        // Wait a frame to ensure all assets are loaded
+        this.time.delayedCall(100, () => {
+            // Debug: Check if cards are loaded
+            const loadedCards = this.cardManager.loadAllCards();
+            console.log(`FriendsGameScene: Found ${loadedCards} loaded cards`);
+            
+            // Create each player using custom positions and avatar loading
+            playerData.forEach((player, index) => {
+                this.createCustomPlayer(index + 1, player);
+            });
         });
     }
 
     createButtonLabels() {
-        // Add text labels on quick action buttons (preserved exactly)
-        this.minButtonText = this.add
-            .text(910, 624, 'МИН.', {
-                fontFamily: 'Arial',
-                fontSize: '12px',
-                fill: '#ffffff',
-                stroke: '#000000',
-                strokeThickness: 1,
-            })
-            .setOrigin(0.5);
-
-        this.halfButtonText = this.add
-            .text(980, 624, '1/2', {
-                fontFamily: 'Arial',
-                fontSize: '12px',
-                fill: '#ffffff',
-                stroke: '#000000',
-                strokeThickness: 1,
-            })
-            .setOrigin(0.5);
-
-        this.bankButtonText = this.add
-            .text(1050, 624, 'БАНК', {
-                fontFamily: 'Arial',
-                fontSize: '12px',
-                fill: '#ffffff',
-                stroke: '#000000',
-                strokeThickness: 1,
-            })
-            .setOrigin(0.5);
-
-        this.maxButtonText = this.add
-            .text(1120, 624, 'МАКС.', {
-                fontFamily: 'Arial',
-                fontSize: '12px',
-                fill: '#ffffff',
-                stroke: '#000000',
-                strokeThickness: 1,
-            })
-            .setOrigin(0.5);
+        // Betting button labels removed
     }
 
     createPokerActionLabels() {
@@ -260,27 +221,9 @@ export class FriendsGameScene extends Phaser.Scene {
         this.buttonManager.handleMenu();
     }
 
-    increaseProgress() {
-        this.progressBarManager.increaseProgress('main');
-    }
 
-    decreaseProgress() {
-        this.progressBarManager.decreaseProgress('main');
-    }
 
-    updateProgressBar() {
-        this.progressBarManager.updateProgressBar('main');
-    }
-
-    getProgressValue() {
-        return this.progressBarManager.getProgress('main');
-    }
-
-    setProgressValue(value) {
-        this.progressBarManager.setProgress('main', value);
-    }
-
-    // Create a player with custom position and dynamic avatar loading (preserved from original)
+    // Create a player with custom position and proper card management
     createCustomPlayer(playerNumber, playerData) {
         const { name, bank, position, avatarUrl } = playerData;
 
@@ -297,7 +240,7 @@ export class FriendsGameScene extends Phaser.Scene {
             this[`${playerPrefix}NamePlaceholder`].scale = 0.36;
         }
 
-        // Avatar circle background
+        // Avatar circle background (fixed asset name)
         this[`${playerPrefix}AvatarCircle`] = this.add.image(
             position.x + 90,
             position.y,
@@ -305,46 +248,39 @@ export class FriendsGameScene extends Phaser.Scene {
         );
         this[`${playerPrefix}AvatarCircle`].scale = 0.3;
 
-        // Load and create avatar dynamically
+        // Load and create avatar from URL
         const avatarKey = `avatar${playerNumber}`;
         this.load.image(avatarKey, avatarUrl);
-        this.load.start();
-
+        
+        // Create avatar after loading
         this.load.once('complete', () => {
-            if (window.isDebug) {
-                this[`${playerPrefix}Avatar`] = this.add.image(
-                    position.x + 90,
-                    position.y - 26,
-                    avatarKey
-                );
-                this[`${playerPrefix}Avatar`].scale = 0.3;
-            } else {
+            if (this.textures.exists(avatarKey)) {
                 this[`${playerPrefix}Avatar`] = this.add.image(
                     position.x + 90,
                     position.y,
                     avatarKey
                 );
                 this[`${playerPrefix}Avatar`].scale = 0.3;
+            } else {
+                // Fallback to default avatar if URL loading fails
+                this[`${playerPrefix}Avatar`] = this.add.image(
+                    position.x + 90,
+                    position.y,
+                    'avatar'
+                );
+                this[`${playerPrefix}Avatar`].scale = 0.3;
             }
-
-            // First card (slightly rotated left)
-            this[`${playerPrefix}FirstCard`] = this.add.image(
-                position.x + 124,
-                position.y + 30,
-                'back_card'
-            );
-            this[`${playerPrefix}FirstCard`].scale = 0.36;
-            this[`${playerPrefix}FirstCard`].rotation = -0.24;
-
-            // Second card (slightly rotated right)
-            this[`${playerPrefix}SecondCard`] = this.add.image(
-                position.x + 144,
-                position.y + 30,
-                'back_card'
-            );
-            this[`${playerPrefix}SecondCard`].scale = 0.36;
-            this[`${playerPrefix}SecondCard`].rotation = 0.24;
         });
+        
+        // Start loading
+        this.load.start();
+
+        // Create card container using CardManager
+        this.cardManager.createCardContainer(playerNumber, position.x + 134, position.y + 30);
+
+        // Add two back cards to the container
+        this.cardManager.addCardToPlayer(playerNumber, '2', 'hearts', false); // face down
+        this.cardManager.addCardToPlayer(playerNumber, '3', 'hearts', false); // face down
 
         // Player name text - only create if name is not empty
         if (name && name.trim() !== '') {

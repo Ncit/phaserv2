@@ -14,16 +14,7 @@ export const GameConfig = {
         bottomBar: { x: 640, y: 660 },
         underline: { x: 680, y: 700 },
         
-        // Progress bar configuration
-        progressBar: {
-            x: 1014,
-            y: 654,
-            width: 260,
-            height: 10,
-            step: 5,
-            min: 0,
-            max: 100,
-        },
+
         
         // Button container layout
         buttonContainer: {
@@ -39,11 +30,7 @@ export const GameConfig = {
         hover: 0xdddddd,
         click: 0x888888,
         
-        // Progress bar colors by level
-        progressLow: 0xff4b00,      // Red for 0-25%
-        progressMedLow: 0xfd5f1d,   // Orange for 26-50%
-        progressMedHigh: 0xfc692c,  // Yellow for 51-75%
-        progressHigh: 0xfb733a,     // Green for 76-100%
+
         
         // Text colors
         primaryText: 0xffffff,

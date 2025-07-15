@@ -52,7 +52,7 @@ export const AssetConfig = {
     gameModes: {
         fastGame: { key: 'fast_game', path: 'assets/fast_game.png' },
         highBid: { key: 'high_bid', path: 'assets/high_bid.png' },
-        trainGame: { key: 'train_game', path: 'assets/train_game.svg' },
+        trainGame: { key: 'ai_bot_btn', path: 'assets/train_game.png' },
         randomMatch: { key: 'random_match', path: 'assets/random_match.png' },
         friendsGame: { key: 'friends_game', path: 'assets/friends_game.png' },
     },

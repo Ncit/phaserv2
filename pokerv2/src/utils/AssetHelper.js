@@ -193,6 +193,7 @@ export class AssetHelper {
         scene.load.image('back_card', 'assets/back_card.png');
         scene.load.image('player_name_placeholder', 'assets/player_name_placeholder.png');
         scene.load.image('avatarCircle', 'assets/avatar_cirlce.png');
+        scene.load.image('avatar', 'assets/avatar.png');
         scene.load.image('dummy_avatar', 'https://gravatar.com/avatar/2ee1f504b415b376c586641aee2c3194?s=400&d=robohash&r=x');
     }
 

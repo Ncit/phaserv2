@@ -29,7 +29,7 @@ export class LoadingScene extends Phaser.Scene {
         this.load.image('friends_game_btn', 'assets/friends_game.png');
         this.load.image('high_bid_btn', 'assets/high_bid.png');
         this.load.image('random_match_btn', 'assets/random_match.png');
-        this.load.image('train_game_btn', 'assets/train_game.png');
+        this.load.image('ai_bot_btn', 'assets/train_game.png');
 
         // Load bonus button asset
         this.load.image('bonus_button', 'assets/bonus_button.png');
