@@ -9,7 +9,6 @@ export const ButtonConfig = {
             cursor: 'hand',
             tints: {
                 hover: 0xdddddd,
-                click: 0x888888,
             },
             feedback: {
                 duration: 150,

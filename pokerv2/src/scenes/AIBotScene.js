@@ -799,6 +799,9 @@ export class AIBotScene extends Phaser.Scene {
         // Update player displays
         this.updateUI();
         
+        // Disable poker actions when Next Round button appears
+        this.disablePlayerActions();
+        
         // Show Next Round button
         this.nextRoundButton.setVisible(true);
         this.nextRoundButtonText.setVisible(true);
