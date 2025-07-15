@@ -1,0 +1,108 @@
+name: Static Deployment to GitHub Pages
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          
+      - name: Create static deployment
+        run: |
+          # Create a completely clean deployment directory
+          rm -rf static-deploy
+          mkdir -p static-deploy
+          
+          # Copy ONLY the game files (no documentation, no markdown)
+          cp -r src/* static-deploy/
+          cp -r dependencies static-deploy/
+          cp -r assets static-deploy/
+          cp index.html static-deploy/
+          if [ -d "supabase" ]; then cp -r supabase static-deploy/; fi
+          if [ -f "project.config" ]; then cp project.config static-deploy/; fi
+          
+          # Create .nojekyll file to disable Jekyll processing
+          touch static-deploy/.nojekyll
+          
+          # Create a minimal _config.yml that completely disables Jekyll
+          cat > static-deploy/_config.yml << 'EOF'
+# Completely disable Jekyll processing
+plugins: []
+markdown: raw
+theme: null
+include: []
+exclude: ["*"]
+safe: false
+EOF
+          
+          # Create a simple README for the deployment
+          cat > static-deploy/README.md << 'EOF'
+# Phaser Poker Game
+
+This is the deployed version of the Phaser Poker Game.
+
+Visit: https://ncit.github.io/pokerv2/
+EOF
+          
+      - name: Deploy to gh-pages branch
+        run: |
+          # Configure git
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          # Create or update gh-pages branch
+          if git show-ref --verify --quiet refs/remotes/origin/gh-pages; then
+            git checkout gh-pages
+            git pull origin gh-pages
+          else
+            git checkout --orphan gh-pages
+          fi
+          
+          # Remove all existing files
+          git rm -rf . || true
+          
+          # Copy deployment files
+          cp -r static-deploy/* .
+          
+          # Add all files
+          git add .
+          
+          # Commit and push
+          git commit -m "Deploy static game files" || exit 0
+          git push origin gh-pages
+          
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+        
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './static-deploy'
+
+  deploy-pages:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: deploy
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4 

@@ -27,22 +27,31 @@ jobs:
         
     - name: Copy src to root for deployment
       run: |
-        # Create a clean deployment directory
+        # Create a completely clean deployment directory
+        rm -rf deploy
         mkdir -p deploy
-        # Copy src contents to deploy directory
+        
+        # Copy only the game files (not documentation or other files)
         cp -r src/* deploy/
-        # Copy dependencies
         cp -r dependencies deploy/
-        # Copy assets
         cp -r assets deploy/
-        # Copy main index.html
         cp index.html deploy/
-        # Copy any other necessary files
-        cp -r supabase deploy/ 2>/dev/null || true
-        # Copy .nojekyll to prevent Jekyll processing
-        cp .nojekyll deploy/
-        # Copy Jekyll config to disable processing
-        if [ -f "_config.yml" ]; then cp _config.yml deploy/; fi
+        if [ -d "supabase" ]; then cp -r supabase deploy/; fi
+        if [ -f "project.config" ]; then cp project.config deploy/; fi
+        
+        # Create .nojekyll file in deployment root
+        touch deploy/.nojekyll
+        
+        # Create a minimal _config.yml that completely disables Jekyll
+        cat > deploy/_config.yml << 'EOF'
+# Completely disable Jekyll processing
+plugins: []
+markdown: raw
+theme: null
+include: []
+exclude: ["*"]
+safe: false
+EOF
         
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
