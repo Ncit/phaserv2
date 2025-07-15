@@ -3,10 +3,14 @@ import { LobbyScene } from './scenes/LobbyScene.js';
 import { FriendsGameScene } from './scenes/FriendsGameScene.js';
 import { AIBotScene } from './scenes/AIBotScene.js';
 import { FastGameScene } from './scenes/FastGameScene.js';
+import { enableGlobalNgrokHeaders } from './utils/NgrokUtils.js';
 
 // Global debug variable accessible in all files
 window.isDebug = true; // Set to true for development
 window.firstFlop = false;
+
+// Enable ngrok headers for all network requests
+enableGlobalNgrokHeaders();
 
 const config = {
     type: Phaser.AUTO,
