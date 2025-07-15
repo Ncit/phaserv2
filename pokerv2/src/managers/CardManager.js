@@ -336,6 +336,22 @@ export class CardManager {
         }
     }
 
+    // Hide player cards (for disconnected players)
+    hidePlayerCards(playerNumber) {
+        this.setPlayerCardsVisibility(playerNumber, false);
+        if (this.isDebug) {
+            console.log(`CardManager: Hidden cards for player ${playerNumber}`);
+        }
+    }
+
+    // Show player cards (for reconnected players)
+    showPlayerCards(playerNumber) {
+        this.setPlayerCardsVisibility(playerNumber, true);
+        if (this.isDebug) {
+            console.log(`CardManager: Shown cards for player ${playerNumber}`);
+        }
+    }
+
     // Deal cards to multiple players
     dealCards(playerNumbers, cardsPerPlayer = 2, faceUp = false) {
         const dealSequence = [];

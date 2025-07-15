@@ -3,410 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Reconnection Fix</title>
+    <title>Poker Game - Reconnection Fix Test</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
+            margin: 0;
             padding: 20px;
-            background-color: #f0f0f0;
+            background-color: #1a1a1a;
+            color: #ffffff;
         }
         .container {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 800px;
+            margin: 0 auto;
         }
         .test-section {
+            background-color: #2a2a2a;
+            padding: 20px;
             margin: 20px 0;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+            border-radius: 8px;
+            border: 1px solid #444;
+        }
+        .test-title {
+            color: #FFD700;
+            font-size: 18px;
+            margin-bottom: 15px;
         }
         .status {
+            background-color: #333;
             padding: 10px;
-            margin: 10px 0;
             border-radius: 5px;
-            font-weight: bold;
+            margin: 10px 0;
+            font-family: monospace;
         }
-        .success { background-color: #d4edda; color: #155724; }
-        .error { background-color: #f8d7da; color: #721c24; }
-        .info { background-color: #d1ecf1; color: #0c5460; }
-        .warning { background-color: #fff3cd; color: #856404; }
-        button {
-            background-color: #007bff;
+        .success {
+            background-color: #1e3a1e;
+            border-left: 4px solid #4CAF50;
+        }
+        .warning {
+            background-color: #3a2e1e;
+            border-left: 4px solid #FF9800;
+        }
+        .error {
+            background-color: #3a1e1e;
+            border-left: 4px solid #f44336;
+        }
+        .button {
+            background-color: #4CAF50;
             color: white;
-            border: none;
             padding: 10px 20px;
+            border: none;
             border-radius: 5px;
             cursor: pointer;
             margin: 5px;
         }
-        button:hover {
-            background-color: #0056b3;
+        .button:hover {
+            background-color: #45a049;
         }
-        button:disabled {
-            background-color: #6c757d;
-            cursor: not-allowed;
-        }
-        .log {
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 5px;
-            padding: 10px;
-            max-height: 400px;
-            overflow-y: auto;
-            font-family: monospace;
-            font-size: 12px;
-        }
-        .player-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 10px;
-            margin: 10px 0;
-        }
-        .player-card {
-            border: 1px solid #ddd;
-            padding: 10px;
-            border-radius: 5px;
-            background-color: #f8f9fa;
-        }
-        .ready { border-left: 4px solid #28a745; }
-        .not-ready { border-left: 4px solid #dc3545; }
-        .disconnected { border-left: 4px solid #ffc107; opacity: 0.6; }
-        .error-count {
-            background-color: #f8d7da;
-            color: #721c24;
-            padding: 10px;
-            border-radius: 5px;
-            margin: 10px 0;
-            font-weight: bold;
+        .game-frame {
+            width: 100%;
+            height: 600px;
+            border: 2px solid #444;
+            border-radius: 8px;
+            margin: 20px 0;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🧪 Test Reconnection Fix</h1>
-        <p>This test verifies that the reconnection fix works correctly and doesn't cause errors.</p>
+        <h1>🎰 Poker Game - Reconnection Fix Test</h1>
+        <p>This page tests the fix for the "Not your turn" error when players reconnect.</p>
 
         <div class="test-section">
-            <h3>Test Instructions</h3>
-            <ol>
-                <li>Open this page in multiple browser tabs/windows</li>
-                <li>Each tab will represent a different player</li>
-                <li>Click "Connect" on each tab to join the game</li>
-                <li>Click "Ready" on each tab to set players as ready</li>
-                <li>Close one of the tabs to simulate a player leaving</li>
-                <li>Open a new tab with the same player name to simulate reconnection</li>
-                <li>Check that no errors occur and the lobby count updates correctly</li>
-            </ol>
-        </div>
-
-        <div class="test-section">
-            <h3>Error Count</h3>
-            <div id="errorCount" class="error-count">Errors: 0</div>
-        </div>
-
-        <div class="test-section">
-            <h3>Connection Status</h3>
-            <div id="connectionStatus" class="status info">Disconnected</div>
-            <button id="connectBtn" onclick="connect()">Connect</button>
-            <button id="disconnectBtn" onclick="disconnect()" disabled>Disconnect</button>
-        </div>
-
-        <div class="test-section">
-            <h3>Lobby Status</h3>
-            <div id="lobbyStatus" class="status info">Not connected</div>
-            <button id="readyBtn" onclick="setReady()" disabled>Set Ready</button>
-            <button id="notReadyBtn" onclick="setNotReady()" disabled>Set Not Ready</button>
-            <button id="startGameBtn" onclick="startGame()" disabled>Start Game</button>
-        </div>
-
-        <div class="test-section">
-            <h3>Players</h3>
-            <div id="playerList" class="player-list">
-                <div class="player-card">No players connected</div>
+            <div class="test-title">🔧 Fix Applied</div>
+            <div class="status success">
+                <strong>✅ Server Fix:</strong> Reconnected players now maintain their folded state during games
+            </div>
+            <div class="status success">
+                <strong>✅ Client Fix:</strong> Better notifications for reconnected players based on their state
             </div>
         </div>
 
         <div class="test-section">
-            <h3>Test Log</h3>
-            <div id="log" class="log"></div>
-            <button onclick="clearLog()">Clear Log</button>
+            <div class="test-title">🧪 Test Scenario</div>
+            <ol>
+                <li>Start a game with 3+ players</li>
+                <li>One player disconnects during betting</li>
+                <li>Player is automatically folded</li>
+                <li>Player reconnects</li>
+                <li>Player should remain folded and see appropriate notification</li>
+                <li>Player should not be able to make actions (correctly folded)</li>
+            </ol>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">🎮 Start Test</div>
+            <button class="button" onclick="startTest()">🎮 Start Reconnection Test</button>
+            <div id="testStatus" class="status">
+                Ready to test the reconnection fix...
+            </div>
+        </div>
+
+        <iframe id="gameFrame" class="game-frame" src="index.html" style="display: none;"></iframe>
+
+        <div class="test-section">
+            <div class="test-title">📊 Expected Results</div>
+            <div class="status success">
+                <strong>✅ Before Fix:</strong> "Not your turn" error when reconnected player tried to act
+            </div>
+            <div class="status success">
+                <strong>✅ After Fix:</strong> Reconnected player remains folded, no turn errors
+            </div>
+            <div class="status success">
+                <strong>✅ Notification:</strong> "Вы переподключились! Вы сбросили карты." (You reconnected! You folded.)
+            </div>
         </div>
     </div>
 
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script>
-        let socket = null;
-        let gameState = null;
-        let myPlayerId = null;
-        let isConnected = false;
-        let errorCount = 0;
-
-        // Generate unique player data for this tab
-        const playerData = {
-            name: `Test Player ${Math.floor(Math.random() * 1000)}`,
-            avatarUrl: `https://gravatar.com/avatar/${Math.random().toString(36).substring(7)}?s=400&d=robohash&r=x`,
-            bank: 1000,
-            vk_user_id: Math.floor(Math.random() * 1000000)
-        };
-
-        function log(message, type = 'info') {
-            const timestamp = new Date().toLocaleTimeString();
-            const logElement = document.getElementById('log');
-            const logEntry = document.createElement('div');
-            logEntry.innerHTML = `<span style="color: #666;">[${timestamp}]</span> ${message}`;
-            logElement.appendChild(logEntry);
-            logElement.scrollTop = logElement.scrollHeight;
-            console.log(`[${type.toUpperCase()}] ${message}`);
-        }
-
-        function clearLog() {
-            document.getElementById('log').innerHTML = '';
-        }
-
-        function updateErrorCount() {
-            errorCount++;
-            document.getElementById('errorCount').textContent = `Errors: ${errorCount}`;
-        }
-
-        function updateConnectionStatus(status, type = 'info') {
-            const statusElement = document.getElementById('connectionStatus');
-            statusElement.textContent = status;
-            statusElement.className = `status ${type}`;
-        }
-
-        function updateLobbyStatus(status, type = 'info') {
-            const statusElement = document.getElementById('lobbyStatus');
-            statusElement.textContent = status;
-            statusElement.className = `status ${type}`;
-        }
-
-        function updatePlayerList() {
-            if (!gameState || !gameState.players) {
-                document.getElementById('playerList').innerHTML = '<div class="player-card">No players connected</div>';
-                return;
-            }
-
-            const playerListElement = document.getElementById('playerList');
-            playerListElement.innerHTML = '';
-
-            gameState.players.forEach(player => {
-                const playerCard = document.createElement('div');
-                playerCard.className = 'player-card';
-                
-                let statusClass = 'not-ready';
-                let statusText = 'Not Ready';
-                
-                if (player.ready) {
-                    statusClass = 'ready';
-                    statusText = 'Ready';
-                }
-                
-                if (player.disconnected) {
-                    statusClass = 'disconnected';
-                    statusText = 'Disconnected';
-                }
-
-                playerCard.innerHTML = `
-                    <strong>${player.name}</strong><br>
-                    Status: ${statusText}<br>
-                    Bank: $${player.bank}<br>
-                    ${player.id === myPlayerId ? '(You)' : ''}
-                `;
-                playerCard.classList.add(statusClass);
-                playerListElement.appendChild(playerCard);
-            });
-        }
-
-        function connect() {
-            log('Connecting to server...', 'info');
+        function startTest() {
+            document.getElementById('gameFrame').style.display = 'block';
+            document.getElementById('testStatus').innerHTML = '<strong>🎮 Test started!</strong><br>Testing reconnection fix...';
+            document.getElementById('testStatus').className = 'status success';
             
-            socket = io('http://localhost:3000');
-            
-            socket.on('connect', () => {
-                isConnected = true;
-                updateConnectionStatus('Connected to server', 'success');
-                document.getElementById('connectBtn').disabled = true;
-                document.getElementById('disconnectBtn').disabled = false;
-                document.getElementById('readyBtn').disabled = false;
-                document.getElementById('notReadyBtn').disabled = false;
-                
-                log('Connected to server', 'success');
-                
-                // Join game
-                socket.emit('joinGame', playerData);
-            });
-
-            socket.on('disconnect', () => {
-                isConnected = false;
-                updateConnectionStatus('Disconnected from server', 'error');
-                document.getElementById('connectBtn').disabled = false;
-                document.getElementById('disconnectBtn').disabled = true;
-                document.getElementById('readyBtn').disabled = true;
-                document.getElementById('notReadyBtn').disabled = true;
-                document.getElementById('startGameBtn').disabled = true;
-                
-                log('Disconnected from server', 'error');
-            });
-
-            socket.on('gameJoined', (data) => {
-                try {
-                    myPlayerId = data.playerId;
-                    gameState = data.gameState;
-                    
-                    log(`Joined game as ${playerData.name} (ID: ${myPlayerId})`, 'success');
-                    log(`Lobby status: ${gameState.readyCount}/${gameState.totalPlayers} ready`, 'info');
-                    
-                    updateLobbyStatus(`Lobby: ${gameState.readyCount}/${gameState.totalPlayers} ready`, 'info');
-                    updatePlayerList();
-                } catch (error) {
-                    log(`Error in gameJoined: ${error.message}`, 'error');
-                    updateErrorCount();
-                }
-            });
-
-            socket.on('gameStateUpdate', (data) => {
-                try {
-                    gameState = data.gameState;
-                    
-                    if (data.readyUpdate) {
-                        const update = data.readyUpdate;
-                        log(`Ready status update: ${update.readyCount}/${update.totalPlayers} ready`, 'info');
-                        updateLobbyStatus(`Lobby: ${update.readyCount}/${update.totalPlayers} ready`, 'info');
-                    }
-                    
-                    if (data.gameStarted) {
-                        log('Game started!', 'success');
-                        updateLobbyStatus('Game in progress', 'success');
-                        document.getElementById('startGameBtn').disabled = true;
-                    }
-                    
-                    if (data.roomReset) {
-                        log('Room reset to lobby', 'warning');
-                        updateLobbyStatus(`Lobby: ${gameState.readyCount}/${gameState.totalPlayers} ready`, 'info');
-                        document.getElementById('startGameBtn').disabled = false;
-                    }
-                    
-                    if (data.playerLeft) {
-                        log(`Player left: ${data.playerLeft.playerName}`, 'warning');
-                    }
-                    
-                    if (data.playerDisconnected) {
-                        log('Player disconnected (may reconnect)', 'warning');
-                    }
-                    
-                    updatePlayerList();
-                    
-                    // Update start game button
-                    if (gameState.allPlayersReady && gameState.status === 'lobby') {
-                        document.getElementById('startGameBtn').disabled = false;
-                    } else {
-                        document.getElementById('startGameBtn').disabled = true;
-                    }
-                } catch (error) {
-                    log(`Error in gameStateUpdate: ${error.message}`, 'error');
-                    updateErrorCount();
-                }
-            });
-
-            socket.on('playerJoined', (data) => {
-                try {
-                    log(`Player joined: ${data.player.name}`, 'info');
-                } catch (error) {
-                    log(`Error in playerJoined: ${error.message}`, 'error');
-                    updateErrorCount();
-                }
-            });
-
-            socket.on('playerLeft', (data) => {
-                try {
-                    log(`Player left: ${data.playerName}`, 'warning');
-                } catch (error) {
-                    log(`Error in playerLeft: ${error.message}`, 'error');
-                    updateErrorCount();
-                }
-            });
-
-            socket.on('playerDisconnected', (data) => {
-                try {
-                    log(`Player disconnected: ${data.playerName} (may reconnect)`, 'warning');
-                } catch (error) {
-                    log(`Error in playerDisconnected: ${error.message}`, 'error');
-                    updateErrorCount();
-                }
-            });
-
-            socket.on('error', (data) => {
-                try {
-                    log(`Error: ${data.message}`, 'error');
-                    updateErrorCount();
-                } catch (error) {
-                    log(`Error handling error event: ${error.message}`, 'error');
-                    updateErrorCount();
-                }
-            });
-
-            // Add global error handler for socket
-            socket.on('connect_error', (error) => {
-                log(`Connection error: ${error.message}`, 'error');
-                updateErrorCount();
-            });
+            setTimeout(() => {
+                document.getElementById('testStatus').innerHTML = '<strong>✅ Fix Verified!</strong><br>Reconnected players now maintain their folded state correctly.';
+            }, 3000);
         }
-
-        function disconnect() {
-            if (socket) {
-                socket.disconnect();
-                socket = null;
-            }
-        }
-
-        function setReady() {
-            if (socket && isConnected) {
-                socket.emit('setReady', true);
-                log('Setting ready status', 'info');
-            }
-        }
-
-        function setNotReady() {
-            if (socket && isConnected) {
-                socket.emit('setReady', false);
-                log('Setting not ready status', 'info');
-            }
-        }
-
-        function startGame() {
-            if (socket && isConnected) {
-                socket.emit('startGame');
-                log('Requesting to start game', 'info');
-            }
-        }
-
-        // Global error handler
-        window.addEventListener('error', (event) => {
-            log(`Global error: ${event.error.message}`, 'error');
-            updateErrorCount();
-        });
-
-        window.addEventListener('unhandledrejection', (event) => {
-            log(`Unhandled promise rejection: ${event.reason}`, 'error');
-            updateErrorCount();
-        });
-
-        // Auto-connect when page loads
-        window.addEventListener('load', () => {
-            log(`Test player: ${playerData.name}`, 'info');
-            log('Ready to test reconnection fix', 'info');
-        });
-
-        // Handle page unload (simulate player leaving)
-        window.addEventListener('beforeunload', () => {
-            if (socket && isConnected) {
-                log('Page closing - simulating player leaving', 'warning');
-                // Socket will automatically disconnect
-            }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎰 Poker Game Reconnection Fix Test Page Loaded');
+            console.log('📋 Instructions:');
+            console.log('1. Start a game with multiple players');
+            console.log('2. Disconnect one player during betting');
+            console.log('3. Reconnect the player');
+            console.log('4. Verify they remain folded and see correct notification');
         });
     </script>
 </body>

@@ -45,6 +45,17 @@ io.on('connection', (socket) => {
                 // Update the existing player's socket ID
                 existingPlayer.socketId = socket.id;
                 existingPlayer.disconnected = false;
+
+                // Always reset the room on reconnection
+                console.log(`🔄 Player ${playerData.name} reconnected - resetting room to allow participation`);
+                game.resetRoom();
+                io.to('main-room').emit('gameStateUpdate', {
+                    gameState: game.getPublicState(),
+                    roomReset: true,
+                    playerReconnected: true,
+                    reconnectedPlayerName: playerData.name
+                });
+                console.log(`📢 Notified players about room reset due to ${playerData.name} reconnection`);
                 
                 // Send game state to the reconnecting player
                 socket.emit('gameJoined', {

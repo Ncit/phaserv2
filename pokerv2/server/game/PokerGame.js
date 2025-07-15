@@ -61,14 +61,15 @@ class PokerGame {
             // This is a reconnection - update the socket ID and restore the player
             console.log(`🔄 Player ${player.name} reconnecting...`);
             existingPlayer.socketId = player.socketId;
+            existingPlayer.disconnected = false; // Mark as reconnected
             existingPlayer.avatarUrl = player.avatarUrl; // Update avatar if changed
             
-            // If game is in progress, mark player as not folded and not all-in
+            // If game is in progress, handle reconnection carefully
             if (this.status === 'playing') {
-                existingPlayer.folded = false;
-                existingPlayer.allIn = false;
-                existingPlayer.hasActed = false;
-                // Don't reset hand - keep existing cards
+                // Don't automatically unfold - keep their current state
+                // They were folded due to disconnection, so they should remain folded
+                existingPlayer.hasActed = false; // Reset action status for next round
+                console.log(`🔄 Player ${player.name} reconnected during game - keeping folded state`);
             }
             
             return existingPlayer;
@@ -170,18 +171,8 @@ class PokerGame {
     }
 
     shouldResetRoomAfterDisconnect() {
-        // Don't reset room if game is in progress (allow reconnection)
-        if (this.status === 'playing') {
-            return false;
-        }
-        
-        // Don't reset room if we have enough players for a game
-        const activePlayers = this.getPlayerCount();
-        if (activePlayers >= this.minPlayers) {
-            return false;
-        }
-        
-        // Reset room if we don't have enough players for a game
+        // Always reset room when a player disconnects or reconnects
+        // This ensures a clean state for all players
         return true;
     }
 
