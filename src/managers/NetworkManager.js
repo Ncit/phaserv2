@@ -1,4 +1,5 @@
 import { EventManager } from '../utils/EventManager.js';
+import { createSocketOptionsWithNgrokHeaders } from '../utils/NgrokUtils.js';
 
 export class NetworkManager {
     constructor() {
@@ -6,7 +7,7 @@ export class NetworkManager {
         this.isConnected = false;
         this.gameId = null;
         this.playerId = null;
-        this.serverUrl = 'http://localhost:3000';
+        this.serverUrl = 'https://490e5998d9b7.ngrok-free.app';
         this.eventManager = new EventManager();
         
         // Connection state
@@ -17,6 +18,11 @@ export class NetworkManager {
         // Game state cache
         this.gameState = null;
         this.players = [];
+        
+        // Ngrok header for all requests
+        this.ngrokHeaders = {
+            'ngrok-skip-browser-warning': '69420'
+        };
         
         this.setupEventListeners();
     }
@@ -34,13 +40,15 @@ export class NetworkManager {
                 // Import socket.io-client dynamically
                 import('https://cdn.socket.io/4.7.2/socket.io.esm.min.js')
                     .then(({ io }) => {
-                        this.socket = io(this.serverUrl, {
+                        const socketOptions = createSocketOptionsWithNgrokHeaders({
                             transports: ['websocket', 'polling'],
                             timeout: 20000,
                             reconnection: true,
                             reconnectionAttempts: this.maxReconnectAttempts,
                             reconnectionDelay: this.reconnectDelay
                         });
+                        
+                        this.socket = io(this.serverUrl, socketOptions);
 
                         this.setupSocketListeners();
                         
@@ -303,5 +311,11 @@ export class NetworkManager {
     cleanup() {
         this.disconnect();
         this.eventManager.cleanup();
+    }
+
+    // Utility method to make fetch requests with ngrok headers
+    async fetchWithNgrokHeaders(url, options = {}) {
+        const { fetchWithNgrokHeaders } = await import('../utils/NgrokUtils.js');
+        return fetchWithNgrokHeaders(url, options);
     }
 } 
