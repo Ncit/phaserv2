@@ -34,7 +34,28 @@ io.on('connection', (socket) => {
             const player = playerManager.addPlayer(socket.id, playerData);
             const game = gameManager.findOrCreateGame();
             
+            // Check if game is in lobby state
+            const wasInLobby = game.status === 'lobby';
+            const hadReadyPlayers = game.readyPlayers.size > 0;
+            
             game.addPlayer(player);
+            
+            // If game was in lobby and had ready players, notify about new player joining
+            // but don't automatically reset the room - let players decide
+            if (wasInLobby && hadReadyPlayers) {
+                console.log(`👋 New player ${playerData.name} joined during lobby with ready players`);
+                
+                // Notify existing players about new player joining
+                socket.to('main-room').emit('gameStateUpdate', {
+                    gameState: game.getPublicState(),
+                    newPlayerJoined: true,
+                    newPlayerName: playerData.name,
+                    readyPlayersCount: game.readyPlayers.size,
+                    totalPlayers: game.getPlayerCount()
+                });
+                
+                console.log(`📢 Notified existing players about ${playerData.name} joining`);
+            }
             
             // Send game state to the new player
             socket.emit('gameJoined', {

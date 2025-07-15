@@ -247,6 +247,10 @@ export class FastGameScene extends Phaser.Scene {
                 this.handleGameStarted();
             } else if (data.newHand) {
                 this.handleNewHand();
+            } else if (data.newPlayerJoined) {
+                // New player joined during lobby - show notification but don't reset
+                console.log('FastGameScene: New player joined during lobby');
+                this.handleNewPlayerJoined(data.newPlayerName, data.readyPlayersCount, data.totalPlayers);
             } else if (data.roomReset) {
                 console.log('FastGameScene: Room reset!');
                 
@@ -580,6 +584,43 @@ export class FastGameScene extends Phaser.Scene {
         this.updateUI();
         
         console.log(`FastGameScene: Player left reset complete - ${playerName} left, cards hidden and room reset to lobby`);
+    }
+
+    handleNewPlayerJoinedReset(newPlayerName) {
+        console.log('FastGameScene: Handling room reset due to new player joining');
+        
+        // Clear all cards immediately when a new player joins
+        this.playerElements.forEach((elements, playerId) => {
+            this.cardManager.safeClearPlayerCards(elements.playerNumber);
+        });
+        
+        // Clear community cards
+        this.communityCardsContainer.removeAll(true);
+        
+        // Clear hand rank and card highlights
+        this.handRank.setText('');
+        this.clearCardHighlights();
+        
+        // Hide next round button
+        this.nextRoundButton.setVisible(false);
+        this.nextRoundButtonText.setVisible(false);
+        
+        // Show notification that room was reset due to new player joining
+        const playerName = newPlayerName || 'Игрок';
+        this.handRank.setText(`${playerName} присоединился к игре. Комната сброшена.`);
+        this.handRank.setFill('#FFD700'); // Gold color for notification
+        
+        // Clear notification after 5 seconds
+        this.time.delayedCall(5000, () => {
+            if (this.handRank && this.gameState && this.gameState.status === 'lobby') {
+                this.handRank.setText('');
+            }
+        });
+        
+        // Reset UI to lobby state
+        this.updateUI();
+        
+        console.log(`FastGameScene: New player joined reset complete - ${playerName} joined, cards hidden and room reset to lobby`);
     }
 
     handlePlayerDisconnected() {
@@ -1310,5 +1351,20 @@ export class FastGameScene extends Phaser.Scene {
         this.children.removeAll(true);
 
         console.log('FastGameScene: Cleanup completed');
+    }
+
+    handleNewPlayerJoined(newPlayerName, readyPlayersCount, totalPlayers) {
+        // Show notification that a new player joined during lobby
+        const playerName = newPlayerName || 'Игрок';
+        this.handRank.setText(`${playerName} присоединился к лобби. (${readyPlayersCount}/${totalPlayers} готовы)`);
+        this.handRank.setFill('#FFD700'); // Gold color for notification
+        // Clear notification after 5 seconds
+        this.time.delayedCall(5000, () => {
+            if (this.handRank && this.gameState && this.gameState.status === 'lobby') {
+                this.handRank.setText('');
+            }
+        });
+        this.updateUI();
+        console.log(`FastGameScene: Notified about new player joining: ${playerName}`);
     }
 }
