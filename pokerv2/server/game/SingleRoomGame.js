@@ -147,6 +147,11 @@ class SingleRoomGame {
 
         console.log(`🔄 Player ${player.name} disconnected`);
         
+        // Check if this is the current player's turn
+        const activePlayerOrder = this.getActivePlayerOrder();
+        const currentPlayerId = activePlayerOrder[this.currentPlayer];
+        const isCurrentPlayerDisconnecting = playerId === currentPlayerId;
+        
         // Mark player as disconnected
         player.socketId = null;
         player.disconnected = true;
@@ -159,18 +164,42 @@ class SingleRoomGame {
         // Check if all players are ready
         this.checkAllPlayersReady();
         
-        // If game is in progress, check if we need to end it
-        if (this.status === 'playing') {
-            const activePlayers = this.getActivePlayers();
-            if (activePlayers.length < this.minPlayers) {
-                console.log(`🛑 Not enough active players (${activePlayers.length}/${this.minPlayers}), ending game`);
-                this.endGame();
+        // Check if room becomes empty after this disconnect
+        const remainingPlayers = this.getPlayerCount();
+        if (remainingPlayers === 0) {
+            console.log('🏠 Room is now empty - performing complete reset');
+            this.resetWhenEmpty();
+        } else {
+            // If game is in progress, handle disconnection
+            if (this.status === 'playing') {
+                // If the current player disconnected during their turn, auto-fold them and move to next player
+                if (isCurrentPlayerDisconnecting && !player.folded && !player.allIn) {
+                    console.log(`🔄 Current player ${player.name} disconnected during their turn - auto-folding and moving to next player`);
+                    
+                    // Auto-fold the disconnecting player
+                    player.folded = true;
+                    player.hasActed = true;
+                    
+                    // Clear action timer
+                    this.clearTimers();
+                    
+                    // Move to next player
+                    this.nextPlayer();
+                }
+                
+                // Check if we need to end the game
+                const activePlayers = this.getActivePlayers();
+                if (activePlayers.length < this.minPlayers) {
+                    console.log(`🛑 Not enough active players (${activePlayers.length}/${this.minPlayers}), ending game`);
+                    this.endGame();
+                }
             }
         }
 
         return {
             playerId: player.id,
-            playerName: player.name
+            playerName: player.name,
+            wasCurrentPlayer: isCurrentPlayerDisconnecting
         };
     }
 
@@ -921,6 +950,41 @@ class SingleRoomGame {
             position: player.position,
             isCurrentPlayer: playerId === this.getActivePlayerOrder()[this.currentPlayer]
         };
+    }
+
+    resetWhenEmpty() {
+        console.log('🏠 Room is now empty - performing complete reset');
+        
+        // Clear all timers
+        this.clearTimers();
+        
+        // Reset game state to initial values
+        this.status = 'lobby';
+        this.phase = 'lobby';
+        this.pot = 0;
+        this.currentBet = 0;
+        this.dealerPosition = 0;
+        this.currentPlayer = 0;
+        this.communityCards = [];
+        this.deck = [];
+        this.showdownResults = null;
+        
+        // Reset betting configuration
+        this.currentRaisesInRound = 0;
+        this.lastRaisePlayerId = null;
+        
+        // Reset player tracking
+        this.bettingRoundStartPlayer = 0;
+        this.hasEveryoneActed = false;
+        
+        // Clear all player data
+        this.players.clear();
+        this.playerOrder = [];
+        this.socketToPlayer.clear();
+        this.readyPlayers.clear();
+        this.allPlayersReady = false;
+        
+        console.log('✅ Room completely reset - ready for new players');
     }
 
     cleanup() {

@@ -311,8 +311,8 @@ export class FastGameScene extends Phaser.Scene {
             this.handRank.setText(`${playerName} отключился. Ожидание переподключения...`);
             this.handRank.setFill('#FFA500'); // Orange color for disconnection
             
-            // Clear notification after 5 seconds
-            this.time.delayedCall(5000, () => {
+            // Clear notification after 1 second
+            this.time.delayedCall(1000, () => {
                 if (this.handRank && this.gameState && this.gameState.status === 'playing') {
                     this.handRank.setText('');
                 }

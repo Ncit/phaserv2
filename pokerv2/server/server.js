@@ -142,18 +142,39 @@ io.on('connection', (socket) => {
         const result = game.handlePlayerDisconnect(socket.id);
         
         if (result) {
-            // Notify other players about the disconnection
-            socket.to('main-room').emit('playerDisconnected', {
-                playerId: result.playerId,
-                playerName: result.playerName
-            });
+            // Check if room is now empty
+            const playerCount = game.getPlayerCount();
             
-            // Broadcast updated game state
-            io.to('main-room').emit('gameStateUpdate', {
-                gameState: game.getPublicState()
-            });
-            
-            console.log(`👤 Player ${result.playerName} disconnected (${game.getPlayerCount()}/6 players remaining)`);
+            if (playerCount === 0) {
+                // Room is empty - notify any remaining clients
+                io.to('main-room').emit('roomEmpty', {
+                    message: 'All players have left. Room has been reset.'
+                });
+                
+                console.log('🏠 Room is now empty - all values reset');
+            } else {
+                // Notify other players about the disconnection
+                socket.to('main-room').emit('playerDisconnected', {
+                    playerId: result.playerId,
+                    playerName: result.playerName,
+                    wasCurrentPlayer: result.wasCurrentPlayer
+                });
+                
+                // If the current player disconnected, broadcast a special event
+                if (result.wasCurrentPlayer) {
+                    io.to('main-room').emit('currentPlayerDisconnected', {
+                        playerId: result.playerId,
+                        playerName: result.playerName
+                    });
+                }
+                
+                // Broadcast updated game state
+                io.to('main-room').emit('gameStateUpdate', {
+                    gameState: game.getPublicState()
+                });
+                
+                console.log(`👤 Player ${result.playerName} disconnected (${playerCount}/6 players remaining)`);
+            }
         }
     });
 });
