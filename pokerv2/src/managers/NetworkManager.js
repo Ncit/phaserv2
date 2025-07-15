@@ -22,22 +22,8 @@ export class NetworkManager {
     }
 
     setupEventListeners() {
-        // Listen for custom events
-        this.eventManager.on('gameStateUpdate', (data) => {
-            this.handleGameStateUpdate(data);
-        });
-        
-        this.eventManager.on('playerJoined', (data) => {
-            this.handlePlayerJoined(data);
-        });
-        
-        this.eventManager.on('playerLeft', (data) => {
-            this.handlePlayerLeft(data);
-        });
-        
-        this.eventManager.on('error', (data) => {
-            this.handleError(data);
-        });
+        // Remove the circular reference - these listeners are not needed
+        // as the socket events are handled directly in setupSocketListeners
     }
 
     connect() {
@@ -107,22 +93,42 @@ export class NetworkManager {
             console.log('NetworkManager: Game state update:', data);
             this.gameState = data.gameState;
             this.players = data.gameState.players;
-            this.eventManager.emit('gameStateUpdate', data);
+            
+            // Emit directly to scene without going through handleGameStateUpdate
+            this.eventManager.emit('gameStateChanged', {
+                gameState: this.gameState,
+                lastAction: data.lastAction,
+                newHand: data.newHand,
+                gameStarted: data.gameStarted
+            });
         });
 
         this.socket.on('playerJoined', (data) => {
             console.log('NetworkManager: Player joined:', data);
+            // Update players list
+            const newPlayer = data.player;
+            const existingPlayerIndex = this.players.findIndex(p => p.id === newPlayer.id);
+            
+            if (existingPlayerIndex >= 0) {
+                this.players[existingPlayerIndex] = newPlayer;
+            } else {
+                this.players.push(newPlayer);
+            }
+            
             this.eventManager.emit('playerJoined', data);
         });
 
         this.socket.on('playerLeft', (data) => {
             console.log('NetworkManager: Player left:', data);
+            // Remove player from list
+            this.players = this.players.filter(p => p.id !== data.playerId);
+            
             this.eventManager.emit('playerLeft', data);
         });
 
         this.socket.on('error', (data) => {
             console.error('NetworkManager: Server error:', data);
-            this.eventManager.emit('error', data);
+            this.eventManager.emit('networkError', data);
         });
     }
 
@@ -157,6 +163,24 @@ export class NetworkManager {
         this.socket.emit('pokerAction', actionData);
     }
 
+    setReady(ready) {
+        if (!this.isConnected || !this.socket) {
+            throw new Error('Not connected to server');
+        }
+
+        console.log('NetworkManager: Setting ready status:', ready);
+        this.socket.emit('setReady', ready);
+    }
+
+    startGame() {
+        if (!this.isConnected || !this.socket) {
+            throw new Error('Not connected to server');
+        }
+
+        console.log('NetworkManager: Requesting to start game');
+        this.socket.emit('startGame');
+    }
+
     requestNewHand() {
         if (!this.isConnected || !this.socket) {
             throw new Error('Not connected to server');
@@ -166,45 +190,8 @@ export class NetworkManager {
         this.socket.emit('startNewHand');
     }
 
-    // Event handlers
-    handleGameStateUpdate(data) {
-        // Update local state
-        this.gameState = data.gameState;
-        this.players = data.gameState.players;
-        
-        // Emit to scene
-        this.eventManager.emit('gameStateChanged', {
-            gameState: this.gameState,
-            lastAction: data.lastAction,
-            newHand: data.newHand
-        });
-    }
-
-    handlePlayerJoined(data) {
-        // Update players list
-        const newPlayer = data.player;
-        const existingPlayerIndex = this.players.findIndex(p => p.id === newPlayer.id);
-        
-        if (existingPlayerIndex >= 0) {
-            this.players[existingPlayerIndex] = newPlayer;
-        } else {
-            this.players.push(newPlayer);
-        }
-        
-        this.eventManager.emit('playerJoined', data);
-    }
-
-    handlePlayerLeft(data) {
-        // Remove player from list
-        this.players = this.players.filter(p => p.id !== data.playerId);
-        
-        this.eventManager.emit('playerLeft', data);
-    }
-
-    handleError(data) {
-        console.error('NetworkManager: Error received:', data);
-        this.eventManager.emit('networkError', data);
-    }
+    // Event handlers - Remove these as they create circular references
+    // handleGameStateUpdate, handlePlayerJoined, handlePlayerLeft, handleError are no longer needed
 
     // Utility methods
     isMyTurn() {

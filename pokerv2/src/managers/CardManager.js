@@ -234,7 +234,7 @@ export class CardManager {
         const containerData = this.cardContainers.get(containerKey);
         
         if (!containerData) {
-            console.error(`CardManager: No container found for player ${playerNumber}`);
+            // Don't log error for missing containers during initialization
             return false;
         }
 
@@ -249,6 +249,34 @@ export class CardManager {
 
         if (this.isDebug) {
             console.log(`CardManager: Cleared all cards for player ${playerNumber}`);
+        }
+
+        // Emit cards cleared event
+        eventManager.emit('cards_cleared', playerNumber);
+
+        return true;
+    }
+
+    // Safely clear player cards without error logging
+    safeClearPlayerCards(playerNumber) {
+        const containerKey = `player${playerNumber}_cards`;
+        const containerData = this.cardContainers.get(containerKey);
+        
+        if (!containerData) {
+            return false;
+        }
+
+        // Destroy all card sprites
+        containerData.cards.forEach(cardData => {
+            containerData.container.remove(cardData.sprite);
+            cardData.sprite.destroy();
+        });
+
+        // Clear cards array
+        containerData.cards = [];
+
+        if (this.isDebug) {
+            console.log(`CardManager: Safely cleared all cards for player ${playerNumber}`);
         }
 
         // Emit cards cleared event

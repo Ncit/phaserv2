@@ -37,12 +37,20 @@ export class FastGameScene extends Phaser.Scene {
         this.allInButton = null;
         this.nextRoundButton = null;
         
+        // Lobby buttons
+        this.readyButton = null;
+        this.startGameButton = null;
+        
         // Button texts
         this.foldButtonText = null;
         this.callButtonText = null;
         this.raiseButtonText = null;
         this.allInButtonText = null;
         this.nextRoundButtonText = null;
+        
+        // Lobby button texts
+        this.readyButtonText = null;
+        this.startGameButtonText = null;
         
         // Connection status
         this.connectionStatus = null;
@@ -109,6 +117,13 @@ export class FastGameScene extends Phaser.Scene {
         this.nextRoundButton = this.buttonManager.createButton('call', 1100, 640);
         this.nextRoundButton.setVisible(false);
 
+        // Create lobby buttons
+        this.readyButton = this.buttonManager.createButton('call', 400, 640);
+        this.readyButton.setVisible(false);
+        
+        this.startGameButton = this.buttonManager.createButton('call', 600, 640);
+        this.startGameButton.setVisible(false);
+
         this.underline = this.add.image(640, 700, 'underline');
         this.underline.setDisplaySize(400, 10);
 
@@ -116,6 +131,7 @@ export class FastGameScene extends Phaser.Scene {
         this.createButtonLabels();
         this.createPokerActionLabels();
         this.createNextRoundButtonLabel();
+        this.createLobbyButtonLabels();
 
         // Create chip bank display
         this.chipBank = this.add.image(600, 280, 'chip_button');
@@ -220,14 +236,22 @@ export class FastGameScene extends Phaser.Scene {
             this.updateUI();
         });
 
-        // Game state update event
+                // Game state update event
         this.networkManager.on('gameStateChanged', (data) => {
             console.log('FastGameScene: Game state changed:', data);
             this.gameState = data.gameState;
             this.players = data.gameState.players;
             
-            if (data.newHand) {
+            if (data.gameStarted) {
+                console.log('FastGameScene: Game started!');
+                this.handleGameStarted();
+            } else if (data.newHand) {
                 this.handleNewHand();
+            }
+            
+            // Handle showdown results
+            if (this.gameState.phase === 'showdown' && this.gameState.showdownResults) {
+                this.handleShowdownResults(this.gameState.showdownResults);
             }
             
             this.updateUI();
@@ -268,13 +292,18 @@ export class FastGameScene extends Phaser.Scene {
     }
 
     initializePlayers() {
+        // Store existing player numbers before clearing
+        const existingPlayerNumbers = Array.from(this.playerElements.values())
+            .map(elements => elements.playerNumber)
+            .filter(number => number !== undefined);
+        
         // Clear existing players
         this.playerElements.clear();
         
-        // Clear all existing card containers
-        for (let i = 1; i <= 6; i++) {
-            this.cardManager.clearPlayerCards(i);
-        }
+        // Clear existing card containers (only if they exist)
+        existingPlayerNumbers.forEach(playerNumber => {
+            this.cardManager.safeClearPlayerCards(playerNumber);
+        });
         
         // Create player positions
         const positions = [
@@ -387,17 +416,26 @@ export class FastGameScene extends Phaser.Scene {
         this.players = this.players.filter(p => p.id !== playerId);
     }
 
+    handleGameStarted() {
+        console.log('FastGameScene: Handling game started');
+        // Clear any lobby-specific UI
+        this.handRank.setText('');
+        
+        // The game will automatically deal cards and start the first hand
+    }
+
     handleNewHand() {
         // Clear community cards
         this.communityCardsContainer.removeAll(true);
         
         // Clear all player cards
         this.playerElements.forEach((elements, playerId) => {
-            this.cardManager.clearPlayerCards(elements.playerNumber);
+            this.cardManager.safeClearPlayerCards(elements.playerNumber);
         });
         
-        // Clear hand rank
+        // Clear hand rank and card highlights
         this.handRank.setText('');
+        this.clearCardHighlights();
         
         // Hide next round button
         this.nextRoundButton.setVisible(false);
@@ -405,6 +443,88 @@ export class FastGameScene extends Phaser.Scene {
         
         // Deal hole cards to players
         this.dealHoleCards();
+    }
+
+    clearCardHighlights() {
+        // Clear all card highlights
+        this.playerElements.forEach((elements, playerId) => {
+            if (elements.playerNumber) {
+                for (let cardIndex = 0; cardIndex < 2; cardIndex++) {
+                    const cardData = this.cardManager.getCard(elements.playerNumber, cardIndex);
+                    if (cardData && cardData.sprite) {
+                        cardData.sprite.clearTint();
+                    }
+                }
+            }
+        });
+    }
+
+    handleShowdownResults(showdownResults) {
+        console.log('FastGameScene: Handling showdown results:', showdownResults);
+        
+        // Display winner information
+        const winnerNames = showdownResults.winnerNames.join(', ');
+        const handDescription = showdownResults.handDescription;
+        
+        this.handRank.setText(`Winner: ${winnerNames} (${handDescription})`);
+        
+        // Show hand rankings in console
+        this.showHandRankings(showdownResults.playerHands);
+        
+        // Highlight winning players' cards
+        this.highlightWinningCards(showdownResults.winners);
+        
+        // Show Next Round button
+        this.nextRoundButton.setVisible(true);
+        this.nextRoundButtonText.setVisible(true);
+        
+        console.log('FastGameScene: Showdown results displayed');
+    }
+
+    showHandRankings(playerHands) {
+        // Sort hands by strength (strongest first)
+        playerHands.sort((a, b) => b.handScore - a.handScore);
+        
+        // Create hand ranking display
+        let rankingText = 'Hand Rankings:\n';
+        playerHands.forEach((handData, index) => {
+            const rank = index + 1;
+            const rankSymbol = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `${rank}.`;
+            
+            rankingText += `${rankSymbol} ${handData.playerName}: ${handData.handRank}\n`;
+        });
+        
+        // Display the rankings in console
+        console.log('FastGameScene: Hand Rankings:', rankingText);
+    }
+
+    highlightWinningCards(winnerIds) {
+        // Reset all card highlights first
+        this.playerElements.forEach((elements, playerId) => {
+            if (elements.playerNumber) {
+                // Clear any existing tints on cards
+                for (let cardIndex = 0; cardIndex < 2; cardIndex++) {
+                    const cardData = this.cardManager.getCard(elements.playerNumber, cardIndex);
+                    if (cardData && cardData.sprite) {
+                        cardData.sprite.clearTint();
+                    }
+                }
+            }
+        });
+        
+        // Highlight winning players' cards
+        winnerIds.forEach(winnerId => {
+            const elements = this.playerElements.get(winnerId);
+            if (elements && elements.playerNumber) {
+                for (let cardIndex = 0; cardIndex < 2; cardIndex++) {
+                    const cardData = this.cardManager.getCard(elements.playerNumber, cardIndex);
+                    if (cardData && cardData.sprite) {
+                        // Add golden tint to winning cards
+                        cardData.sprite.setTint(0xFFD700);
+                    }
+                }
+            }
+        });
     }
 
     dealHoleCards() {
@@ -468,8 +588,14 @@ export class FastGameScene extends Phaser.Scene {
         // Update pot display
         this.chipBankText.setText(`БАНК: ${this.gameState.pot}`);
         
-        // Update phase text
-        this.phaseText.setText(this.gameState.phase.charAt(0).toUpperCase() + this.gameState.phase.slice(1));
+        // Update phase text based on game status
+        if (this.gameState.status === 'lobby') {
+            this.phaseText.setText(`Лобби (${this.gameState.readyCount}/${this.gameState.totalPlayers} готовы)`);
+            this.updateLobbyUI();
+        } else {
+            this.phaseText.setText(this.gameState.phase.charAt(0).toUpperCase() + this.gameState.phase.slice(1));
+            this.updateGameUI();
+        }
         
         // Update community cards
         this.updateCommunityCards();
@@ -478,9 +604,77 @@ export class FastGameScene extends Phaser.Scene {
         this.players.forEach(player => {
             this.updatePlayerDisplay(player.id);
         });
+    }
+
+    updateLobbyUI() {
+        // Hide poker action buttons
+        this.foldButton.setVisible(false);
+        this.callButton.setVisible(false);
+        this.raiseButton.setVisible(false);
+        this.allInButton.setVisible(false);
+        this.foldButtonText.setVisible(false);
+        this.callButtonText.setVisible(false);
+        this.raiseButtonText.setVisible(false);
+        this.allInButtonText.setVisible(false);
         
-        // Update action buttons
-        this.updateActionButtons();
+        // Show lobby buttons
+        this.readyButton.setVisible(true);
+        this.readyButtonText.setVisible(true);
+        
+        // Show start game button if all players are ready
+        if (this.gameState.allPlayersReady) {
+            this.startGameButton.setVisible(true);
+            this.startGameButtonText.setVisible(true);
+        } else {
+            this.startGameButton.setVisible(false);
+            this.startGameButtonText.setVisible(false);
+        }
+        
+        // Hide next round button
+        this.nextRoundButton.setVisible(false);
+        this.nextRoundButtonText.setVisible(false);
+    }
+
+    updateGameUI() {
+        // Hide lobby buttons
+        this.readyButton.setVisible(false);
+        this.readyButtonText.setVisible(false);
+        this.startGameButton.setVisible(false);
+        this.startGameButtonText.setVisible(false);
+        
+        // Check if game is in showdown phase
+        if (this.gameState.phase === 'showdown') {
+            // Hide poker action buttons in showdown
+            this.foldButton.setVisible(false);
+            this.callButton.setVisible(false);
+            this.raiseButton.setVisible(false);
+            this.allInButton.setVisible(false);
+            this.foldButtonText.setVisible(false);
+            this.callButtonText.setVisible(false);
+            this.raiseButtonText.setVisible(false);
+            this.allInButtonText.setVisible(false);
+            
+            // Show next round button
+            this.nextRoundButton.setVisible(true);
+            this.nextRoundButtonText.setVisible(true);
+        } else {
+            // Show poker action buttons for active game
+            this.foldButton.setVisible(true);
+            this.callButton.setVisible(true);
+            this.raiseButton.setVisible(true);
+            this.allInButton.setVisible(true);
+            this.foldButtonText.setVisible(true);
+            this.callButtonText.setVisible(true);
+            this.raiseButtonText.setVisible(true);
+            this.allInButtonText.setVisible(true);
+            
+            // Hide next round button
+            this.nextRoundButton.setVisible(false);
+            this.nextRoundButtonText.setVisible(false);
+            
+            // Update action buttons
+            this.updateActionButtons();
+        }
     }
 
     updateCommunityCards() {
@@ -514,14 +708,25 @@ export class FastGameScene extends Phaser.Scene {
         
         // Update player name with current bet if applicable
         let displayName = player.name;
-        if (player.currentBet > 0) {
-            displayName += ` ($${player.currentBet})`;
-        }
-        if (player.folded) {
-            displayName += ' [FOLDED]';
-        }
-        if (player.allIn) {
-            displayName += ' [ALL IN]';
+        
+        // Show ready status in lobby
+        if (this.gameState.status === 'lobby') {
+            if (player.ready) {
+                displayName += ' ✅';
+            } else {
+                displayName += ' ❌';
+            }
+        } else {
+            // Show game status
+            if (player.currentBet > 0) {
+                displayName += ` ($${player.currentBet})`;
+            }
+            if (player.folded) {
+                displayName += ' [FOLDED]';
+            }
+            if (player.allIn) {
+                displayName += ' [ALL IN]';
+            }
         }
         
         elements.playerName.setText(displayName);
@@ -541,7 +746,7 @@ export class FastGameScene extends Phaser.Scene {
 
     updatePlayerCards(player, elements) {
         // Clear existing cards
-        this.cardManager.clearPlayerCards(elements.playerNumber);
+        this.cardManager.safeClearPlayerCards(elements.playerNumber);
         
         // Add new cards
         player.hand.forEach((card, cardIndex) => {
@@ -558,6 +763,12 @@ export class FastGameScene extends Phaser.Scene {
     updateActionButtons() {
         const isMyTurn = this.networkManager.isMyTurn();
         const myPlayer = this.networkManager.getMyPlayer();
+        
+        // Disable actions if game is in showdown phase
+        if (this.gameState.phase === 'showdown') {
+            this.disablePlayerActions();
+            return;
+        }
         
         if (isMyTurn && myPlayer && !myPlayer.folded && !myPlayer.allIn) {
             this.enablePlayerActions();
@@ -628,6 +839,30 @@ export class FastGameScene extends Phaser.Scene {
         this.nextRoundButtonText.setVisible(false);
     }
 
+    createLobbyButtonLabels() {
+        this.readyButtonText = this.add
+            .text(400, 628, 'ГОТОВ', {
+                fontFamily: 'Arial',
+                fontSize: '16px',
+                fill: '#ffffff',
+                stroke: '#000000',
+                strokeThickness: 1,
+            })
+            .setOrigin(0.5);
+        this.readyButtonText.setVisible(false);
+
+        this.startGameButtonText = this.add
+            .text(600, 628, 'НАЧАТЬ ИГРУ', {
+                fontFamily: 'Arial',
+                fontSize: '16px',
+                fill: '#ffffff',
+                stroke: '#000000',
+                strokeThickness: 1,
+            })
+            .setOrigin(0.5);
+        this.startGameButtonText.setVisible(false);
+    }
+
     setupButtonHandlers() {
         // Setup button click handlers
         this.foldButton.on('pointerdown', () => this.handleFold());
@@ -638,6 +873,10 @@ export class FastGameScene extends Phaser.Scene {
         this.settingsGame.on('pointerdown', () => this.handleSettings());
         this.chatButton.on('pointerdown', () => this.handleChat());
         this.nextRoundButton.on('pointerdown', () => this.handleNextRound());
+        
+        // Lobby button handlers
+        this.readyButton.on('pointerdown', () => this.handleReady());
+        this.startGameButton.on('pointerdown', () => this.handleStartGame());
     }
 
     enablePlayerActions() {
@@ -658,6 +897,7 @@ export class FastGameScene extends Phaser.Scene {
 
     handleFold() {
         if (!this.networkManager.isMyTurn()) return;
+        if (this.gameState.phase === 'showdown') return;
         
         try {
             this.networkManager.sendPokerAction('fold');
@@ -669,6 +909,7 @@ export class FastGameScene extends Phaser.Scene {
 
     handleCall() {
         if (!this.networkManager.isMyTurn()) return;
+        if (this.gameState.phase === 'showdown') return;
         
         try {
             const myPlayer = this.networkManager.getMyPlayer();
@@ -689,19 +930,55 @@ export class FastGameScene extends Phaser.Scene {
 
     handleRaise() {
         if (!this.networkManager.isMyTurn()) return;
+        if (this.gameState.phase === 'showdown') return;
         
         try {
             const myPlayer = this.networkManager.getMyPlayer();
-            let raiseAmount;
+            let totalBetAmount;
+            
+            // Default big blind if not defined
+            const bigBlind = this.gameState.bigBlind || 20;
             
             if (this.gameState.currentBet === 0) {
-                raiseAmount = this.gameState.bigBlind;
+                // No current bet, so minimum raise is big blind
+                totalBetAmount = bigBlind;
             } else {
-                raiseAmount = this.gameState.currentBet * 2;
+                // Current bet exists, so raise must be at least current bet + 10
+                totalBetAmount = this.gameState.currentBet + 10;
             }
             
-            raiseAmount = Math.min(raiseAmount, myPlayer.bank);
-            this.networkManager.sendPokerAction('raise', raiseAmount);
+            // Ensure totalBetAmount is a valid number
+            if (isNaN(totalBetAmount) || totalBetAmount <= 0) {
+                console.error('FastGameScene: Invalid raise amount calculated:', totalBetAmount);
+                return;
+            }
+            
+            // Check if player has enough money for the minimum raise
+            const additionalAmountNeeded = totalBetAmount - myPlayer.currentBet;
+            if (myPlayer.bank < additionalAmountNeeded) {
+                // Player doesn't have enough for minimum raise, make it all-in
+                console.log('FastGameScene: Insufficient funds for minimum raise, making all-in');
+                this.networkManager.sendPokerAction('allIn', myPlayer.bank);
+            } else {
+                // Player has enough money, proceed with normal raise
+                // Ensure we don't exceed player's bank
+                totalBetAmount = Math.min(totalBetAmount, myPlayer.bank);
+                
+                // Calculate the additional amount needed
+                const additionalAmount = totalBetAmount - myPlayer.currentBet;
+                
+                console.log('FastGameScene: Raise calculation:', {
+                    currentBet: this.gameState.currentBet,
+                    myCurrentBet: myPlayer.currentBet,
+                    totalBetAmount,
+                    additionalAmount,
+                    myBank: myPlayer.bank,
+                    bigBlind
+                });
+                
+                this.networkManager.sendPokerAction('raise', totalBetAmount);
+            }
+            
             this.disablePlayerActions();
         } catch (error) {
             console.error('FastGameScene: Error sending raise action:', error);
@@ -710,6 +987,7 @@ export class FastGameScene extends Phaser.Scene {
 
     handleAllIn() {
         if (!this.networkManager.isMyTurn()) return;
+        if (this.gameState.phase === 'showdown') return;
         
         try {
             const myPlayer = this.networkManager.getMyPlayer();
@@ -732,6 +1010,30 @@ export class FastGameScene extends Phaser.Scene {
 
     handleChat() {
         // Handle chat
+    }
+
+    handleReady() {
+        try {
+            const myPlayer = this.networkManager.getMyPlayer();
+            if (myPlayer) {
+                const isReady = !myPlayer.ready;
+                this.networkManager.setReady(isReady);
+                
+                // Update button text
+                this.readyButtonText.setText(isReady ? 'НЕ ГОТОВ' : 'ГОТОВ');
+                this.readyButtonText.setFill(isReady ? '#FF0000' : '#00FF00');
+            }
+        } catch (error) {
+            console.error('FastGameScene: Error setting ready status:', error);
+        }
+    }
+
+    handleStartGame() {
+        try {
+            this.networkManager.startGame();
+        } catch (error) {
+            console.error('FastGameScene: Error starting game:', error);
+        }
     }
 
     handleNextRound() {

@@ -75,6 +75,11 @@ export class EventManager {
         }
     }
 
+    // Cleanup method for NetworkManager compatibility
+    cleanup() {
+        this.clear();
+    }
+
     // Get the number of listeners for an event
     getListenerCount(eventName) {
         return this.listeners.has(eventName) ? this.listeners.get(eventName).length : 0;

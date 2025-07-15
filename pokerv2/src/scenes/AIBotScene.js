@@ -1085,10 +1085,19 @@ export class AIBotScene extends Phaser.Scene {
                 raiseAmount = this.gameState.currentBet * 2;
             }
             
-            // Ensure raise doesn't exceed player's bank
-            raiseAmount = Math.min(raiseAmount, currentPlayer.bank);
+            // Check if player has enough money for the minimum raise
+            const additionalAmountNeeded = raiseAmount - currentPlayer.currentBet;
+            if (currentPlayer.bank < additionalAmountNeeded) {
+                // Player doesn't have enough for minimum raise, make it all-in
+                console.log('AIBotScene: Insufficient funds for minimum raise, making all-in');
+                this.raisePlayer(currentPlayer.id, currentPlayer.bank);
+            } else {
+                // Player has enough money, proceed with normal raise
+                // Ensure raise doesn't exceed player's bank
+                raiseAmount = Math.min(raiseAmount, currentPlayer.bank);
+                this.raisePlayer(currentPlayer.id, raiseAmount);
+            }
             
-            this.raisePlayer(currentPlayer.id, raiseAmount);
             this.disablePlayerActions();
         }
     }

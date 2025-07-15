@@ -3,81 +3,92 @@ const PokerGame = require('./PokerGame');
 
 class GameManager {
     constructor() {
-        this.games = new Map();
-        this.maxGames = 10;
+        this.singleGame = null;
+        this.maxPlayers = 6; // Maximum players in the single room
     }
 
     findOrCreateGame() {
-        // Find an available game
-        for (const [gameId, game] of this.games) {
-            if (game.getPlayerCount() < game.maxPlayers && game.status === 'waiting') {
-                return game;
-            }
+        // If no game exists, create the single game
+        if (!this.singleGame) {
+            const gameId = 'main-room';
+            this.singleGame = new PokerGame(gameId);
+            console.log(`Created main game room: ${gameId}`);
         }
 
-        // Create a new game if we haven't reached the limit
-        if (this.games.size < this.maxGames) {
-            const gameId = uuidv4();
-            const game = new PokerGame(gameId);
-            this.games.set(gameId, game);
-            console.log(`Created new game: ${gameId}`);
-            return game;
+        // Check if the game is full
+        if (this.singleGame.getPlayerCount() >= this.maxPlayers) {
+            throw new Error('Game room is full. Please wait for a spot to open.');
         }
 
-        throw new Error('No available games. Please try again later.');
+        return this.singleGame;
     }
 
     getGame(gameId) {
-        return this.games.get(gameId);
+        // Always return the single game regardless of gameId
+        return this.singleGame;
     }
 
-    getGameByPlayerId(playerId) {
-        for (const game of this.games.values()) {
-            if (game.hasPlayer(playerId)) {
-                return game;
+    getGameByPlayerId(socketId) {
+        if (this.singleGame) {
+            // First try to find by socket ID
+            if (this.singleGame.hasPlayerBySocketId(socketId)) {
+                return this.singleGame;
+            }
+            
+            // If not found, check if this socket ID corresponds to a player in the game
+            const playerId = this.singleGame.getPlayerIdBySocketId(socketId);
+            if (playerId && this.singleGame.hasPlayer(playerId)) {
+                return this.singleGame;
             }
         }
         return null;
     }
 
     getAllGames() {
-        return Array.from(this.games.values());
+        // Return array with single game if it exists
+        return this.singleGame ? [this.singleGame] : [];
     }
 
     removeGame(gameId) {
-        const game = this.games.get(gameId);
-        if (game) {
-            game.cleanup();
-            this.games.delete(gameId);
-            console.log(`Removed game: ${gameId}`);
+        // Only remove if it's the single game and it's empty
+        if (this.singleGame && this.singleGame.id === gameId) {
+            if (this.singleGame.getPlayerCount() === 0) {
+                this.singleGame.cleanup();
+                this.singleGame = null;
+                console.log('Main game room removed (no players)');
+            }
         }
     }
 
     getGameStats() {
         const stats = {
-            totalGames: this.games.size,
-            activeGames: 0,
-            totalPlayers: 0,
+            totalGames: this.singleGame ? 1 : 0,
+            activeGames: this.singleGame && this.singleGame.getPlayerCount() > 0 ? 1 : 0,
+            totalPlayers: this.singleGame ? this.singleGame.getPlayerCount() : 0,
             games: []
         };
 
-        for (const game of this.games.values()) {
-            const playerCount = game.getPlayerCount();
-            if (playerCount > 0) {
-                stats.activeGames++;
-                stats.totalPlayers += playerCount;
-            }
-
+        if (this.singleGame) {
             stats.games.push({
-                id: game.id,
-                playerCount,
-                maxPlayers: game.maxPlayers,
-                status: game.status,
-                phase: game.phase
+                id: this.singleGame.id,
+                playerCount: this.singleGame.getPlayerCount(),
+                maxPlayers: this.maxPlayers,
+                status: this.singleGame.status,
+                phase: this.singleGame.phase
             });
         }
 
         return stats;
+    }
+
+    // Get the single game directly
+    getMainGame() {
+        return this.singleGame;
+    }
+
+    // Check if main game exists
+    hasMainGame() {
+        return this.singleGame !== null;
     }
 }
 

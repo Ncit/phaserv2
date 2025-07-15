@@ -6,11 +6,11 @@ A Node.js multiplayer poker server for the Phaser poker game.
 
 - Real-time multiplayer Texas Hold'em poker
 - WebSocket communication using Socket.IO
-- Automatic game management and player matching
+- Single room system - all players join the main room
 - Hand evaluation and winner determination
 - Action timers and auto-fold functionality
-- Support for up to 6 players per game
-- Multiple concurrent games
+- Support for up to 6 players in the main room
+- Automatic room management
 
 ## Setup
 
@@ -57,7 +57,7 @@ The server will start on port 3000 by default. You can change this by setting th
 ## Game Flow
 
 1. **Connection**: Player connects to server via WebSocket
-2. **Join Game**: Player joins an available game or creates a new one
+2. **Join Main Room**: Player automatically joins the main poker room
 3. **Game Start**: Game starts when minimum players (2) join
 4. **Betting Rounds**: Players take turns making poker actions
 5. **Showdown**: Remaining players reveal cards and determine winner
@@ -90,7 +90,7 @@ server/
 ├── server.js              # Main server file
 ├── package.json           # Dependencies and scripts
 ├── game/
-│   ├── GameManager.js     # Manages multiple games
+│   ├── GameManager.js     # Manages the single main room
 │   ├── PlayerManager.js   # Manages player connections
 │   ├── PokerGame.js       # Individual game logic
 │   └── HandEvaluator.js   # Poker hand evaluation
