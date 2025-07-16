@@ -76,7 +76,7 @@ export const AssetConfig = {
         
         // Generate card keys dynamically: e.g., '2_of_clubs', 'ace_of_spades'
         getCardKey: (value, suit) => `${value}_of_${suit}`,
-        getCardPath: (value, suit) => `assets/cards_cvg/${value}_of_${suit}.svg`,
+        getCardPath: (value, suit) => `assets/cards/${value}_of_${suit}.png`,
     },
 
     // Media and branding assets
