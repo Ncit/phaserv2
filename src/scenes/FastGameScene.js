@@ -3,6 +3,7 @@ import { UIManager } from '../managers/UIManager.js';
 import { PlayerManager } from '../managers/PlayerManager.js';
 import { CardManager } from '../managers/CardManager.js';
 import { NetworkManager } from '../managers/NetworkManager.js';
+import { ChatManager } from '../managers/ChatManager.js';
 import { GameConfig } from '../config/GameConfig.js';
 import { ButtonConfig } from '../config/ButtonConfig.js';
 import { PlayerConfig } from '../config/PlayerConfig.js';
@@ -67,6 +68,7 @@ export class FastGameScene extends Phaser.Scene {
         this.playerManager = new PlayerManager(this);
         this.cardManager = new CardManager(this);
         this.uiManager = new UIManager(this);
+        this.chatManager = new ChatManager(this, this.networkManager);
         
         // Wait for assets to load
         this.time.delayedCall(100, () => {
@@ -86,6 +88,12 @@ export class FastGameScene extends Phaser.Scene {
         // Connect to server
         await this.connectToServer();
         
+        // Initialize chat UI after connection
+        this.chatManager.createChatUI();
+        
+        // Update chat visibility based on initial player count
+        this.chatManager.updateChatVisibility();
+        
         // Add scene shutdown event listener
         this.events.on('shutdown', () => {
             console.log('FastGameScene: Scene shutdown event triggered');
@@ -102,7 +110,10 @@ export class FastGameScene extends Phaser.Scene {
         // Create game interface buttons
         this.menuGame = this.buttonManager.createButton('menuGame', 85, 60);
         this.settingsGame = this.buttonManager.createButton('settingsGame', 150, 60);
-        this.chatButton = this.buttonManager.createButton('chat', 150, 640);
+        this.chatButton = this.buttonManager.createButton('chat', 1100, 640);
+        
+        // Initially hide chat button (will be shown in multiplayer)
+        this.chatButton.setVisible(false);
 
         // Create poker action buttons
         this.foldButton = this.buttonManager.createButton('fold', 310, 640);
@@ -1430,7 +1441,9 @@ export class FastGameScene extends Phaser.Scene {
     }
 
     handleChat() {
-        // Handle chat
+        if (this.chatManager) {
+            this.chatManager.toggleChat();
+        }
     }
 
     handleStartGame() {
@@ -1469,6 +1482,9 @@ export class FastGameScene extends Phaser.Scene {
         }
         if (this.uiManager) {
             this.uiManager.cleanup();
+        }
+        if (this.chatManager) {
+            this.chatManager.cleanup();
         }
 
         // Clean up UI elements

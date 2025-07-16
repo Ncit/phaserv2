@@ -184,6 +184,12 @@ export class NetworkManager {
             console.error('NetworkManager: Server error:', data);
             this.eventManager.emit('networkError', data);
         });
+
+        // Chat message events
+        this.socket.on('chatMessage', (data) => {
+            console.log('NetworkManager: Chat message received:', data);
+            this.eventManager.emit('chatMessage', data);
+        });
     }
 
     disconnect() {
@@ -241,6 +247,18 @@ export class NetworkManager {
 
         console.log('NetworkManager: Requesting room reset');
         this.socket.emit('resetRoom');
+    }
+
+    sendChatMessage(message) {
+        if (!this.isConnected || !this.socket) {
+            throw new Error('Not connected to server');
+        }
+
+        console.log('NetworkManager: Sending chat message:', message);
+        this.socket.emit('chatMessage', {
+            message: message,
+            timestamp: Date.now()
+        });
     }
 
     // Event handlers - Remove these as they create circular references
