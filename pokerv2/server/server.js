@@ -153,6 +153,20 @@ io.on('connection', (socket) => {
                 });
                 
                 console.log('🏠 Room is now empty - all values reset');
+            } else if (playerCount === 1) {
+                // Only one player remaining - room has been reset to lobby
+                io.to('main-room').emit('roomResetToOnePlayer', {
+                    message: 'Only one player remaining. Room has been reset to lobby state.',
+                    remainingPlayer: game.getPlayersList()[0]
+                });
+                
+                // Broadcast updated game state
+                io.to('main-room').emit('gameStateUpdate', {
+                    gameState: game.getPublicState(),
+                    roomResetToOnePlayer: true
+                });
+                
+                console.log(`👤 Only one player remaining - room reset to lobby`);
             } else {
                 // Notify other players about the disconnection
                 socket.to('main-room').emit('playerDisconnected', {

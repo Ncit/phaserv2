@@ -187,6 +187,10 @@ class SingleRoomGame {
         if (remainingPlayers === 0) {
             console.log('🏠 Room is now empty - performing complete reset');
             this.resetWhenEmpty();
+        } else if (remainingPlayers === 1) {
+            // Only one player left - reset room to lobby state
+            console.log('👤 Only one player remaining - resetting room to lobby state');
+            this.resetRoom();
         } else {
             // If game is in progress, handle disconnection
             if (this.status === 'playing') {
@@ -465,6 +469,16 @@ class SingleRoomGame {
                               this.readyPlayers.size === activePlayers.length;
     }
 
+    checkAndResetIfOnePlayer() {
+        const playerCount = this.getPlayerCount();
+        if (playerCount === 1 && this.status === 'playing') {
+            console.log('👤 Only one player remaining during active game - resetting room to lobby');
+            this.resetRoom();
+            return true;
+        }
+        return false;
+    }
+
     isAcceptingNewPlayers() {
         // Game accepts new players only when in lobby phase and not full
         return this.status === 'lobby' && 
@@ -544,6 +558,11 @@ class SingleRoomGame {
         
         const activePlayers = this.getActivePlayers();
         if (activePlayers.length <= 1) {
+            // Check if we should reset the room instead of continuing
+            if (this.checkAndResetIfOnePlayer()) {
+                return;
+            }
+            
             this.nextPhase();
             return;
         }
@@ -758,6 +777,11 @@ class SingleRoomGame {
         
         const activePlayers = this.getActivePlayers();
         if (activePlayers.length <= 1) {
+            // Check if we should reset the room instead of going to showdown
+            if (this.checkAndResetIfOnePlayer()) {
+                return;
+            }
+            
             this.phase = 'showdown';
             this.showdown();
             return;
