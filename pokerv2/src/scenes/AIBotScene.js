@@ -136,10 +136,20 @@ export class AIBotScene extends Phaser.Scene {
 
         // Create game info display
         this.gameInfo = this.add
-            .text(640, 50, 'Texas Hold\'em - AI Bot Game', {
+            .text(640, 50, 'Texas Hold\'em - Enhanced AI Bot Game', {
                 fontFamily: 'Arial',
                 fontSize: '24px',
                 fill: '#ffffff',
+                strokeThickness: 1,
+            })
+            .setOrigin(0.5);
+
+        // Create AI personality info display
+        this.aiInfo = this.add
+            .text(640, 25, '🎯 Tight Aggressive | 🐟 Loose Passive | 🎭 Manic Bluffer | 🪨 Solid Rock', {
+                fontFamily: 'Arial',
+                fontSize: '14px',
+                fill: '#FFD700',
                 strokeThickness: 1,
             })
             .setOrigin(0.5);
@@ -234,23 +244,37 @@ export class AIBotScene extends Phaser.Scene {
     }
 
     initializeGame() {
-        // Create 5 AI players and 1 human player
+        // Create 4 AI players with different levels and 1 human player
         const playerData = [
             {
-                name: 'AI Bot 1',
+                name: 'Tight Aggressive',
                 bank: 1000,
                 position: { x: 280, y: 270 },
                 avatarUrl: 'https://gravatar.com/avatar/1?s=400&d=robohash&r=x',
                 isAI: true,
-                aiLevel: 'medium'
+                aiLevel: 'tight_aggressive',
+                personality: {
+                    aggression: 0.8,
+                    looseness: 0.2,
+                    bluffFrequency: 0.1,
+                    patience: 0.9,
+                    riskTolerance: 0.6
+                }
             },
             {
-                name: 'AI Bot 2',
+                name: 'Loose Passive',
                 bank: 1000,
                 position: { x: 280, y: 460 },
                 avatarUrl: 'https://gravatar.com/avatar/2?s=400&d=robohash&r=x',
                 isAI: true,
-                aiLevel: 'medium'
+                aiLevel: 'loose_passive',
+                personality: {
+                    aggression: 0.2,
+                    looseness: 0.8,
+                    bluffFrequency: 0.05,
+                    patience: 0.3,
+                    riskTolerance: 0.4
+                }
             },
             {
                 name: window.appData?.first_name || 'Player',
@@ -261,20 +285,34 @@ export class AIBotScene extends Phaser.Scene {
                 vk_user_id: window.appData?.vk_user_id || 0
             },
             {
-                name: 'AI Bot 3',
+                name: 'Manic Bluffer',
                 bank: 1000,
                 position: { x: 980, y: 270 },
                 avatarUrl: 'https://gravatar.com/avatar/4?s=400&d=robohash&r=x',
                 isAI: true,
-                aiLevel: 'medium'
+                aiLevel: 'manic_bluffer',
+                personality: {
+                    aggression: 0.9,
+                    looseness: 0.7,
+                    bluffFrequency: 0.4,
+                    patience: 0.1,
+                    riskTolerance: 0.9
+                }
             },
             {
-                name: 'AI Bot 4',
+                name: 'Solid Rock',
                 bank: 1000,
                 position: { x: 980, y: 460 },
                 avatarUrl: 'https://gravatar.com/avatar/5?s=400&d=robohash&r=x',
                 isAI: true,
-                aiLevel: 'medium'
+                aiLevel: 'solid_rock',
+                personality: {
+                    aggression: 0.3,
+                    looseness: 0.1,
+                    bluffFrequency: 0.02,
+                    patience: 0.95,
+                    riskTolerance: 0.2
+                }
             }
         ];
 
@@ -290,9 +328,16 @@ export class AIBotScene extends Phaser.Scene {
             hasActed: false,
             isAI: data.isAI,
             aiLevel: data.aiLevel,
+            personality: data.personality,
             hand: [],
             handRank: null,
-            position: data.position
+            position: data.position,
+            // AI-specific tracking
+            handsPlayed: 0,
+            handsWon: 0,
+            totalBets: 0,
+            lastAction: null,
+            confidenceLevel: 0.5
         }));
 
         // Create player UI elements
@@ -487,42 +532,187 @@ export class AIBotScene extends Phaser.Scene {
     }
 
     makeAIDecision(player) {
-        // Simple AI decision making
+        // Enhanced AI decision making with personality-based timing
+        const thinkingTime = this.calculateThinkingTime(player);
         setTimeout(() => {
             const decision = this.calculateAIDecision(player);
             this.executeAIAction(player, decision);
-        }, 1000);
+        }, thinkingTime);
+    }
+
+    calculateThinkingTime(player) {
+        // Different AI personalities think at different speeds
+        const baseTime = 800;
+        const personality = player.personality;
+        
+        // Manic bluffer thinks fast, solid rock thinks slow
+        const speedMultiplier = 1 - (personality.patience * 0.5);
+        return Math.max(300, Math.min(2000, baseTime * speedMultiplier));
     }
 
     calculateAIDecision(player) {
         const callAmount = this.gameState.currentBet - player.currentBet;
         const potOdds = callAmount / (this.gameState.pot + callAmount);
-        
-        // Evaluate hand strength using HandEvaluator
         const handStrength = this.evaluateHandStrength(player);
-        
-        // AI decision logic based on hand strength, pot odds, and position
         const position = this.getPlayerPosition(player.id);
         const isLatePosition = position >= 3;
+        const personality = player.personality;
         
-        if (handStrength > 0.8) {
-            // Very strong hand - raise aggressively
-            const raiseAmount = this.gameState.currentBet === 0 ? this.gameState.bigBlind * 3 : this.gameState.currentBet * 3;
-            return { action: 'raise', amount: raiseAmount };
-        } else if (handStrength > 0.6) {
-            // Strong hand - raise
-            const raiseAmount = this.gameState.currentBet === 0 ? this.gameState.bigBlind * 2 : this.gameState.currentBet * 2;
-            return { action: 'raise', amount: raiseAmount };
-        } else if (handStrength > 0.4 || potOdds < 0.25 || isLatePosition) {
-            // Medium hand or good pot odds or late position - call
-            return { action: 'call', amount: callAmount };
-        } else if (handStrength > 0.2 && isLatePosition) {
-            // Weak hand but late position - call small bets
-            return { action: 'call', amount: Math.min(callAmount, this.gameState.bigBlind) };
-        } else {
-            // Weak hand - fold
-            return { action: 'fold', amount: 0 };
+        // Calculate adjusted hand strength based on personality
+        const adjustedHandStrength = this.adjustHandStrengthForPersonality(handStrength, personality);
+        
+        // Calculate bluff probability
+        const bluffProbability = this.calculateBluffProbability(player, handStrength, position);
+        
+        // Determine action based on AI personality
+        const action = this.determineActionByPersonality(player, adjustedHandStrength, potOdds, position, bluffProbability);
+        
+        // Calculate bet sizing based on personality
+        const betSize = this.calculateBetSizeByPersonality(player, action, adjustedHandStrength, potOdds);
+        
+        console.log(`AIBotScene: ${player.name} (${player.aiLevel}) decision:`, {
+            handStrength: handStrength.toFixed(2),
+            adjustedHandStrength: adjustedHandStrength.toFixed(2),
+            bluffProbability: bluffProbability.toFixed(2),
+            action: action,
+            betSize: betSize,
+            position: position,
+            potOdds: potOdds.toFixed(2)
+        });
+        
+        return { action, amount: betSize };
+    }
+
+    adjustHandStrengthForPersonality(handStrength, personality) {
+        // Loose players overvalue hands, tight players undervalue hands
+        const loosenessAdjustment = (personality.looseness - 0.5) * 0.3;
+        return Math.max(0, Math.min(1, handStrength + loosenessAdjustment));
+    }
+
+    calculateBluffProbability(player, handStrength, position) {
+        const personality = player.personality;
+        const baseBluffProb = personality.bluffFrequency;
+        
+        // Bluff more in late position
+        const positionBonus = position >= 3 ? 0.2 : 0;
+        
+        // Bluff less with strong hands
+        const handStrengthPenalty = handStrength * 0.5;
+        
+        // Bluff more when pot is large relative to stack
+        const potSizeBonus = this.gameState.pot > player.bank * 0.5 ? 0.1 : 0;
+        
+        return Math.max(0, Math.min(1, baseBluffProb + positionBonus - handStrengthPenalty + potSizeBonus));
+    }
+
+    determineActionByPersonality(player, adjustedHandStrength, potOdds, position, bluffProbability) {
+        const personality = player.personality;
+        const random = Math.random();
+        
+        // Check if this is a bluff
+        if (random < bluffProbability && adjustedHandStrength < 0.6) {
+            return 'raise';
         }
+        
+        // Determine action based on personality and hand strength
+        switch (player.aiLevel) {
+            case 'tight_aggressive':
+                return this.tightAggressiveDecision(adjustedHandStrength, potOdds, position);
+            case 'loose_passive':
+                return this.loosePassiveDecision(adjustedHandStrength, potOdds, position);
+            case 'manic_bluffer':
+                return this.manicBlufferDecision(adjustedHandStrength, potOdds, position, random);
+            case 'solid_rock':
+                return this.solidRockDecision(adjustedHandStrength, potOdds, position);
+            default:
+                return this.defaultDecision(adjustedHandStrength, potOdds, position);
+        }
+    }
+
+    tightAggressiveDecision(handStrength, potOdds, position) {
+        if (handStrength > 0.7) {
+            return 'raise';
+        } else if (handStrength > 0.5 || (potOdds < 0.3 && position >= 2)) {
+            return 'call';
+        } else {
+            return 'fold';
+        }
+    }
+
+    loosePassiveDecision(handStrength, potOdds, position) {
+        if (handStrength > 0.8) {
+            return 'raise';
+        } else if (handStrength > 0.2 || potOdds < 0.4) {
+            return 'call';
+        } else {
+            return 'fold';
+        }
+    }
+
+    manicBlufferDecision(handStrength, potOdds, position, random) {
+        if (handStrength > 0.6) {
+            return 'raise';
+        } else if (random < 0.4 && position >= 2) {
+            return 'raise'; // Bluff frequently
+        } else if (handStrength > 0.3 || potOdds < 0.5) {
+            return 'call';
+        } else {
+            return 'fold';
+        }
+    }
+
+    solidRockDecision(handStrength, potOdds, position) {
+        if (handStrength > 0.8) {
+            return 'raise';
+        } else if (handStrength > 0.6 && position >= 3) {
+            return 'call';
+        } else if (handStrength > 0.4 && potOdds < 0.2) {
+            return 'call';
+        } else {
+            return 'fold';
+        }
+    }
+
+    defaultDecision(handStrength, potOdds, position) {
+        if (handStrength > 0.7) {
+            return 'raise';
+        } else if (handStrength > 0.4 || potOdds < 0.3) {
+            return 'call';
+        } else {
+            return 'fold';
+        }
+    }
+
+    calculateBetSizeByPersonality(player, action, handStrength, potOdds) {
+        const personality = player.personality;
+        const callAmount = this.gameState.currentBet - player.currentBet;
+        
+        if (action === 'fold') {
+            return 0;
+        } else if (action === 'call') {
+            return callAmount;
+        } else if (action === 'raise') {
+            // Calculate raise size based on personality
+            let raiseMultiplier = 1;
+            
+            if (player.aiLevel === 'tight_aggressive') {
+                raiseMultiplier = handStrength > 0.8 ? 3 : 2;
+            } else if (player.aiLevel === 'loose_passive') {
+                raiseMultiplier = handStrength > 0.7 ? 2 : 1.5;
+            } else if (player.aiLevel === 'manic_bluffer') {
+                raiseMultiplier = handStrength > 0.6 ? 4 : 2.5;
+            } else if (player.aiLevel === 'solid_rock') {
+                raiseMultiplier = handStrength > 0.8 ? 2.5 : 1.8;
+            }
+            
+            const baseBet = this.gameState.currentBet === 0 ? this.gameState.bigBlind : this.gameState.currentBet;
+            const raiseAmount = Math.floor(baseBet * raiseMultiplier);
+            
+            // Ensure raise doesn't exceed player's bank
+            return Math.min(raiseAmount, player.bank);
+        }
+        
+        return callAmount;
     }
 
     evaluateHandStrength(player) {
@@ -546,25 +736,74 @@ export class AIBotScene extends Phaser.Scene {
         const val1 = this.handEvaluator.cardValues[card1.value];
         const val2 = this.handEvaluator.cardValues[card2.value];
         const isSuited = card1.suit === card2.suit;
+        const isConnected = Math.abs(val1 - val2) <= 2;
+        const isBroadway = val1 >= 10 && val2 >= 10;
         
-        // Premium hands
-        if (val1 === 14 && val2 === 14) return 0.95; // AA
-        if ((val1 === 14 && val2 === 13) || (val1 === 13 && val2 === 14)) return 0.9; // AK
-        if ((val1 === 14 && val2 === 12) || (val1 === 12 && val2 === 14)) return 0.85; // AQ
-        if (val1 === 14 && val2 === 14) return 0.8; // AJ
-        
-        // Pairs
+        // Premium pairs
         if (val1 === val2) {
-            if (val1 >= 10) return 0.75; // TT+
-            if (val1 >= 7) return 0.6; // 77-99
-            return 0.4; // Lower pairs
+            if (val1 === 14) return 0.95; // AA
+            if (val1 === 13) return 0.92; // KK
+            if (val1 === 12) return 0.88; // QQ
+            if (val1 === 11) return 0.84; // JJ
+            if (val1 === 10) return 0.80; // TT
+            if (val1 === 9) return 0.75; // 99
+            if (val1 === 8) return 0.70; // 88
+            if (val1 === 7) return 0.65; // 77
+            if (val1 === 6) return 0.60; // 66
+            if (val1 === 5) return 0.55; // 55
+            if (val1 === 4) return 0.50; // 44
+            if (val1 === 3) return 0.45; // 33
+            return 0.40; // 22
         }
         
-        // High cards
-        if (val1 >= 12 && val2 >= 12) return isSuited ? 0.5 : 0.4; // KQ
-        if (val1 >= 11 && val2 >= 11) return isSuited ? 0.45 : 0.35; // KJ
+        // Premium unpaired hands
+        if (val1 === 14 || val2 === 14) {
+            const otherVal = val1 === 14 ? val2 : val1;
+            if (otherVal === 13) return isSuited ? 0.90 : 0.85; // AK
+            if (otherVal === 12) return isSuited ? 0.87 : 0.82; // AQ
+            if (otherVal === 11) return isSuited ? 0.84 : 0.79; // AJ
+            if (otherVal === 10) return isSuited ? 0.81 : 0.76; // AT
+            if (otherVal === 9) return isSuited ? 0.78 : 0.73; // A9
+            if (otherVal === 8) return isSuited ? 0.75 : 0.70; // A8
+            if (otherVal === 7) return isSuited ? 0.72 : 0.67; // A7
+            if (otherVal === 6) return isSuited ? 0.69 : 0.64; // A6
+            if (otherVal === 5) return isSuited ? 0.66 : 0.61; // A5
+            if (otherVal === 4) return isSuited ? 0.63 : 0.58; // A4
+            if (otherVal === 3) return isSuited ? 0.60 : 0.55; // A3
+            return isSuited ? 0.57 : 0.52; // A2
+        }
         
-        return 0.2; // Weak hands
+        // Broadway pairs
+        if (isBroadway && val1 !== val2) {
+            if (val1 === 13 && val2 === 12) return isSuited ? 0.75 : 0.70; // KQ
+            if (val1 === 13 && val2 === 11) return isSuited ? 0.72 : 0.67; // KJ
+            if (val1 === 13 && val2 === 10) return isSuited ? 0.69 : 0.64; // KT
+            if (val1 === 12 && val2 === 11) return isSuited ? 0.66 : 0.61; // QJ
+            if (val1 === 12 && val2 === 10) return isSuited ? 0.63 : 0.58; // QT
+            if (val1 === 11 && val2 === 10) return isSuited ? 0.60 : 0.55; // JT
+        }
+        
+        // Connected hands
+        if (isConnected) {
+            const maxVal = Math.max(val1, val2);
+            if (maxVal >= 10) return isSuited ? 0.55 : 0.50; // High connected
+            if (maxVal >= 7) return isSuited ? 0.50 : 0.45; // Medium connected
+            return isSuited ? 0.45 : 0.40; // Low connected
+        }
+        
+        // Suited connectors
+        if (isSuited && Math.abs(val1 - val2) <= 3) {
+            const maxVal = Math.max(val1, val2);
+            if (maxVal >= 10) return 0.50; // High suited connector
+            if (maxVal >= 7) return 0.45; // Medium suited connector
+            return 0.40; // Low suited connector
+        }
+        
+        // High card hands
+        if (val1 >= 10 && val2 >= 10) return isSuited ? 0.45 : 0.40; // High cards
+        if (val1 >= 9 || val2 >= 9) return isSuited ? 0.40 : 0.35; // One high card
+        
+        return 0.25; // Weak hands
     }
 
     getPlayerPosition(playerId) {
@@ -574,6 +813,16 @@ export class AIBotScene extends Phaser.Scene {
     }
 
     executeAIAction(player, decision) {
+        // Track the action for AI learning
+        player.lastAction = decision.action;
+        player.totalBets += decision.amount;
+        
+        // Log AI action with personality context
+        const actionEmoji = decision.action === 'fold' ? '🃏' : 
+                           decision.action === 'call' ? '📞' : '📈';
+        
+        console.log(`AIBotScene: ${actionEmoji} ${player.name} (${player.aiLevel}) ${decision.action}s ${decision.amount > 0 ? `$${decision.amount}` : ''}`);
+        
         switch (decision.action) {
             case 'fold':
                 this.foldPlayer(player.id);
@@ -884,6 +1133,9 @@ export class AIBotScene extends Phaser.Scene {
             player.bank += potPerWinner;
         });
         
+        // Update AI statistics
+        this.updateAIStatistics(playerHands, winners);
+        
         // Highlight winning players' cards
         this.highlightWinningCards(winners);
         
@@ -912,6 +1164,31 @@ export class AIBotScene extends Phaser.Scene {
         this.nextRoundButtonText.setVisible(true);
         
         console.log('AIBotScene: Showdown complete');
+    }
+
+    updateAIStatistics(playerHands, winners) {
+        // Update statistics for all AI players
+        this.gameState.players.forEach(player => {
+            if (player.isAI) {
+                player.handsPlayed++;
+                
+                // Check if this player won
+                const isWinner = winners.some(({ player: winner }) => winner.id === player.id);
+                if (isWinner) {
+                    player.handsWon++;
+                }
+                
+                // Calculate win rate
+                const winRate = player.handsPlayed > 0 ? (player.handsWon / player.handsPlayed * 100).toFixed(1) : 0;
+                
+                console.log(`AIBotScene: ${player.name} (${player.aiLevel}) stats:`, {
+                    handsPlayed: player.handsPlayed,
+                    handsWon: player.handsWon,
+                    winRate: `${winRate}%`,
+                    currentBank: player.bank
+                });
+            }
+        });
     }
     
     showHandRankings(playerHands) {
@@ -1015,8 +1292,33 @@ export class AIBotScene extends Phaser.Scene {
             // Update bank display
             playerElements.bankText.setText(`$${player.bank}`);
             
-            // Update player name with current bet if applicable
+            // Update player name with current bet and AI personality info
             let displayName = player.name;
+            
+            // Add AI personality indicator for AI players
+            if (player.isAI && player.personality) {
+                const personality = player.personality;
+                let personalityIcon = '';
+                
+                // Add personality icon based on AI level
+                switch (player.aiLevel) {
+                    case 'tight_aggressive':
+                        personalityIcon = '🎯'; // Target for precision
+                        break;
+                    case 'loose_passive':
+                        personalityIcon = '🐟'; // Fish for loose play
+                        break;
+                    case 'manic_bluffer':
+                        personalityIcon = '🎭'; // Drama mask for bluffing
+                        break;
+                    case 'solid_rock':
+                        personalityIcon = '🪨'; // Rock for solid play
+                        break;
+                }
+                
+                displayName = `${personalityIcon} ${displayName}`;
+            }
+            
             if (player.currentBet > 0) {
                 displayName += ` ($${player.currentBet})`;
             }
@@ -1029,9 +1331,29 @@ export class AIBotScene extends Phaser.Scene {
             
             playerElements.playerName.setText(displayName);
             
-            // Highlight current player
+            // Highlight current player with different colors based on AI personality
             if (player.id === this.gameState.currentPlayer) {
-                playerElements.avatar.setTint(0x00ff00); // Green tint for current player
+                if (player.isAI && player.personality) {
+                    // Different colors for different AI personalities
+                    switch (player.aiLevel) {
+                        case 'tight_aggressive':
+                            playerElements.avatar.setTint(0x00ff00); // Green
+                            break;
+                        case 'loose_passive':
+                            playerElements.avatar.setTint(0x00ffff); // Cyan
+                            break;
+                        case 'manic_bluffer':
+                            playerElements.avatar.setTint(0xff00ff); // Magenta
+                            break;
+                        case 'solid_rock':
+                            playerElements.avatar.setTint(0xffff00); // Yellow
+                            break;
+                        default:
+                            playerElements.avatar.setTint(0x00ff00); // Default green
+                    }
+                } else {
+                    playerElements.avatar.setTint(0x00ff00); // Green tint for human player
+                }
             } else {
                 playerElements.avatar.clearTint();
             }
@@ -1143,10 +1465,6 @@ export class AIBotScene extends Phaser.Scene {
         console.log('AIBotScene: handleCall called');
         const currentPlayer = this.gameState.players[this.gameState.currentPlayer];
         if (!currentPlayer.isAI) {
-            if (window.firstFlop == false) {
-                window.firstFlop = true;
-                this.handleCall();
-            }
             var callAmount = this.gameState.currentBet - currentPlayer.currentBet;
             
             console.log('AIBotScene: Call details:', {
@@ -1169,6 +1487,11 @@ export class AIBotScene extends Phaser.Scene {
             // Don't disable actions here - let the game flow handle it
             // The nextPlayer() method will call startBettingRound() which will
             // properly enable/disable actions based on whose turn it is
+
+            if (window.firstFlop == false) {
+                window.firstFlop = true;
+                this.handleCall();
+            }
         }
     }
 
@@ -1453,6 +1776,10 @@ export class AIBotScene extends Phaser.Scene {
         if (this.gameInfo) {
             this.gameInfo.destroy();
             this.gameInfo = null;
+        }
+        if (this.aiInfo) {
+            this.aiInfo.destroy();
+            this.aiInfo = null;
         }
 
         // Clean up player elements
