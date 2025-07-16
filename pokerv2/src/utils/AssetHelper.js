@@ -23,7 +23,12 @@ export class AssetHelper {
     // Load asset directly with key and path
     loadAssetDirect(key, path) {
         try {
-            this.scene.load.image(key, path);
+            // Check if it's an SVG file and load accordingly
+            if (path.endsWith('.svg')) {
+                this.scene.load.svg(key, path);
+            } else {
+                this.scene.load.image(key, path);
+            }
             this.loadedAssets.add(key);
             
             if (this.isDebug) {
@@ -206,8 +211,8 @@ export class AssetHelper {
         suits.forEach((suit) => {
             values.forEach((value) => {
                 const cardKey = `${value}_of_${suit}`;
-                const cardPath = `assets/cards/${value}_of_${suit}.png`;
-                scene.load.image(cardKey, cardPath);
+                const cardPath = `assets/cards_cvg/${value}_of_${suit}.svg`;
+                scene.load.svg(cardKey, cardPath);
             });
         });
         const variantCards = [
@@ -216,7 +221,7 @@ export class AssetHelper {
             'king_of_clubs2', 'king_of_diamonds2', 'king_of_hearts2', 'king_of_spades2'
         ];
         variantCards.forEach((cardKey) => {
-            scene.load.image(cardKey, `assets/cards/${cardKey}.png`);
+            scene.load.svg(cardKey, `assets/cards_cvg/${cardKey}.svg`);
         });
     }
 
