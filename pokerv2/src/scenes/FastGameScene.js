@@ -1187,17 +1187,21 @@ export class FastGameScene extends Phaser.Scene {
         if (isMyTurn && myPlayer && !myPlayer.folded && !myPlayer.allIn) {
             this.enablePlayerActions();
             
+            console.log('FastGameScene RAISE CHECK');
             // Check raise limit and disable raise button if limit reached
             const canRaise = this.networkManager.canRaise();
             if (!canRaise) {
+                console.log('FastGameScene RAISE FIRST DISABLED');
                 this.raiseButton.disableInteractive();
                 this.raiseButtonText.setFill('#888888'); // Gray out the text
                 console.log('FastGameScene: Raise limit reached, raise button disabled');
             } else {
+                console.log('FastGameScene RAISE FIRST ENABLED');
                 this.raiseButton.setInteractive();
                 this.raiseButtonText.setFill('#ffffff'); // Normal text color
             }
         } else {
+            console.log('FastGameScene RAISE SECOND DISABLE');
             this.disablePlayerActions();
         }
     }

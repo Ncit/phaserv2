@@ -90,13 +90,15 @@ io.on('connection', (socket) => {
         try {
             game.startGame();
             
-            // Broadcast game started
+            // Broadcast game started with active player information
             io.to('main-room').emit('gameStateUpdate', {
                 gameState: game.getPublicState(),
-                gameStarted: true
+                gameStarted: true,
+                allPlayersActive: true,
+                activePlayerCount: game.getActivePlayerCount()
             });
             
-            console.log(`🎮 Game started`);
+            console.log(`🎮 Game started with ${game.getActivePlayerCount()} active players`);
         } catch (error) {
             socket.emit('error', { message: error.message });
         }

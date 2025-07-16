@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turn Management Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .player-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .player-card {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            background: #fafafa;
+        }
+        .player-card.current-turn {
+            border-color: #4CAF50;
+            background: #e8f5e8;
+        }
+        .player-card.spectator {
+            border-color: #ff9800;
+            background: #fff3e0;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.info { background: #d1ecf1; color: #0c5460; }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button.primary { background: #007bff; color: white; }
+        button.success { background: #28a745; color: white; }
+        button.danger { background: #dc3545; color: white; }
+        button.warning { background: #ffc107; color: black; }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .game-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .info-card {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .info-card h3 {
+            margin: 0 0 10px 0;
+            color: #495057;
+        }
+        .info-card .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #212529;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Turn Management Fix Test</h1>
+        <p>This test verifies that turn management works correctly when players join and leave during a game.</p>
+        
+        <div class="status info">
+            <strong>Test Scenario:</strong> Start a game with 2 players, then have a 3rd player join during the game to test turn management.
+        </div>
+
+        <div class="controls">
+            <button class="primary" onclick="connectPlayer1()">Connect Player 1</button>
+            <button class="primary" onclick="connectPlayer2()">Connect Player 2</button>
+            <button class="primary" onclick="connectPlayer3()">Connect Player 3 (Late Join)</button>
+            <button class="success" onclick="startGame()">Start Game</button>
+            <button class="warning" onclick="disconnectPlayer2()">Disconnect Player 2</button>
+            <button class="danger" onclick="disconnectAll()">Disconnect All</button>
+            <button onclick="clearLog()">Clear Log</button>
+        </div>
+
+        <div class="game-info">
+            <div class="info-card">
+                <h3>Game Status</h3>
+                <div class="value" id="gameStatus">Lobby</div>
+            </div>
+            <div class="info-card">
+                <h3>Phase</h3>
+                <div class="value" id="gamePhase">Lobby</div>
+            </div>
+            <div class="info-card">
+                <h3>Players</h3>
+                <div class="value" id="playerCount">0</div>
+            </div>
+            <div class="info-card">
+                <h3>Current Turn</h3>
+                <div class="value" id="currentTurn">-</div>
+            </div>
+        </div>
+
+        <div class="player-list" id="playerList">
+            <div class="status info">No players connected</div>
+        </div>
+
+        <div class="log" id="log"></div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script>
+        const players = {};
+        let gameState = {};
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logDiv = document.getElementById('log');
+            const logEntry = document.createElement('div');
+            logEntry.style.color = type === 'error' ? 'red' : type === 'success' ? 'green' : 'black';
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logDiv.appendChild(logEntry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        function updateGameInfo() {
+            document.getElementById('gameStatus').textContent = gameState.status || 'Unknown';
+            document.getElementById('gamePhase').textContent = gameState.phase || 'Unknown';
+            document.getElementById('playerCount').textContent = gameState.totalPlayers || 0;
+            
+            const currentPlayerId = gameState.currentPlayer !== undefined ? 
+                (gameState.players && gameState.players[gameState.currentPlayer] ? 
+                 gameState.players[gameState.currentPlayer].name : 'Unknown') : '-';
+            document.getElementById('currentTurn').textContent = currentPlayerId;
+        }
+
+        function updatePlayerList() {
+            const playerListDiv = document.getElementById('playerList');
+            
+            if (!gameState.players || gameState.players.length === 0) {
+                playerListDiv.innerHTML = '<div class="status info">No players connected</div>';
+                return;
+            }
+
+            playerListDiv.innerHTML = gameState.players.map(player => {
+                const isCurrentTurn = player.isCurrentPlayer;
+                const isSpectator = player.isSpectator;
+                const cardClass = isCurrentTurn ? 'player-card current-turn' : 
+                                isSpectator ? 'player-card spectator' : 'player-card';
+                
+                return `
+                    <div class="${cardClass}">
+                        <h3>${player.name}</h3>
+                        <p><strong>ID:</strong> ${player.id}</p>
+                        <p><strong>Bank:</strong> $${player.bank}</p>
+                        <p><strong>Current Bet:</strong> $${player.currentBet}</p>
+                        <p><strong>Status:</strong> 
+                            ${player.folded ? 'Folded' : 
+                              player.allIn ? 'All In' : 
+                              player.isSpectator ? 'Spectator' : 'Active'}
+                        </p>
+                        <p><strong>Ready:</strong> ${player.ready ? 'Yes' : 'No'}</p>
+                        ${isCurrentTurn ? '<p style="color: green; font-weight: bold;">🎯 CURRENT TURN</p>' : ''}
+                        ${isSpectator ? '<p style="color: orange; font-weight: bold;">👁️ SPECTATOR</p>' : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function createPlayer(name, avatarUrl = null) {
+            const socket = io('http://localhost:3000');
+            
+            socket.on('connect', () => {
+                log(`Player ${name} connected with socket ID: ${socket.id}`, 'success');
+                
+                socket.emit('joinGame', {
+                    name: name,
+                    avatarUrl: avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`
+                });
+            });
+
+            socket.on('gameJoined', (data) => {
+                log(`Player ${name} joined game with ID: ${data.playerId}`, 'success');
+                players[name] = {
+                    socket: socket,
+                    playerId: data.playerId,
+                    isReconnection: data.isReconnection
+                };
+                
+                if (data.gameState) {
+                    gameState = data.gameState;
+                    updateGameInfo();
+                    updatePlayerList();
+                }
+            });
+
+            socket.on('gameStateUpdate', (data) => {
+                log(`Game state updated for ${name}: ${data.gameState.phase} phase`, 'info');
+                gameState = data.gameState;
+                updateGameInfo();
+                updatePlayerList();
+                
+                if (data.lastAction) {
+                    log(`Last action: ${data.lastAction.playerName} ${data.lastAction.action}`, 'info');
+                }
+                
+                if (data.gameStarted) {
+                    log(`🎮 Game started! All players are now active.`, 'success');
+                }
+                
+                if (data.roomResetToOnePlayer) {
+                    log(`🔄 Room reset to lobby due to only one player remaining`, 'warning');
+                }
+            });
+
+            socket.on('playerJoined', (data) => {
+                log(`New player joined: ${data.player.name}`, 'info');
+            });
+
+            socket.on('playerDisconnected', (data) => {
+                log(`Player disconnected: ${data.playerName}`, 'warning');
+            });
+
+            socket.on('currentPlayerDisconnected', (data) => {
+                log(`⚠️ Current player disconnected: ${data.playerName}`, 'error');
+            });
+
+            socket.on('error', (data) => {
+                log(`Error for ${name}: ${data.message}`, 'error');
+            });
+
+            socket.on('disconnect', () => {
+                log(`Player ${name} disconnected from server`, 'warning');
+            });
+
+            return socket;
+        }
+
+        function connectPlayer1() {
+            if (players['Alice']) {
+                log('Player Alice already connected', 'error');
+                return;
+            }
+            createPlayer('Alice');
+        }
+
+        function connectPlayer2() {
+            if (players['Bob']) {
+                log('Player Bob already connected', 'error');
+                return;
+            }
+            createPlayer('Bob');
+        }
+
+        function connectPlayer3() {
+            if (players['Charlie']) {
+                log('Player Charlie already connected', 'error');
+                return;
+            }
+            createPlayer('Charlie');
+        }
+
+        function startGame() {
+            const player1 = players['Alice'];
+            const player2 = players['Bob'];
+            
+            if (!player1 || !player2) {
+                log('Need at least 2 players to start game', 'error');
+                return;
+            }
+            
+            log('🎮 Starting game...', 'info');
+            player1.socket.emit('startGame');
+        }
+
+        function disconnectPlayer2() {
+            const player2 = players['Bob'];
+            if (player2) {
+                log('Disconnecting Player 2 (Bob)...', 'warning');
+                player2.socket.disconnect();
+                delete players['Bob'];
+            } else {
+                log('Player 2 not found', 'error');
+            }
+        }
+
+        function disconnectAll() {
+            log('Disconnecting all players...', 'warning');
+            Object.values(players).forEach(player => {
+                player.socket.disconnect();
+            });
+            players = {};
+            gameState = {};
+            updateGameInfo();
+            updatePlayerList();
+        }
+
+        // Auto-test sequence
+        function runAutoTest() {
+            log('🚀 Starting auto-test sequence...', 'info');
+            
+            setTimeout(() => {
+                log('Step 1: Connecting Player 1 (Alice)', 'info');
+                connectPlayer1();
+            }, 1000);
+            
+            setTimeout(() => {
+                log('Step 2: Connecting Player 2 (Bob)', 'info');
+                connectPlayer2();
+            }, 3000);
+            
+            setTimeout(() => {
+                log('Step 3: Starting game', 'info');
+                startGame();
+            }, 5000);
+            
+            setTimeout(() => {
+                log('Step 4: Connecting Player 3 (Charlie) during game', 'info');
+                connectPlayer3();
+            }, 8000);
+            
+            setTimeout(() => {
+                log('Step 5: Disconnecting Player 2 to test turn management', 'info');
+                disconnectPlayer2();
+            }, 12000);
+        }
+
+        // Add auto-test button
+        document.querySelector('.controls').insertAdjacentHTML('beforeend', 
+            '<button onclick="runAutoTest()" style="background: #6f42c1; color: white;">Run Auto Test</button>'
+        );
+
+        log('Turn Management Fix Test loaded. Use the buttons above to test turn management.', 'info');
+    </script>
+</body>
+</html> 
