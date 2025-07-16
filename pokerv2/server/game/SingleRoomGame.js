@@ -52,65 +52,116 @@ class SingleRoomGame {
     }
 
     handlePlayerJoin(socketId, playerData) {
-        // Since we now remove players completely when they disconnect,
-        // every join is treated as a new player join
-        console.log(`🆕 New player ${playerData.name} joining...`);
+        console.log(`🆕 Player ${playerData.name} attempting to join...`);
         
         // Check if room is full
         if (this.getPlayerCount() >= this.maxPlayers) {
             throw new Error('Game room is full. Please wait for a spot to open.');
         }
 
-        // Check if game is in progress
-        const isGameInProgress = this.status === 'playing' || this.phase !== 'lobby';
+        // Check if this is a reconnection by looking for a player with the same name
+        let existingPlayer = null;
+        let isReconnection = false;
         
-        // Create new player
-        const playerId = uuidv4();
-        const player = {
-            id: playerId,
-            socketId: socketId,
-            name: playerData.name || 'Anonymous',
-            avatarUrl: playerData.avatarUrl || 'https://gravatar.com/avatar/default?s=400&d=robohash&r=x',
-            bank: 1000,
-            currentBet: 0,
-            folded: false,
-            allIn: false,
-            hasActed: false,
-            hand: [],
-            handRank: null,
-            position: this.getPlayerCount(),
-            ready: !isGameInProgress, // Only auto-ready if game is not in progress
-            disconnected: false,
-            isSpectator: isGameInProgress // Mark as spectator if joining during game
-        };
-
-        this.players.set(playerId, player);
-        this.playerOrder.push(playerId);
-        this.socketToPlayer.set(socketId, playerId);
-        
-        // Only add to ready players if not a spectator
-        if (!isGameInProgress) {
-            this.readyPlayers.add(playerId);
-        }
-        
-        // Check if all players are ready
-        this.checkAllPlayersReady();
-        
-        // Validate current player index after player joins
-        if (this.status === 'playing') {
-            this.validateCurrentPlayerIndex();
-        }
-        
-        if (isGameInProgress) {
-            console.log(`👁️ Player ${playerData.name} joined as spectator during active game`);
+        for (const [playerId, player] of this.players.entries()) {
+            if (player.name === playerData.name && player.disconnected) {
+                existingPlayer = player;
+                isReconnection = true;
+                break;
+            }
         }
 
-        return {
-            playerId: player.id,
-            playerName: player.name,
-            playerInfo: this.getPlayerInfo(player.id),
-            isReconnection: false
-        };
+        if (isReconnection && existingPlayer) {
+            // Handle reconnection
+            console.log(`🔄 Player ${playerData.name} reconnecting...`);
+            
+            // Update the existing player's socket ID and mark as reconnected
+            existingPlayer.socketId = socketId;
+            existingPlayer.disconnected = false;
+            
+            // Only convert from spectator to active player if game is not in progress
+            if (this.status === 'lobby') {
+                existingPlayer.isSpectator = false;
+                this.readyPlayers.add(existingPlayer.id);
+            } else {
+                // If game is in progress, keep as spectator
+                existingPlayer.isSpectator = true;
+                console.log(`👁️ Reconnected player ${playerData.name} remains as spectator during active game`);
+            }
+            
+            // Update socket mapping
+            this.socketToPlayer.set(socketId, existingPlayer.id);
+            
+            // Check if all players are ready
+            this.checkAllPlayersReady();
+            
+            // Validate current player index after reconnection
+            if (this.status === 'playing') {
+                this.validateCurrentPlayerIndex();
+            }
+            
+            return {
+                playerId: existingPlayer.id,
+                playerName: existingPlayer.name,
+                playerInfo: this.getPlayerInfo(existingPlayer.id),
+                isReconnection: true,
+                wasAutoFolded: existingPlayer.folded
+            };
+        } else {
+            // Handle new player join
+            console.log(`🆕 New player ${playerData.name} joining...`);
+            
+            // Check if game is in progress
+            const isGameInProgress = this.status === 'playing' || this.phase !== 'lobby';
+            
+            // Create new player
+            const playerId = uuidv4();
+            const player = {
+                id: playerId,
+                socketId: socketId,
+                name: playerData.name || 'Anonymous',
+                avatarUrl: playerData.avatarUrl || 'https://gravatar.com/avatar/default?s=400&d=robohash&r=x',
+                bank: 1000,
+                currentBet: 0,
+                folded: false,
+                allIn: false,
+                hasActed: false,
+                hand: [],
+                handRank: null,
+                position: this.getPlayerCount(),
+                ready: !isGameInProgress, // Only auto-ready if game is not in progress
+                disconnected: false,
+                isSpectator: isGameInProgress // Mark as spectator if joining during game
+            };
+
+            this.players.set(playerId, player);
+            this.playerOrder.push(playerId);
+            this.socketToPlayer.set(socketId, playerId);
+            
+            // Only add to ready players if not a spectator
+            if (!isGameInProgress) {
+                this.readyPlayers.add(playerId);
+            }
+            
+            // Check if all players are ready
+            this.checkAllPlayersReady();
+            
+            // Validate current player index after player joins
+            if (this.status === 'playing') {
+                this.validateCurrentPlayerIndex();
+            }
+            
+            if (isGameInProgress) {
+                console.log(`👁️ Player ${playerData.name} joined as spectator during active game`);
+            }
+
+            return {
+                playerId: player.id,
+                playerName: player.name,
+                playerInfo: this.getPlayerInfo(player.id),
+                isReconnection: false
+            };
+        }
     }
 
     handlePlayerDisconnect(socketId) {
@@ -127,16 +178,15 @@ class SingleRoomGame {
         const currentPlayerId = activePlayerOrder[this.currentPlayer];
         const isCurrentPlayerDisconnecting = playerId === currentPlayerId;
         
-        // Remove player from all tracking structures
-        this.players.delete(playerId);
-        this.socketToPlayer.delete(socketId);
-        this.readyPlayers.delete(playerId);
+        // Mark player as disconnected instead of removing them
+        player.disconnected = true;
+        player.socketId = null;
         
-        // Remove player from player order array
-        const playerOrderIndex = this.playerOrder.indexOf(playerId);
-        if (playerOrderIndex !== -1) {
-            this.playerOrder.splice(playerOrderIndex, 1);
-        }
+        // Remove from socket mapping but keep player in game
+        this.socketToPlayer.delete(socketId);
+        
+        // Remove from ready players
+        this.readyPlayers.delete(playerId);
         
         // Check if all players are ready
         this.checkAllPlayersReady();
@@ -146,14 +196,16 @@ class SingleRoomGame {
             this.validateCurrentPlayerIndex();
         }
         
-        // Check if room becomes empty after this disconnect
-        const remainingPlayers = this.getPlayerCount();
-        if (remainingPlayers === 0) {
+        // Check if room becomes empty after this disconnect (only count connected players)
+        const connectedPlayers = Array.from(this.players.values()).filter(p => !p.disconnected);
+        const connectedPlayerCount = connectedPlayers.length;
+        
+        if (connectedPlayerCount === 0) {
             console.log('🏠 Room is now empty - performing complete reset');
             this.resetWhenEmpty();
-        } else if (remainingPlayers === 1) {
-            // Only one player left - reset room to lobby state
-            console.log('👤 Only one player remaining - resetting room to lobby state');
+        } else if (connectedPlayerCount === 1) {
+            // Only one connected player left - reset room to lobby state
+            console.log('👤 Only one connected player remaining - resetting room to lobby state');
             this.resetRoom();
         } else {
             // If game is in progress, handle disconnection
@@ -169,10 +221,10 @@ class SingleRoomGame {
                     this.nextPlayer();
                 }
                 
-                // Check if we need to end the game
-                const activePlayers = this.getActivePlayers();
-                if (activePlayers.length < this.minPlayers) {
-                    console.log(`🛑 Not enough active players (${activePlayers.length}/${this.minPlayers}), ending game`);
+                // Check if we need to end the game (only count connected players)
+                const connectedActivePlayers = this.getActivePlayers().filter(p => !p.disconnected);
+                if (connectedActivePlayers.length < this.minPlayers) {
+                    console.log(`🛑 Not enough connected active players (${connectedActivePlayers.length}/${this.minPlayers}), ending game`);
                     this.endGame();
                 }
             }
@@ -219,6 +271,20 @@ class SingleRoomGame {
         
         if (playerId !== currentPlayerId) {
             console.log(`❌ Turn mismatch - Expected: ${currentPlayerId}, Got: ${playerId}`);
+            console.log(`🔍 Debug info:`, {
+                activePlayerOrder,
+                currentPlayerIndex: this.currentPlayer,
+                totalActivePlayers: activePlayerOrder.length,
+                playerOrder: this.playerOrder,
+                allPlayers: Array.from(this.players.entries()).map(([id, p]) => ({
+                    id,
+                    name: p.name,
+                    disconnected: p.disconnected,
+                    isSpectator: p.isSpectator,
+                    folded: p.folded,
+                    allIn: p.allIn
+                }))
+            });
             throw new Error('Not your turn');
         }
         
@@ -449,15 +515,39 @@ class SingleRoomGame {
         return Array.from(this.players.values()).filter(p => !p.disconnected && !p.isSpectator).length;
     }
 
+    getConnectedPlayerCount() {
+        return Array.from(this.players.values()).filter(p => !p.disconnected).length;
+    }
+
     getActivePlayers() {
         return Array.from(this.players.values()).filter(p => !p.folded && !p.disconnected && !p.isSpectator);
     }
 
     getActivePlayerOrder() {
-        return this.playerOrder.filter(playerId => {
+        const activeOrder = this.playerOrder.filter(playerId => {
             const player = this.players.get(playerId);
             return player && !player.disconnected && !player.isSpectator;
         });
+        
+        console.log(`🎮 Server getActivePlayerOrder:`, {
+            playerOrder: this.playerOrder,
+            activeOrder,
+            totalPlayers: this.playerOrder.length,
+            totalActivePlayers: activeOrder.length,
+            playerDetails: this.playerOrder.map(playerId => {
+                const player = this.players.get(playerId);
+                return player ? {
+                    id: playerId,
+                    name: player.name,
+                    disconnected: player.disconnected,
+                    isSpectator: player.isSpectator,
+                    folded: player.folded,
+                    allIn: player.allIn
+                } : { id: playerId, error: 'Player not found' };
+            })
+        });
+        
+        return activeOrder;
     }
 
     checkAllPlayersReady() {
@@ -488,6 +578,7 @@ class SingleRoomGame {
     getCurrentPlayerId() {
         const activePlayerOrder = this.getActivePlayerOrder();
         if (activePlayerOrder.length === 0) {
+            console.log(`⚠️ No active players available for turn`);
             return null;
         }
         
@@ -497,7 +588,15 @@ class SingleRoomGame {
             this.currentPlayer = 0;
         }
         
-        return activePlayerOrder[this.currentPlayer];
+        const currentPlayerId = activePlayerOrder[this.currentPlayer];
+        console.log(`🎯 Server getCurrentPlayerId:`, {
+            currentPlayerIndex: this.currentPlayer,
+            activePlayerOrder,
+            currentPlayerId,
+            totalActivePlayers: activePlayerOrder.length
+        });
+        
+        return currentPlayerId;
     }
 
     validateCurrentPlayerIndex() {

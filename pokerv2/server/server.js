@@ -174,21 +174,22 @@ io.on('connection', (socket) => {
         const result = game.handlePlayerDisconnect(socket.id);
         
         if (result) {
-            // Check if room is now empty
-            const playerCount = game.getPlayerCount();
+            // Check if room is now empty (only count connected players)
+            const connectedPlayerCount = game.getConnectedPlayerCount();
             
-            if (playerCount === 0) {
+            if (connectedPlayerCount === 0) {
                 // Room is empty - notify any remaining clients
                 io.to('main-room').emit('roomEmpty', {
                     message: 'All players have left. Room has been reset.'
                 });
                 
                 console.log('🏠 Room is now empty - all values reset');
-            } else if (playerCount === 1) {
-                // Only one player remaining - room has been reset to lobby
+            } else if (connectedPlayerCount === 1) {
+                // Only one connected player remaining - room has been reset to lobby
+                const connectedPlayers = game.getPlayersList().filter(p => !p.disconnected);
                 io.to('main-room').emit('roomResetToOnePlayer', {
                     message: 'Only one player remaining. Room has been reset to lobby state.',
-                    remainingPlayer: game.getPlayersList()[0]
+                    remainingPlayer: connectedPlayers[0]
                 });
                 
                 // Broadcast updated game state
@@ -197,7 +198,7 @@ io.on('connection', (socket) => {
                     roomResetToOnePlayer: true
                 });
                 
-                console.log(`👤 Only one player remaining - room reset to lobby`);
+                console.log(`👤 Only one connected player remaining - room reset to lobby`);
             } else {
                 // Notify other players about the disconnection
                 socket.to('main-room').emit('playerDisconnected', {
@@ -219,7 +220,7 @@ io.on('connection', (socket) => {
                     gameState: game.getPublicState()
                 });
                 
-                console.log(`👤 Player ${result.playerName} disconnected (${playerCount}/6 players remaining)`);
+                console.log(`👤 Player ${result.playerName} disconnected (${connectedPlayerCount}/6 connected players remaining)`);
             }
         }
     });

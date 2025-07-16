@@ -3,465 +3,377 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reconnection Buttons Test</title>
+    <title>Reconnection Button Test</title>
     <style>
         body {
             font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #1a1a1a;
+            color: #ffffff;
+        }
+        .test-container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
-            background-color: #1a1a1a;
-            color: #fff;
         }
-        .container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-        .player-section {
+        .test-section {
             background-color: #2a2a2a;
             padding: 20px;
-            border-radius: 10px;
+            margin: 20px 0;
+            border-radius: 8px;
             border: 1px solid #444;
         }
-        .controls {
-            background-color: #2a2a2a;
-            padding: 20px;
-            border-radius: 10px;
-            border: 1px solid #444;
-            grid-column: 1 / -1;
-        }
-        .game-state {
-            background-color: #2a2a2a;
-            padding: 20px;
-            border-radius: 10px;
-            border: 1px solid #444;
-            grid-column: 1 / -1;
-        }
-        button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 5px;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        button:disabled {
-            background-color: #666;
-            cursor: not-allowed;
-        }
-        .log {
-            background-color: #000;
-            color: #0f0;
-            padding: 10px;
-            border-radius: 5px;
-            font-family: monospace;
-            font-size: 12px;
-            max-height: 200px;
-            overflow-y: auto;
-            margin-top: 10px;
-        }
-        .error {
-            color: #ff6b6b;
-        }
-        .success {
+        .test-title {
             color: #4CAF50;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+        .test-description {
+            color: #ccc;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .test-steps {
+            background-color: #333;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .test-steps ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .test-steps li {
+            margin: 8px 0;
+            color: #ddd;
+        }
+        .expected-result {
+            background-color: #1e3a5f;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 4px solid #2196F3;
+        }
+        .expected-result h4 {
+            color: #2196F3;
+            margin-top: 0;
+        }
+        .code-block {
+            background-color: #000;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        .highlight {
+            background-color: #ffeb3b;
+            color: #000;
+            padding: 2px 4px;
+            border-radius: 3px;
         }
         .warning {
-            color: #ffa500;
-        }
-        .turn-indicator {
+            background-color: #ff9800;
+            color: #000;
             padding: 10px;
             border-radius: 5px;
             margin: 10px 0;
-            text-align: center;
-            font-weight: bold;
         }
-        .turn-my-turn {
-            background-color: #1a3a1a;
-            border: 2px solid #4CAF50;
-            color: #4CAF50;
-        }
-        .turn-other-turn {
-            background-color: #3a3a1a;
-            border: 2px solid #FFD700;
-            color: #FFD700;
-        }
-        .action-buttons {
-            display: flex;
-            gap: 10px;
+        .success {
+            background-color: #4CAF50;
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
             margin: 10px 0;
-            flex-wrap: wrap;
         }
-        .action-buttons button {
-            flex: 1;
-            min-width: 80px;
+        .error {
+            background-color: #f44336;
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .debug-info {
+            background-color: #2d1b69;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 4px solid #9c27b0;
+        }
+        .debug-info h4 {
+            color: #9c27b0;
+            margin-top: 0;
         }
     </style>
 </head>
 <body>
-    <h1>🔄 Reconnection Buttons Test</h1>
-    <p>Testing that reconnected players can properly click action buttons after reconnection.</p>
+    <div class="test-container">
+        <h1 class="test-title">🔄 Reconnection Button Test</h1>
+        
+        <div class="test-section">
+            <h2 class="test-title">Test Overview</h2>
+            <div class="test-description">
+                This test helps debug the issue where buttons are not clickable after reconnection, even when it's the player's turn.
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2 class="test-title">🐛 Root Cause Analysis</h2>
+            <div class="test-description">
+                The issue is that after reconnection, the player's turn is detected correctly, but the UI buttons are not properly restored to an interactive state.
+            </div>
+            
+            <div class="debug-info">
+                <h4>Problem Identified:</h4>
+                <div class="code-block">
+// ISSUE: After reconnection, buttons are not clickable
+// Even though isMyTurn() returns true, buttons remain disabled
+
+// ENHANCED FIXES APPLIED:
+1. Enhanced restoreUIAfterReconnection() with detailed logging
+2. Added button interactivity debugging
+3. Added safety check to force enable buttons
+4. Enhanced enablePlayerActions() with debugging
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2 class="test-title">🧪 Test Scenario: Reconnection Button Fix</h2>
+            <div class="test-description">
+                Test that buttons are properly restored to interactive state after reconnection.
+            </div>
+            
+            <div class="test-steps">
+                <h4>Test Steps:</h4>
+                <ol>
+                    <li>Start the server: <code>cd pokerv2/server && npm start</code></li>
+                    <li>Open the game in two browser windows</li>
+                    <li>Join as different players (Player1, Player2)</li>
+                    <li>Start the game</li>
+                    <li>When it's Player1's turn, disconnect Player1 (close tab or network disconnect)</li>
+                    <li>Reconnect Player1 (reopen tab or restore network)</li>
+                    <li>Check if it's still Player1's turn</li>
+                    <li>Verify that buttons are clickable after reconnection</li>
+                    <li>Check console for detailed reconnection logs</li>
+                </ol>
+            </div>
+            
+            <div class="expected-result">
+                <h4>Expected Results:</h4>
+                <ul>
+                    <li>Console should show detailed <span class="highlight">reconnection logs</span></li>
+                    <li>Buttons should be <span class="highlight">enabled and clickable</span> after reconnection</li>
+                    <li>Console should show: <code>"FastGameScene: Buttons force-enabled after reconnection"</code></li>
+                    <li>Button interactivity status should show all buttons as enabled</li>
+                    <li>No "not your turn" errors when clicking buttons after reconnection</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2 class="test-title">🔧 Fixes Applied</h2>
+            <div class="test-description">
+                Enhanced the reconnection UI restoration process with multiple safety checks:
+            </div>
+            
+            <div class="expected-result">
+                <h4>Enhanced restoreUIAfterReconnection() Method:</h4>
+                <div class="code-block">
+restoreUIAfterReconnection() {
+    console.log('FastGameScene: Restoring UI after reconnection');
     
-    <div class="container">
-        <div class="player-section">
-            <h2>Player 1 (Test Subject)</h2>
-            <div id="player1-info" class="player-info">
-                <p>Status: <span id="player1-status">Disconnected</span></p>
-                <p>Name: <span id="player1-name">-</span></p>
-                <p>Player ID: <span id="player1-id">-</span></p>
-                <p>Is My Turn: <span id="player1-turn">-</span></p>
-            </div>
-            <button id="player1-join" onclick="joinPlayer(1)">Join as Player 1</button>
-            <button id="player1-disconnect" onclick="disconnectPlayer(1)" disabled>Disconnect</button>
-            <button id="player1-reconnect" onclick="reconnectPlayer(1)" disabled>Reconnect</button>
-            
-            <div class="action-buttons">
-                <button id="player1-fold" onclick="makeAction(1, 'fold')" disabled>Fold</button>
-                <button id="player1-check" onclick="makeAction(1, 'check')" disabled>Check</button>
-                <button id="player1-call" onclick="makeAction(1, 'call')" disabled>Call</button>
-                <button id="player1-raise" onclick="makeAction(1, 'raise')" disabled>Raise</button>
-                <button id="player1-allin" onclick="makeAction(1, 'allIn')" disabled>All In</button>
-            </div>
-            
-            <div id="player1-log" class="log"></div>
-        </div>
+    // Force a complete UI update
+    this.updateUI();
+    
+    // Ensure all buttons are properly set up
+    this.setupButtonHandlers();
+    
+    // If in game state, ensure action buttons are properly configured
+    if (this.gameState && this.gameState.status === 'playing') {
+        console.log('FastGameScene: Game is in playing state, updating action buttons');
         
-        <div class="player-section">
-            <h2>Player 2 (Opponent)</h2>
-            <div id="player2-info" class="player-info">
-                <p>Status: <span id="player2-status">Disconnected</span></p>
-                <p>Name: <span id="player2-name">-</span></p>
-                <p>Player ID: <span id="player2-id">-</span></p>
-                <p>Is My Turn: <span id="player2-turn">-</span></p>
-            </div>
-            <button id="player2-join" onclick="joinPlayer(2)">Join as Player 2</button>
-            <button id="player2-disconnect" onclick="disconnectPlayer(2)" disabled>Disconnect</button>
-            <button id="player2-reconnect" onclick="reconnectPlayer(2)" disabled>Reconnect</button>
-            
-            <div class="action-buttons">
-                <button id="player2-fold" onclick="makeAction(2, 'fold')" disabled>Fold</button>
-                <button id="player2-check" onclick="makeAction(2, 'check')" disabled>Check</button>
-                <button id="player2-call" onclick="makeAction(2, 'call')" disabled>Call</button>
-                <button id="player2-raise" onclick="makeAction(2, 'raise')" disabled>Raise</button>
-                <button id="player2-allin" onclick="makeAction(2, 'allIn')" disabled>All In</button>
-            </div>
-            
-            <div id="player2-log" class="log"></div>
-        </div>
+        // Check if it's the player's turn
+        const isMyTurn = this.networkManager.isMyTurn();
+        const myPlayer = this.networkManager.getMyPlayer();
         
-        <div class="controls">
-            <h2>Game Controls</h2>
-            <button id="start-game" onclick="startGame()" disabled>Start Game</button>
-            <button id="reset-room" onclick="resetRoom()" disabled>Reset Room</button>
-        </div>
+        console.log('FastGameScene: Reconnection turn check:', {
+            isMyTurn,
+            myPlayer: myPlayer ? {
+                id: myPlayer.id,
+                name: myPlayer.name,
+                folded: myPlayer.folded,
+                allIn: myPlayer.allIn,
+                isSpectator: myPlayer.isSpectator
+            } : null,
+            gamePhase: this.gameState.phase
+        });
         
-        <div class="game-state">
-            <h2>Game State & Turn Status</h2>
-            <p>Status: <span id="game-status">-</span></p>
-            <p>Phase: <span id="game-phase">-</span></p>
-            <p>Current Player: <span id="game-current-player">-</span></p>
-            <p>Pot: <span id="game-pot">-</span></p>
-            <p>Current Bet: <span id="game-current-bet">-</span></p>
+        // Force update action buttons
+        this.updateActionButtons();
+        
+        // If it's the player's turn, ensure buttons are enabled
+        if (isMyTurn && myPlayer && !myPlayer.folded && !myPlayer.allIn && !myPlayer.isSpectator) {
+            console.log('FastGameScene: It is my turn after reconnection - enabling buttons');
+            this.enablePlayerActions();
             
-            <div id="turn-indicator" class="turn-indicator">
-                <strong>Turn Status:</strong><br>
-                <span id="turn-text">Waiting for connection...</span>
+            // Double-check button interactivity
+            console.log('FastGameScene: Button interactivity check after reconnection:', {
+                foldButton: this.foldButton.input ? this.foldButton.input.enabled : 'no input',
+                callButton: this.callButton.input ? this.callButton.input.enabled : 'no input',
+                raiseButton: this.raiseButton.input ? this.raiseButton.input.enabled : 'no input',
+                allInButton: this.allInButton.input ? this.allInButton.input.enabled : 'no input'
+            });
+        }
+    }
+    
+    // Additional safety check: if it's the player's turn, force enable buttons
+    if (this.gameState && this.gameState.status === 'playing') {
+        const isMyTurn = this.networkManager.isMyTurn();
+        const myPlayer = this.networkManager.getMyPlayer();
+        
+        if (isMyTurn && myPlayer && !myPlayer.folded && !myPlayer.allIn && !myPlayer.isSpectator) {
+            console.log('FastGameScene: Safety check - forcing button enable after reconnection');
+            
+            // Force enable all buttons
+            this.foldButton.setInteractive();
+            this.callButton.setInteractive();
+            this.raiseButton.setInteractive();
+            this.allInButton.setInteractive();
+            
+            // Reset text colors
+            this.foldButtonText.setFill('#ffffff');
+            this.callButtonText.setFill('#ffffff');
+            this.raiseButtonText.setFill('#ffffff');
+            this.allInButtonText.setFill('#ffffff');
+            
+            console.log('FastGameScene: Buttons force-enabled after reconnection');
+        }
+    }
+}
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2 class="test-title">📊 Expected Console Output</h2>
+            <div class="test-description">
+                The enhanced logging will show detailed information about the reconnection process:
             </div>
             
-            <div id="game-log" class="log"></div>
+            <div class="debug-info">
+                <h4>Expected Console Logs:</h4>
+                <div class="code-block">
+FastGameScene: Restoring UI after reconnection
+FastGameScene: Game is in playing state, updating action buttons
+FastGameScene: Reconnection turn check: {
+    isMyTurn: true,
+    myPlayer: {
+        id: "player1_id",
+        name: "Player1",
+        folded: false,
+        allIn: false,
+        isSpectator: false
+    },
+    gamePhase: "preflop"
+}
+FastGameScene: It is my turn after reconnection - enabling buttons
+FastGameScene: All action buttons enabled
+FastGameScene: Button interactivity status: {
+    foldButton: true,
+    callButton: true,
+    raiseButton: true,
+    allInButton: true
+}
+FastGameScene: Safety check - forcing button enable after reconnection
+FastGameScene: Buttons force-enabled after reconnection
+FastGameScene: UI restoration after reconnection complete
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2 class="test-title">🔍 Troubleshooting Guide</h2>
+            <div class="test-description">
+                If buttons are still not clickable after reconnection:
+            </div>
+            
+            <div class="test-steps">
+                <ol>
+                    <li><strong>Check Console Logs:</strong> Look for the detailed reconnection logs</li>
+                    <li><strong>Verify Turn State:</strong> Ensure <code>isMyTurn</code> returns true</li>
+                    <li><strong>Check Player State:</strong> Ensure player is not folded, all-in, or spectator</li>
+                    <li><strong>Verify Button Interactivity:</strong> Check the button interactivity status logs</li>
+                    <li><strong>Check Game State:</strong> Ensure game is in 'playing' state</li>
+                    <li><strong>Verify Button Creation:</strong> Ensure buttons exist and have input handlers</li>
+                    <li><strong>Check Network State:</strong> Ensure reconnection was successful</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2 class="test-title">⚠️ Common Issues</h2>
+            <div class="warning">
+                <strong>Potential Reconnection Issues:</strong>
+                <ul>
+                    <li><strong>Timing Issues:</strong> Buttons restored before game state is fully updated</li>
+                    <li><strong>Player State Mismatch:</strong> Player marked as spectator or disconnected</li>
+                    <li><strong>Button Handler Loss:</strong> Event handlers not properly reattached</li>
+                    <li><strong>Game State Inconsistency:</strong> Client and server state out of sync</li>
+                    <li><strong>Network Delays:</strong> Game state updates delayed after reconnection</li>
+                    <li><strong>Button Creation Issues:</strong> Buttons not properly recreated after reconnection</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2 class="test-title">✅ Verification Checklist</h2>
+            <div class="test-description">
+                Use this checklist to verify the reconnection button fix:
+            </div>
+            
+            <div class="test-steps">
+                <ul>
+                    <li>✅ Console shows detailed reconnection restoration logs</li>
+                    <li>✅ Turn detection works correctly after reconnection</li>
+                    <li>✅ All action buttons are enabled and clickable</li>
+                    <li>✅ Button interactivity status shows all buttons as enabled</li>
+                    <li>✅ No "not your turn" errors when clicking buttons</li>
+                    <li>✅ Button text colors are white (enabled state)</li>
+                    <li>✅ Game state is properly restored after reconnection</li>
+                    <li>✅ Player state is correctly maintained (not spectator/folded)</li>
+                    <li>✅ Event handlers are properly reattached</li>
+                    <li>✅ Reconnection works in different game phases</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2 class="test-title">🎯 Next Steps</h2>
+            <div class="test-description">
+                After verifying the reconnection button fix:
+            </div>
+            
+            <div class="success">
+                <strong>If Reconnection Works:</strong>
+                <ul>
+                    <li>Test reconnection in different game phases (preflop, flop, turn, river)</li>
+                    <li>Test reconnection when multiple players disconnect/reconnect</li>
+                    <li>Test reconnection during active betting rounds</li>
+                    <li>Verify spectator functionality after reconnection</li>
+                </ul>
+            </div>
+            
+            <div class="error">
+                <strong>If Issues Persist:</strong>
+                <ul>
+                    <li>Check for race conditions in UI restoration</li>
+                    <li>Review button creation and event handler setup</li>
+                    <li>Verify game state synchronization after reconnection</li>
+                    <li>Check for timing issues in the reconnection process</li>
+                </ul>
+            </div>
         </div>
     </div>
-
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <script>
-        const players = {
-            1: { socket: null, playerId: null, name: 'Player1', originalSocket: null },
-            2: { socket: null, playerId: null, name: 'Player2', originalSocket: null }
-        };
-        
-        let gameState = null;
-
-        function log(playerNum, message, type = 'info') {
-            const logElement = document.getElementById(`player${playerNum}-log`);
-            const timestamp = new Date().toLocaleTimeString();
-            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : type === 'warning' ? 'warning' : '';
-            logElement.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
-            logElement.scrollTop = logElement.scrollHeight;
-        }
-
-        function gameLog(message, type = 'info') {
-            const logElement = document.getElementById('game-log');
-            const timestamp = new Date().toLocaleTimeString();
-            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : type === 'warning' ? 'warning' : '';
-            logElement.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
-            logElement.scrollTop = logElement.scrollHeight;
-        }
-
-        function updateGameState(newGameState) {
-            gameState = newGameState;
-            
-            document.getElementById('game-status').textContent = gameState.status;
-            document.getElementById('game-phase').textContent = gameState.phase;
-            document.getElementById('game-pot').textContent = gameState.pot;
-            document.getElementById('game-current-bet').textContent = gameState.currentBet;
-            
-            // Find current player
-            const currentPlayer = gameState.players.find(p => p.isCurrentPlayer);
-            document.getElementById('game-current-player').textContent = currentPlayer ? currentPlayer.name : 'None';
-            
-            // Update turn indicator
-            updateTurnIndicator();
-            
-            // Update player info and action buttons
-            gameState.players.forEach(player => {
-                if (player.name === 'Player1') {
-                    updatePlayerInfo(1, player);
-                    updateActionButtons(1, player);
-                } else if (player.name === 'Player2') {
-                    updatePlayerInfo(2, player);
-                    updateActionButtons(2, player);
-                }
-            });
-            
-            // Update controls
-            updateControls();
-        }
-
-        function updateTurnIndicator() {
-            const turnIndicator = document.getElementById('turn-indicator');
-            const turnText = document.getElementById('turn-text');
-            
-            if (!gameState || gameState.status !== 'playing') {
-                turnText.textContent = 'Not in game';
-                turnIndicator.className = 'turn-indicator';
-                return;
-            }
-
-            // Find current player
-            const currentPlayer = gameState.players.find(p => p.isCurrentPlayer);
-            
-            if (currentPlayer) {
-                // Check if it's the current player's turn
-                const isMyTurn = currentPlayer.name === 'Player1' || currentPlayer.name === 'Player2';
-                
-                if (isMyTurn) {
-                    turnText.textContent = `🎯 ${currentPlayer.name}'s turn!`;
-                    turnIndicator.className = 'turn-indicator turn-my-turn';
-                } else {
-                    turnText.textContent = `Waiting for: ${currentPlayer.name}`;
-                    turnIndicator.className = 'turn-indicator turn-other-turn';
-                }
-            } else {
-                turnText.textContent = 'Waiting for players...';
-                turnIndicator.className = 'turn-indicator turn-other-turn';
-            }
-        }
-
-        function updatePlayerInfo(playerNum, playerData) {
-            const status = document.getElementById(`player${playerNum}-status`);
-            const name = document.getElementById(`player${playerNum}-name`);
-            const id = document.getElementById(`player${playerNum}-id`);
-            const turn = document.getElementById(`player${playerNum}-turn`);
-            
-            if (playerData) {
-                status.textContent = playerData.disconnected ? 'Disconnected' : 'Connected';
-                name.textContent = playerData.name;
-                id.textContent = playerData.id;
-                turn.textContent = playerData.isCurrentPlayer ? 'Yes' : 'No';
-            } else {
-                status.textContent = 'Disconnected';
-                name.textContent = '-';
-                id.textContent = '-';
-                turn.textContent = '-';
-            }
-        }
-
-        function updateActionButtons(playerNum, playerData) {
-            const foldBtn = document.getElementById(`player${playerNum}-fold`);
-            const checkBtn = document.getElementById(`player${playerNum}-check`);
-            const callBtn = document.getElementById(`player${playerNum}-call`);
-            const raiseBtn = document.getElementById(`player${playerNum}-raise`);
-            const allinBtn = document.getElementById(`player${playerNum}-allin`);
-            
-            // Check if it's this player's turn and they can act
-            const canAct = playerData && 
-                          gameState.status === 'playing' && 
-                          playerData.isCurrentPlayer && 
-                          !playerData.folded && 
-                          !playerData.allIn;
-            
-            foldBtn.disabled = !canAct;
-            checkBtn.disabled = !canAct;
-            callBtn.disabled = !canAct;
-            raiseBtn.disabled = !canAct;
-            allinBtn.disabled = !canAct;
-            
-            if (canAct) {
-                log(playerNum, `Action buttons enabled - it's your turn!`, 'success');
-            }
-        }
-
-        function updateControls() {
-            const startGameBtn = document.getElementById('start-game');
-            const resetRoomBtn = document.getElementById('reset-room');
-            
-            startGameBtn.disabled = !gameState.allPlayersReady || gameState.status === 'playing';
-            resetRoomBtn.disabled = false;
-        }
-
-        function joinPlayer(playerNum) {
-            if (players[playerNum].socket) {
-                log(playerNum, 'Already connected', 'warning');
-                return;
-            }
-            
-            const socket = io('http://localhost:3000');
-            players[playerNum].socket = socket;
-            players[playerNum].originalSocket = socket;
-            
-            socket.on('connect', () => {
-                log(playerNum, 'Connected to server', 'success');
-                
-                socket.emit('joinGame', {
-                    name: players[playerNum].name,
-                    avatarUrl: `https://gravatar.com/avatar/${playerNum}?s=400&d=robohash&r=x`
-                });
-            });
-            
-            socket.on('gameJoined', (data) => {
-                players[playerNum].playerId = data.playerId;
-                log(playerNum, `Joined game as ${data.playerId} (${data.isReconnection ? 'reconnection' : 'new player'})`, 'success');
-                
-                updateGameState(data.gameState);
-                
-                // Enable buttons
-                document.getElementById(`player${playerNum}-disconnect`).disabled = false;
-                document.getElementById(`player${playerNum}-reconnect`).disabled = false;
-            });
-            
-            socket.on('gameStateUpdate', (data) => {
-                log(playerNum, `Game state updated: ${data.gameState.status} - ${data.gameState.phase}`);
-                updateGameState(data.gameState);
-                
-                if (data.lastAction) {
-                    log(playerNum, `Action: ${data.lastAction.action} by ${data.lastAction.playerName}`);
-                    gameLog(`🎯 Turn changed: ${data.lastAction.playerName} performed ${data.lastAction.action}`);
-                }
-            });
-            
-            socket.on('error', (data) => {
-                log(playerNum, `Error: ${data.message}`, 'error');
-                gameLog(`Player ${playerNum} error: ${data.message}`, 'error');
-            });
-            
-            socket.on('disconnect', () => {
-                log(playerNum, 'Disconnected from server', 'warning');
-                players[playerNum].socket = null;
-                
-                // Disable buttons
-                document.getElementById(`player${playerNum}-disconnect`).disabled = true;
-            });
-        }
-
-        function disconnectPlayer(playerNum) {
-            if (players[playerNum].socket) {
-                players[playerNum].socket.disconnect();
-                log(playerNum, 'Manually disconnected', 'warning');
-            }
-        }
-
-        function reconnectPlayer(playerNum) {
-            if (players[playerNum].socket) {
-                log(playerNum, 'Already connected', 'warning');
-                return;
-            }
-            
-            // Create new socket for reconnection
-            const socket = io('http://localhost:3000');
-            players[playerNum].socket = socket;
-            
-            socket.on('connect', () => {
-                log(playerNum, 'Reconnecting...', 'warning');
-                
-                socket.emit('joinGame', {
-                    name: players[playerNum].name,
-                    avatarUrl: `https://gravatar.com/avatar/${playerNum}?s=400&d=robohash&r=x`
-                });
-            });
-            
-            socket.on('gameJoined', (data) => {
-                if (data.isReconnection) {
-                    log(playerNum, `Successfully reconnected as ${data.playerId}`, 'success');
-                    gameLog(`Player ${playerNum} successfully reconnected during ${data.gameState.phase} phase`, 'success');
-                    
-                    // Check if it's their turn after reconnection
-                    const playerData = data.gameState.players.find(p => p.id === data.playerId);
-                    if (playerData && playerData.isCurrentPlayer) {
-                        log(playerNum, `🎯 Reconnected and it's your turn! Action buttons should be enabled.`, 'success');
-                        gameLog(`Player ${playerNum} reconnected and it's their turn - testing button functionality`, 'success');
-                    }
-                } else {
-                    log(playerNum, `Reconnected as new player (should not happen during game)`, 'error');
-                    gameLog(`Player ${playerNum} reconnected as new player during ${data.gameState.phase} phase`, 'error');
-                }
-                
-                updateGameState(data.gameState);
-            });
-            
-            socket.on('error', (data) => {
-                log(playerNum, `Reconnection error: ${data.message}`, 'error');
-                gameLog(`Player ${playerNum} reconnection error: ${data.message}`, 'error');
-            });
-        }
-
-        function makeAction(playerNum, action) {
-            const player = players[playerNum];
-            if (!player.socket) {
-                log(playerNum, 'Not connected', 'error');
-                return;
-            }
-            
-            log(playerNum, `Making action: ${action}`, 'success');
-            gameLog(`Player ${playerNum} making action: ${action}`, 'success');
-            
-            const actionData = { action };
-            if (action === 'call' || action === 'raise') {
-                actionData.amount = 20; // Default amount
-            }
-            
-            player.socket.emit('pokerAction', actionData);
-        }
-
-        function startGame() {
-            const connectedPlayer = Object.values(players).find(p => p.socket);
-            if (connectedPlayer && connectedPlayer.socket) {
-                connectedPlayer.socket.emit('startGame');
-                gameLog('Starting game...', 'success');
-            }
-        }
-
-        function resetRoom() {
-            const connectedPlayer = Object.values(players).find(p => p.socket);
-            if (connectedPlayer && connectedPlayer.socket) {
-                connectedPlayer.socket.emit('resetRoom');
-                gameLog('Resetting room...', 'warning');
-            }
-        }
-
-        // Initialize
-        gameLog('Reconnection buttons test page loaded.', 'success');
-        gameLog('1. Join as Player 1', 'info');
-        gameLog('2. Join as Player 2', 'info');
-        gameLog('3. Start the game', 'info');
-        gameLog('4. Wait for Player 1\'s turn', 'info');
-        gameLog('5. Disconnect Player 1', 'info');
-        gameLog('6. Reconnect Player 1', 'info');
-        gameLog('7. Check if action buttons are enabled', 'info');
-    </script>
 </body>
 </html> 

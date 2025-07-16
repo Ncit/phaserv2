@@ -94,6 +94,10 @@ export class NetworkManager {
             this.playerId = data.playerId;
             this.gameState = data.gameState;
             this.players = data.players;
+            
+            // Store reconnection state for this session
+            this.isReconnection = data.isReconnection || false;
+            
             this.eventManager.emit('gameJoined', data);
         });
 
@@ -116,10 +120,17 @@ export class NetworkManager {
                 newHand: data.newHand,
                 gameStarted: data.gameStarted,
                 roomReset: data.roomReset,
+                roomResetToOnePlayer: data.roomResetToOnePlayer,
                 playerLeft: data.playerLeft,
                 newPlayerJoined: data.newPlayerJoined,
-                leavingPlayerName: data.leavingPlayerName
+                leavingPlayerName: data.leavingPlayerName,
+                isReconnection: this.isReconnection
             });
+            
+            // Reset reconnection flag after first game state update
+            if (this.isReconnection) {
+                this.isReconnection = false;
+            }
         });
 
         this.socket.on('playerJoined', (data) => {
@@ -269,13 +280,23 @@ export class NetworkManager {
         if (!this.gameState || !this.playerId) return false;
         
         // Find the current player by checking the isCurrentPlayer property
-        const currentPlayer = this.gameState.players.find(p => p.isCurrentPlayer);
+        // Use this.players which is updated from gameStateUpdate
+        const currentPlayer = this.players.find(p => p.isCurrentPlayer);
+        
+        console.log('NetworkManager: isMyTurn check:', {
+            playerId: this.playerId,
+            currentPlayer: currentPlayer ? currentPlayer.id : null,
+            isMyTurn: currentPlayer && currentPlayer.id === this.playerId,
+            totalPlayers: this.players.length,
+            players: this.players.map(p => ({ id: p.id, name: p.name, isCurrentPlayer: p.isCurrentPlayer }))
+        });
+        
         return currentPlayer && currentPlayer.id === this.playerId;
     }
 
     getCurrentPlayer() {
-        if (!this.gameState) return null;
-        return this.gameState.players.find(p => p.isCurrentPlayer);
+        if (!this.players) return null;
+        return this.players.find(p => p.isCurrentPlayer);
     }
 
     getMyPlayer() {
@@ -289,8 +310,8 @@ export class NetworkManager {
     }
 
     getActivePlayers() {
-        if (!this.gameState) return [];
-        return this.gameState.players.filter(p => !p.folded);
+        if (!this.players) return [];
+        return this.players.filter(p => !p.folded);
     }
 
     getRaiseInfo() {
