@@ -1047,6 +1047,13 @@ class SingleRoomGame {
         };
     }
 
+    getPlayerBySocketId(socketId) {
+        const playerId = this.socketToPlayer.get(socketId);
+        if (!playerId) return null;
+        
+        return this.players.get(playerId);
+    }
+
     resetWhenEmpty() {
         console.log('🏠 Room is now empty - performing complete reset');
         

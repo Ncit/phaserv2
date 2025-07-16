@@ -138,6 +138,35 @@ io.on('connection', (socket) => {
         }
     });
 
+    // Player sends a chat message
+    socket.on('chatMessage', (messageData) => {
+        try {
+            // Get player info from the game
+            const player = game.getPlayerBySocketId(socket.id);
+            
+            if (!player) {
+                console.log(`❌ Chat message from unknown player: ${socket.id}`);
+                return;
+            }
+
+            // Create chat message object
+            const chatMessage = {
+                playerId: player.id,
+                playerName: player.name,
+                message: messageData.message,
+                timestamp: messageData.timestamp || Date.now()
+            };
+
+            // Broadcast chat message to all players in the room
+            io.to('main-room').emit('chatMessage', chatMessage);
+            
+            console.log(`💬 Chat message from ${player.name}: ${messageData.message}`);
+        } catch (error) {
+            console.error(`❌ Error handling chat message: ${error.message}`);
+            socket.emit('error', { message: 'Failed to send chat message' });
+        }
+    });
+
     // Player disconnects
     socket.on('disconnect', () => {
         console.log(`👋 Player disconnected: ${socket.id}`);
