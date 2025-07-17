@@ -810,10 +810,10 @@ export class FastGameScene extends Phaser.Scene {
         this.highlightWinningCards(showdownResults.winners);
         
         // Show Next Round button
-        this.nextRoundButton.setVisible(true);
-        this.nextRoundButtonText.setVisible(true);
+        // this.nextRoundButton.setVisible(true);
+        // this.nextRoundButtonText.setVisible(true);
         
-        this.nextRoundButton.setInteractive();
+        // this.nextRoundButton.setInteractive();
         console.log('FastGameScene: Showdown results displayed');
     }
     
@@ -992,9 +992,9 @@ export class FastGameScene extends Phaser.Scene {
                 this.allInButtonText.setVisible(false);
                 
                 // Hide start game button
-                this.startGameButton.setVisible(false);
-                this.startGameButton.disableInteractive();
-                this.startGameButtonText.setVisible(false);
+                // this.startGameButton.setVisible(false);
+                // this.startGameButton.disableInteractive();
+                // this.startGameButtonText.setVisible(false);
                 
                 // Hide next round button
                 this.nextRoundButton.setVisible(false);
@@ -1125,9 +1125,9 @@ export class FastGameScene extends Phaser.Scene {
             this.startGameButtonText.setVisible(true);
             console.log('FastGameScene: updateLobbyUI - Start game button enabled');
         } else {
-            this.startGameButton.setVisible(false);
-            this.startGameButton.disableInteractive();
-            this.startGameButtonText.setVisible(false);
+            // this.startGameButton.setVisible(false);
+            // this.startGameButton.disableInteractive();
+            // this.startGameButtonText.setVisible(false);
             console.log('FastGameScene: updateLobbyUI - Start game button disabled');
         }
         
@@ -1138,9 +1138,9 @@ export class FastGameScene extends Phaser.Scene {
 
     updateGameUI() {
         // Hide start game button and disable it
-        this.startGameButton.setVisible(false);
-        this.startGameButton.disableInteractive();
-        this.startGameButtonText.setVisible(false);
+        // this.startGameButton.setVisible(false);
+        // this.startGameButton.disableInteractive();
+        // this.startGameButtonText.setVisible(false);
         
         // Check if game is in showdown phase
         if (this.gameState.phase === 'showdown') {
@@ -1155,8 +1155,8 @@ export class FastGameScene extends Phaser.Scene {
             this.allInButtonText.setVisible(false);
             
             // Show next round button
-            this.nextRoundButton.setVisible(true);
-            this.nextRoundButtonText.setVisible(true);
+            // this.nextRoundButton.setVisible(true);
+            // this.nextRoundButtonText.setVisible(true);
 
             this.nextRoundButton.setInteractive();
             // Enable or visually disable next round button based on player permission
