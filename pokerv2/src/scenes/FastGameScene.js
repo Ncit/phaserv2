@@ -127,7 +127,7 @@ export class FastGameScene extends Phaser.Scene {
             interactive: true,
             cursor: 'hand'
         });
-        this.startGameButton.setVisible(false);
+        // this.startGameButton.setVisible(false);
 
         // Create Next Round button under start game button
         this.nextRoundButton = this.buttonManager.createButton('raise', 120, 180, {
@@ -408,8 +408,8 @@ export class FastGameScene extends Phaser.Scene {
         // Network error event
         this.networkManager.on('networkError', (data) => {
             console.error('FastGameScene: Network error:', data);
-            this.connectionStatusText.setText(`Error: ${data.message}`);
-            this.connectionStatusText.setFill('#FF0000');
+            // this.connectionStatusText.setText(`Error: ${data.message}`);
+            // this.connectionStatusText.setFill('#FF0000');
         });
 
         // Disconnected event
@@ -1464,7 +1464,7 @@ export class FastGameScene extends Phaser.Scene {
 
     createStartGameButtonLabel() {
         this.startGameButtonText = this.add
-            .text(120, 220, 'НАЧАТЬ РАЗДАЧУ', {
+            .text(120, 220, 'НОВАЯ ИГРА', {
                 fontFamily: 'Arial',
                 fontSize: '16px',
                 fill: '#ffffff',
@@ -1472,7 +1472,7 @@ export class FastGameScene extends Phaser.Scene {
                 strokeThickness: 1,
             })
             .setOrigin(0.5);
-        this.startGameButtonText.setVisible(false);
+        // this.startGameButtonText.setVisible(false);
     }
 
     setupButtonHandlers() {
@@ -1566,6 +1566,11 @@ export class FastGameScene extends Phaser.Scene {
             return;
         }
         
+        if (myPlayer && (myPlayer.folded || myPlayer.allIn)) {
+            console.log('FastGameScene: Player cannot act - folded or all-in');
+            return;
+        }
+        
         try {
             this.networkManager.sendPokerAction('fold');
             this.disablePlayerActions();
@@ -1581,6 +1586,11 @@ export class FastGameScene extends Phaser.Scene {
         const myPlayer = this.networkManager.getMyPlayer();
         if (myPlayer && myPlayer.isSpectator) {
             console.log('FastGameScene: Spectators cannot make actions');
+            return;
+        }
+        
+        if (myPlayer && (myPlayer.folded || myPlayer.allIn)) {
+            console.log('FastGameScene: Player cannot act - folded or all-in');
             return;
         }
         
@@ -1607,6 +1617,11 @@ export class FastGameScene extends Phaser.Scene {
         const myPlayer = this.networkManager.getMyPlayer();
         if (myPlayer && myPlayer.isSpectator) {
             console.log('FastGameScene: Spectators cannot make actions');
+            return;
+        }
+        
+        if (myPlayer && (myPlayer.folded || myPlayer.allIn)) {
+            console.log('FastGameScene: Player cannot act - folded or all-in');
             return;
         }
         
@@ -1675,6 +1690,11 @@ export class FastGameScene extends Phaser.Scene {
         const myPlayer = this.networkManager.getMyPlayer();
         if (myPlayer && myPlayer.isSpectator) {
             console.log('FastGameScene: Spectators cannot make actions');
+            return;
+        }
+        
+        if (myPlayer && (myPlayer.folded || myPlayer.allIn)) {
+            console.log('FastGameScene: Player cannot act - folded or all-in');
             return;
         }
         

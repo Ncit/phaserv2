@@ -325,6 +325,20 @@ class SingleRoomGame {
     }
 
     startGame() {
+        // First, convert all spectators to active players
+        console.log('🎮 Converting all spectators to active players for game start');
+        for (const player of this.players.values()) {
+            if (!player.disconnected && player.isSpectator) {
+                player.isSpectator = false;
+                player.ready = true;
+                this.readyPlayers.add(player.id);
+                console.log(`🎮 Converted spectator ${player.name} to active player`);
+            }
+        }
+
+        // Recalculate ready status after converting spectators
+        this.checkAllPlayersReady();
+
         if (!this.allPlayersReady) {
             throw new Error('Not all players are ready');
         }
@@ -333,17 +347,15 @@ class SingleRoomGame {
             throw new Error('Not enough players to start');
         }
 
-        // Ensure all players are active (not spectators) when game starts
-        console.log('🎮 Converting all players to active players for game start');
+        // Ensure all players are ready
         for (const player of this.players.values()) {
             if (!player.disconnected) {
-                player.isSpectator = false; // Convert any spectators to active players
                 player.ready = true; // Ensure all players are ready
                 this.readyPlayers.add(player.id); // Add to ready players if not already there
             }
         }
 
-        // Recalculate ready status
+        // Final ready status check
         this.checkAllPlayersReady();
 
         // Double-check that we have enough active players
@@ -551,9 +563,23 @@ class SingleRoomGame {
     }
 
     checkAllPlayersReady() {
-        const activePlayers = Array.from(this.players.values()).filter(p => !p.disconnected);
+        const connectedPlayers = Array.from(this.players.values()).filter(p => !p.disconnected);
+        const activePlayers = connectedPlayers.filter(p => !p.isSpectator);
+        
+        // Consider all players ready if:
+        // 1. We have at least minPlayers ready, AND
+        // 2. All active (non-spectator) players are ready
         this.allPlayersReady = this.readyPlayers.size >= this.minPlayers && 
                               this.readyPlayers.size === activePlayers.length;
+        
+        console.log('🎮 checkAllPlayersReady:', {
+            connectedPlayers: connectedPlayers.length,
+            activePlayers: activePlayers.length,
+            readyPlayers: this.readyPlayers.size,
+            minPlayers: this.minPlayers,
+            allPlayersReady: this.allPlayersReady,
+            spectators: connectedPlayers.filter(p => p.isSpectator).map(p => p.name)
+        });
     }
 
     checkAndResetIfOnePlayer() {
@@ -588,12 +614,31 @@ class SingleRoomGame {
             this.currentPlayer = 0;
         }
         
-        const currentPlayerId = activePlayerOrder[this.currentPlayer];
+        // Skip folded/all-in players to find the next player who can act
+        let currentPlayerId = activePlayerOrder[this.currentPlayer];
+        let iterations = 0;
+        
+        while (this.players.get(currentPlayerId).folded || this.players.get(currentPlayerId).allIn) {
+            this.currentPlayer = (this.currentPlayer + 1) % activePlayerOrder.length;
+            currentPlayerId = activePlayerOrder[this.currentPlayer];
+            iterations++;
+            
+            // Prevent infinite loop
+            if (iterations >= activePlayerOrder.length) {
+                console.log(`⚠️ All players are folded/all-in, no one can act`);
+                return null;
+            }
+        }
+        
         console.log(`🎯 Server getCurrentPlayerId:`, {
             currentPlayerIndex: this.currentPlayer,
             activePlayerOrder,
             currentPlayerId,
-            totalActivePlayers: activePlayerOrder.length
+            totalActivePlayers: activePlayerOrder.length,
+            playerState: this.players.get(currentPlayerId) ? {
+                folded: this.players.get(currentPlayerId).folded,
+                allIn: this.players.get(currentPlayerId).allIn
+            } : 'Player not found'
         });
         
         return currentPlayerId;
@@ -1038,6 +1083,20 @@ class SingleRoomGame {
             })),
             revealedCards: revealedCards
         };
+        
+        // Convert all spectators to active players and mark them as ready for next round
+        console.log('🎮 Converting spectators to active players after showdown');
+        for (const player of this.players.values()) {
+            if (!player.disconnected && player.isSpectator) {
+                player.isSpectator = false;
+                player.ready = true;
+                this.readyPlayers.add(player.id);
+                console.log(`🎮 Converted spectator ${player.name} to active player`);
+            }
+        }
+        
+        // Recalculate ready status
+        this.checkAllPlayersReady();
         
         this.phase = 'showdown';
     }
