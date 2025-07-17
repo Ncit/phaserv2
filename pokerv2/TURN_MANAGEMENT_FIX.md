@@ -1,35 +1,66 @@
 # Turn Management Fix
 
-## Problem Description
+## Issue Description
 
-Players were experiencing a "Not your turn" error even when the client correctly showed it was their turn. This happened because:
+Players were receiving "Player cannot act" errors despite it being their turn. The client-side logic was working correctly (buttons were enabled when `isMyTurn: true`), but the server-side turn management had several issues causing turn advancement problems.
 
-1. **Index Mismatch**: The server used `this.currentPlayer` as an index into the `getActivePlayerOrder()` array
-2. **Array Changes**: When players joined or left during a game, the `activePlayerOrder` array would change
-3. **Stale Index**: The `currentPlayer` index would then point to the wrong player or be out of bounds
+## Root Causes Identified
 
-## Root Cause
+1. **getCurrentPlayerId() Method Issue**: The method was using a temporary variable `tempCurrentPlayer` to skip folded/all-in players but wasn't updating the actual `this.currentPlayer` index, causing the turn to get stuck.
 
+2. **nextPlayer() Method Problems**: 
+   - No validation for out-of-bounds current player index
+   - Inconsistent handling of folded/all-in players
+   - Missing debug logging for turn advancement
+
+3. **startBettingRound() Recursive Calls**: The method was calling `this.nextPlayer()` in a loop when the current player was folded/all-in, which could cause infinite recursion or unexpected behavior.
+
+4. **isBettingRoundComplete() Logic**: Insufficient logging made it difficult to debug betting round completion decisions.
+
+## Fixes Applied
+
+### 1. Fixed getCurrentPlayerId() Method
+
+**File**: `pokerv2/server/game/SingleRoomGame.js`
+
+**Problem**: Method used temporary variable without updating actual index
 ```javascript
-// Server was doing this:
-const activePlayerOrder = this.getActivePlayerOrder();
-const currentPlayerId = activePlayerOrder[this.currentPlayer]; // Index could be wrong!
-
-// Client was doing this:
-isCurrentPlayer: playerId === this.getActivePlayerOrder()[this.currentPlayer] // Same issue!
+// OLD CODE (problematic)
+let tempCurrentPlayer = this.currentPlayer;
+while (this.players.get(currentPlayerId).folded || this.players.get(currentPlayerId).allIn) {
+    tempCurrentPlayer = (tempCurrentPlayer + 1) % activePlayerOrder.length;
+    currentPlayerId = activePlayerOrder[tempCurrentPlayer];
+    // tempCurrentPlayer was never assigned back to this.currentPlayer
+}
 ```
 
-When players joined/left, the `activePlayerOrder` array would change, but `this.currentPlayer` index remained the same, causing it to point to the wrong player.
+**Solution**: Directly update `this.currentPlayer` index
+```javascript
+// NEW CODE (fixed)
+while (this.players.get(currentPlayerId).folded || this.players.get(currentPlayerId).allIn) {
+    this.currentPlayer = (this.currentPlayer + 1) % activePlayerOrder.length;
+    currentPlayerId = activePlayerOrder[this.currentPlayer];
+    // this.currentPlayer is now properly updated
+}
+```
 
-## Solution Implemented
+### 2. Enhanced nextPlayer() Method
 
-### 1. Added `getCurrentPlayerId()` Method
+**File**: `pokerv2/server/game/SingleRoomGame.js`
+
+**Improvements**:
+- Added validation for out-of-bounds current player index
+- Enhanced folded/all-in player skipping logic
+- Added comprehensive debug logging
+- Better error handling for edge cases
 
 ```javascript
-getCurrentPlayerId() {
+nextPlayer() {
     const activePlayerOrder = this.getActivePlayerOrder();
+    
     if (activePlayerOrder.length === 0) {
-        return null;
+        console.log('⚠️ No active players for next player');
+        return;
     }
     
     // Validate current player index
@@ -38,120 +69,185 @@ getCurrentPlayerId() {
         this.currentPlayer = 0;
     }
     
-    return activePlayerOrder[this.currentPlayer];
+    let nextPlayer = (this.currentPlayer + 1) % activePlayerOrder.length;
+    let iterations = 0;
+    
+    // Skip folded/all-in players
+    while ((this.players.get(activePlayerOrder[nextPlayer]).folded || 
+            this.players.get(activePlayerOrder[nextPlayer]).allIn) && 
+           nextPlayer !== this.currentPlayer && 
+           iterations < activePlayerOrder.length) {
+        nextPlayer = (nextPlayer + 1) % activePlayerOrder.length;
+        iterations++;
+    }
+    
+    console.log(`🔄 nextPlayer: current=${this.currentPlayer}, next=${nextPlayer}, activePlayers=${activePlayerOrder.length}`);
+    
+    if (this.isBettingRoundComplete()) {
+        console.log('🔄 Betting round complete, moving to next phase');
+        this.nextPhase();
+    } else {
+        this.currentPlayer = nextPlayer;
+        if (this.phase !== 'showdown') {
+            console.log(`🔄 Continuing betting round, next player: ${nextPlayer}`);
+            this.startBettingRound();
+        }
+    }
 }
 ```
 
-### 2. Added `validateCurrentPlayerIndex()` Method
+### 3. Fixed startBettingRound() Method
 
+**File**: `pokerv2/server/game/SingleRoomGame.js`
+
+**Problem**: Recursive calls to `nextPlayer()` could cause infinite loops
 ```javascript
-validateCurrentPlayerIndex() {
-    const activePlayerOrder = this.getActivePlayerOrder();
-    if (activePlayerOrder.length === 0) {
-        this.currentPlayer = 0;
+// OLD CODE (problematic)
+while (this.isCurrentPlayerFoldedOrAllIn()) {
+    this.nextPlayer(); // This could cause infinite recursion
+    if (this.isBettingRoundComplete()) {
+        this.nextPhase();
         return;
     }
-    
-    // If current player index is out of bounds, reset to 0
-    if (this.currentPlayer >= activePlayerOrder.length) {
-        console.log(`🔄 Current player index (${this.currentPlayer}) out of bounds, resetting to 0`);
-        this.currentPlayer = 0;
-    }
-    
-    // If current player is folded or all-in, move to next player
-    const currentPlayerId = activePlayerOrder[this.currentPlayer];
-    const currentPlayer = this.players.get(currentPlayerId);
-    if (currentPlayer && (currentPlayer.folded || currentPlayer.allIn)) {
-        console.log(`🔄 Current player ${currentPlayer.name} is folded/all-in, moving to next player`);
-        this.nextPlayer();
-    }
 }
 ```
 
-### 3. Updated Turn Validation
+**Solution**: Direct index advancement instead of recursive calls
+```javascript
+// NEW CODE (fixed)
+const activePlayerOrder = this.getActivePlayerOrder();
+let iterations = 0;
+
+while (this.isCurrentPlayerFoldedOrAllIn() && iterations < activePlayerOrder.length) {
+    this.currentPlayer = (this.currentPlayer + 1) % activePlayerOrder.length;
+    iterations++;
+    
+    if (this.isBettingRoundComplete()) {
+        this.nextPhase();
+        return;
+    }
+}
+
+console.log(`🎯 startBettingRound: currentPlayer=${this.currentPlayer}, currentPlayerId=${this.getCurrentPlayerId()}`);
+```
+
+### 4. Enhanced isBettingRoundComplete() Method
+
+**File**: `pokerv2/server/game/SingleRoomGame.js`
+
+**Improvements**:
+- Added detailed logging for betting round completion decisions
+- Separate logic for preflop vs post-flop phases
+- Better debugging information for player bets and actions
 
 ```javascript
-handlePlayerAction(socketId, actionData) {
-    // ... existing code ...
+isBettingRoundComplete() {
+    const activePlayers = this.getActivePlayers();
     
-    // Check if it's the player's turn
-    const activePlayerOrder = this.getActivePlayerOrder();
-    
-    // Debug logging
-    console.log(`🎯 Turn check - Player ${player.name} (${playerId}) attempting action: ${actionData.action}`);
-    console.log(`🎯 Active player order: [${activePlayerOrder.join(', ')}]`);
-    console.log(`🎯 Current player index: ${this.currentPlayer}`);
-    console.log(`🎯 Expected current player: ${activePlayerOrder[this.currentPlayer] || 'undefined'}`);
-    
-    // Validate current player index
-    if (this.currentPlayer >= activePlayerOrder.length) {
-        console.log(`⚠️ Current player index (${this.currentPlayer}) out of bounds for active players (${activePlayerOrder.length})`);
-        this.currentPlayer = 0; // Reset to first player
+    if (activePlayers.length <= 1) {
+        console.log('🎯 Betting complete - only one active player');
+        return true;
     }
     
-    const currentPlayerId = activePlayerOrder[this.currentPlayer];
+    const allBetsEqual = activePlayers.every(p => 
+        p.currentBet === this.currentBet || p.allIn
+    );
     
-    if (playerId !== currentPlayerId) {
-        console.log(`❌ Turn mismatch - Expected: ${currentPlayerId}, Got: ${playerId}`);
-        throw new Error('Not your turn');
+    const allHaveActed = activePlayers.every(p => 
+        p.hasActed || p.allIn
+    );
+    
+    const allAllIn = activePlayers.every(p => p.allIn);
+    
+    // For preflop, we need all bets equal (blinds are already posted)
+    if (this.phase === 'preflop') {
+        const shouldComplete = allBetsEqual;
+        console.log('🎯 Preflop betting complete:', shouldComplete, {
+            phase: this.phase,
+            currentBet: this.currentBet,
+            activePlayers: activePlayers.length,
+            allBetsEqual,
+            playerBets: activePlayers.map(p => ({ 
+                id: p.id, 
+                name: p.name,
+                bet: p.currentBet, 
+                allIn: p.allIn 
+            }))
+        });
+        return shouldComplete;
     }
     
-    console.log(`✅ Turn validated - ${player.name} can make action`);
+    // For post-flop phases, we need all bets equal AND everyone has acted
+    const shouldComplete = (allBetsEqual && allHaveActed) || allAllIn || (this.phase === 'river' && allBetsEqual);
     
-    // ... rest of method ...
+    console.log('🎯 Post-flop betting complete:', shouldComplete, {
+        phase: this.phase,
+        currentBet: this.currentBet,
+        activePlayers: activePlayers.length,
+        allBetsEqual,
+        allHaveActed,
+        allAllIn,
+        playerBets: activePlayers.map(p => ({ 
+            id: p.id, 
+            name: p.name,
+            bet: p.currentBet, 
+            allIn: p.allIn,
+            hasActed: p.hasActed 
+        }))
+    });
+    
+    return shouldComplete;
 }
 ```
 
-### 4. Updated Client-Side Turn Detection
+### 5. Added Comprehensive Debug Logging
 
-```javascript
-// In getPlayersList() and getPlayerInfo()
-isCurrentPlayer: playerId === this.getCurrentPlayerId()
-```
+**Files**: `pokerv2/server/game/SingleRoomGame.js`
 
-### 5. Automatic Validation on Player Changes
-
-```javascript
-// In handlePlayerJoin()
-if (this.status === 'playing') {
-    this.validateCurrentPlayerIndex();
-}
-
-// In handlePlayerDisconnect()
-if (this.status === 'playing') {
-    this.validateCurrentPlayerIndex();
-}
-```
-
-## Benefits
-
-1. **Consistent Turn Management**: Server and client now use the same logic to determine whose turn it is
-2. **Automatic Recovery**: Index out-of-bounds issues are automatically detected and fixed
-3. **Better Debugging**: Detailed logging helps identify turn management issues
-4. **Robust Handling**: Players joining/leaving during games no longer break turn order
+**Added logging for**:
+- Turn validation in `handlePlayerAction()`
+- Action completion and turn advancement
+- Betting round completion decisions
+- Player state changes
+- Index validation and corrections
 
 ## Testing
 
-Use the `test-turn-management-fix.html` file to test:
+Created `test-turn-management-fix.html` with enhanced logging to monitor:
+- Turn validation and button enablement
+- Action processing and turn advancement
+- Betting round completion logic
+- Phase transitions
 
-1. Start a game with 2 players
-2. Have a 3rd player join during the game
-3. Disconnect a player during the game
-4. Verify turn management continues to work correctly
+## Expected Results
 
-## Debug Logs
+After these fixes:
+1. ✅ Players should be able to act when it's their turn
+2. ✅ Turn should advance correctly after actions
+3. ✅ Folded/all-in players should be properly skipped
+4. ✅ Betting rounds should complete correctly
+5. ✅ Phase transitions should work smoothly
+6. ✅ Detailed logs should help identify any remaining issues
 
-The fix includes comprehensive logging to help diagnose turn issues:
+## Monitoring
 
-- `🎯 Turn check` - Shows who is attempting an action
-- `🎯 Active player order` - Shows the current player order
-- `🎯 Current player index` - Shows the current index
-- `⚠️ Current player index out of bounds` - When index needs resetting
-- `❌ Turn mismatch` - When turn validation fails
-- `✅ Turn validated` - When turn validation succeeds
+Use the debug logs to monitor:
+- `🎯 Server getCurrentPlayerId:` - Shows current player validation
+- `🔄 nextPlayer:` - Shows turn advancement
+- `🎯 Action completed:` - Shows action processing
+- `🎯 Betting round complete:` - Shows betting round decisions
+- `🎯 startBettingRound:` - Shows betting round initialization
 
 ## Files Modified
 
-- `pokerv2/server/game/SingleRoomGame.js` - Main fix implementation
-- `pokerv2/test-turn-management-fix.html` - Test file for verification
-- `pokerv2/TURN_MANAGEMENT_FIX.md` - This documentation 
+1. `pokerv2/server/game/SingleRoomGame.js` - Main turn management fixes
+2. `pokerv2/test-turn-management-fix.html` - Enhanced test file
+3. `pokerv2/TURN_MANAGEMENT_FIX.md` - This documentation
+
+## Related Issues
+
+This fix addresses the core turn management issues that were causing:
+- "Player cannot act" errors
+- Inactive buttons despite correct turn
+- Turn advancement problems
+- Betting round completion issues 

@@ -261,16 +261,15 @@ class SingleRoomGame {
         console.log(`🎯 Current player index: ${this.currentPlayer}`);
         console.log(`🎯 Expected current player: ${activePlayerOrder[this.currentPlayer] || 'undefined'}`);
         
-        // Validate current player index
-        if (this.currentPlayer >= activePlayerOrder.length) {
-            console.log(`⚠️ Current player index (${this.currentPlayer}) out of bounds for active players (${activePlayerOrder.length})`);
-            this.currentPlayer = 0; // Reset to first player
-        }
+        // Get the actual current player ID using the fixed method
+        const actualCurrentPlayerId = this.getCurrentPlayerId();
+        console.log(`🎯 Actual current player ID: ${actualCurrentPlayerId}`);
+        console.log(`🎯 Player attempting action: ${playerId}`);
+        console.log(`🎯 Match: ${playerId === actualCurrentPlayerId}`);
         
-        const currentPlayerId = activePlayerOrder[this.currentPlayer];
-        
-        if (playerId !== currentPlayerId) {
-            console.log(`❌ Turn mismatch - Expected: ${currentPlayerId}, Got: ${playerId}`);
+        // Use the actual current player ID (which skips folded/all-in players)
+        if (playerId !== actualCurrentPlayerId) {
+            console.log(`❌ Turn mismatch - Expected: ${actualCurrentPlayerId}, Got: ${playerId}`);
             console.log(`🔍 Debug info:`, {
                 activePlayerOrder,
                 currentPlayerIndex: this.currentPlayer,
@@ -318,8 +317,13 @@ class SingleRoomGame {
         // Clear action timer
         this.clearTimers();
 
+        console.log(`🎯 Action completed: ${actionData.action} by ${player.name}, moving to next player`);
+        console.log(`🎯 Before nextPlayer - currentPlayer: ${this.currentPlayer}, activePlayers: ${this.getActivePlayerOrder().length}`);
+
         // Move to next player
         this.nextPlayer();
+
+        console.log(`🎯 After nextPlayer - currentPlayer: ${this.currentPlayer}, currentPlayerId: ${this.getCurrentPlayerId()}`);
 
         return result;
     }
@@ -759,15 +763,21 @@ class SingleRoomGame {
             return;
         }
 
-        // Skip folded/all-in players
-        while (this.isCurrentPlayerFoldedOrAllIn()) {
-            this.nextPlayer();
+        // Skip folded/all-in players by advancing the current player index
+        const activePlayerOrder = this.getActivePlayerOrder();
+        let iterations = 0;
+        
+        while (this.isCurrentPlayerFoldedOrAllIn() && iterations < activePlayerOrder.length) {
+            this.currentPlayer = (this.currentPlayer + 1) % activePlayerOrder.length;
+            iterations++;
             
             if (this.isBettingRoundComplete()) {
                 this.nextPhase();
                 return;
             }
         }
+        
+        console.log(`🎯 startBettingRound: currentPlayer=${this.currentPlayer}, currentPlayerId=${this.getCurrentPlayerId()}`);
 
         // Start action timer
         this.startActionTimer();
@@ -912,22 +922,38 @@ class SingleRoomGame {
     nextPlayer() {
         const activePlayerOrder = this.getActivePlayerOrder();
         
+        if (activePlayerOrder.length === 0) {
+            console.log('⚠️ No active players for next player');
+            return;
+        }
+        
+        // Validate current player index
+        if (this.currentPlayer >= activePlayerOrder.length) {
+            console.log(`⚠️ Current player index (${this.currentPlayer}) out of bounds, resetting to 0`);
+            this.currentPlayer = 0;
+        }
+        
         let nextPlayer = (this.currentPlayer + 1) % activePlayerOrder.length;
         let iterations = 0;
         
-        // Skip folded players
-        while (this.players.get(activePlayerOrder[nextPlayer]).folded && 
+        // Skip folded/all-in players
+        while ((this.players.get(activePlayerOrder[nextPlayer]).folded || 
+                this.players.get(activePlayerOrder[nextPlayer]).allIn) && 
                nextPlayer !== this.currentPlayer && 
                iterations < activePlayerOrder.length) {
             nextPlayer = (nextPlayer + 1) % activePlayerOrder.length;
             iterations++;
         }
         
+        console.log(`🔄 nextPlayer: current=${this.currentPlayer}, next=${nextPlayer}, activePlayers=${activePlayerOrder.length}`);
+        
         if (this.isBettingRoundComplete()) {
+            console.log('🔄 Betting round complete, moving to next phase');
             this.nextPhase();
         } else {
             this.currentPlayer = nextPlayer;
             if (this.phase !== 'showdown') {
+                console.log(`🔄 Continuing betting round, next player: ${nextPlayer}`);
                 this.startBettingRound();
             }
         }
@@ -937,6 +963,7 @@ class SingleRoomGame {
         const activePlayers = this.getActivePlayers();
         
         if (activePlayers.length <= 1) {
+            console.log('🎯 Betting complete - only one active player');
             return true;
         }
         
@@ -950,8 +977,46 @@ class SingleRoomGame {
         
         const allAllIn = activePlayers.every(p => p.allIn);
         
-        // For all phases including preflop, require both equal bets AND all players to have acted
-        return (allBetsEqual && allHaveActed) || allAllIn || (this.phase === 'river' && allBetsEqual);
+        // For preflop, we need all bets equal (blinds are already posted)
+        if (this.phase === 'preflop') {
+            const shouldComplete = allBetsEqual;
+            console.log('🎯 Preflop betting complete:', shouldComplete, {
+                phase: this.phase,
+                currentBet: this.currentBet,
+                activePlayers: activePlayers.length,
+                allBetsEqual,
+                playerBets: activePlayers.map(p => ({ 
+                    id: p.id, 
+                    name: p.name,
+                    bet: p.currentBet, 
+                    allIn: p.allIn 
+                }))
+            });
+            return shouldComplete;
+        }
+        
+        // For post-flop phases, we need all bets equal AND everyone has acted
+        // OR if everyone has equal bets and no one can act (all all-in)
+        // OR if we're in river phase and all bets are equal (no more betting after river)
+        const shouldComplete = (allBetsEqual && allHaveActed) || allAllIn || (this.phase === 'river' && allBetsEqual);
+        
+        console.log('🎯 Post-flop betting complete:', shouldComplete, {
+            phase: this.phase,
+            currentBet: this.currentBet,
+            activePlayers: activePlayers.length,
+            allBetsEqual,
+            allHaveActed,
+            allAllIn,
+            playerBets: activePlayers.map(p => ({ 
+                id: p.id, 
+                name: p.name,
+                bet: p.currentBet, 
+                allIn: p.allIn,
+                hasActed: p.hasActed 
+            }))
+        });
+        
+        return shouldComplete;
     }
 
     nextPhase() {

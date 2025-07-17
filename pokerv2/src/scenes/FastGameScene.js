@@ -1491,6 +1491,8 @@ export class FastGameScene extends Phaser.Scene {
     }
 
     enablePlayerActions() {
+        console.log('FastGameScene: enablePlayerActions called');
+        
         // Enable action buttons for human player (excluding raise button which is handled separately)
         this.foldButton.setInteractive();
         this.callButton.setInteractive();
@@ -1514,6 +1516,8 @@ export class FastGameScene extends Phaser.Scene {
     }
 
     disablePlayerActions() {
+        console.log('FastGameScene: disablePlayerActions called - stack trace:', new Error().stack);
+        
         // Disable action buttons
         this.foldButton.disableInteractive();
         this.callButton.disableInteractive();
@@ -1557,8 +1561,16 @@ export class FastGameScene extends Phaser.Scene {
     }
 
     handleFold() {
-        if (!this.networkManager.isMyTurn()) return;
-        if (this.gameState.phase === 'showdown') return;
+        console.log('FastGameScene: handleFold called');
+        
+        if (!this.networkManager.isMyTurn()) {
+            console.log('FastGameScene: handleFold - not my turn');
+            return;
+        }
+        if (this.gameState.phase === 'showdown') {
+            console.log('FastGameScene: handleFold - game in showdown');
+            return;
+        }
         
         const myPlayer = this.networkManager.getMyPlayer();
         if (myPlayer && myPlayer.isSpectator) {
@@ -1571,6 +1583,7 @@ export class FastGameScene extends Phaser.Scene {
             return;
         }
         
+        console.log('FastGameScene: handleFold - sending action');
         try {
             this.networkManager.sendPokerAction('fold');
             this.disablePlayerActions();

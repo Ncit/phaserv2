@@ -7,369 +7,280 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
+            margin: 20px;
+            background-color: #1a1a1a;
+            color: #ffffff;
         }
         .container {
-            background: white;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-info {
+            background-color: #2a2a2a;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
         }
-        .player-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
+        .test-info h2 {
+            color: #4CAF50;
+            margin-top: 0;
         }
-        .player-card {
-            border: 2px solid #ddd;
-            border-radius: 8px;
+        .test-info ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .test-info li {
+            margin: 5px 0;
+        }
+        .debug-log {
+            background-color: #000;
+            color: #00ff00;
             padding: 15px;
-            background: #fafafa;
-        }
-        .player-card.current-turn {
-            border-color: #4CAF50;
-            background: #e8f5e8;
-        }
-        .player-card.spectator {
-            border-color: #ff9800;
-            background: #fff3e0;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            margin-top: 20px;
         }
         .status {
-            padding: 10px;
+            background-color: #333;
+            padding: 15px;
+            border-radius: 5px;
             margin: 10px 0;
-            border-radius: 4px;
-            font-weight: bold;
         }
-        .status.success { background: #d4edda; color: #155724; }
-        .status.error { background: #f8d7da; color: #721c24; }
-        .status.info { background: #d1ecf1; color: #0c5460; }
-        .controls {
-            display: flex;
-            gap: 10px;
-            margin: 20px 0;
-            flex-wrap: wrap;
+        .status h3 {
+            margin-top: 0;
+            color: #4CAF50;
         }
-        button {
-            padding: 10px 15px;
+        .button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
             border: none;
-            border-radius: 4px;
+            border-radius: 5px;
             cursor: pointer;
+            margin: 5px;
             font-size: 14px;
         }
-        button.primary { background: #007bff; color: white; }
-        button.success { background: #28a745; color: white; }
-        button.danger { background: #dc3545; color: white; }
-        button.warning { background: #ffc107; color: black; }
-        button:disabled { opacity: 0.6; cursor: not-allowed; }
-        .log {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 4px;
-            padding: 15px;
-            max-height: 300px;
-            overflow-y: auto;
-            font-family: monospace;
-            font-size: 12px;
+        .button:hover {
+            background-color: #45a049;
         }
-        .game-info {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
+        .button:disabled {
+            background-color: #666;
+            cursor: not-allowed;
         }
-        .info-card {
-            background: #e9ecef;
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .player-info {
+            background-color: #2a2a2a;
             padding: 15px;
-            border-radius: 4px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .player-info h4 {
+            margin-top: 0;
+            color: #4CAF50;
+        }
+        .turn-indicator {
+            background-color: #ff9800;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
             text-align: center;
-        }
-        .info-card h3 {
-            margin: 0 0 10px 0;
-            color: #495057;
-        }
-        .info-card .value {
-            font-size: 24px;
             font-weight: bold;
-            color: #212529;
+            margin: 10px 0;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🎯 Turn Management Fix Test</h1>
-        <p>This test verifies that turn management works correctly when players join and leave during a game.</p>
-        
-        <div class="status info">
-            <strong>Test Scenario:</strong> Start a game with 2 players, then have a 3rd player join during the game to test turn management.
+        <div class="test-info">
+            <h2>🎯 Turn Management Fix Test</h2>
+            <p>This test focuses on debugging the turn management issue where players cannot act despite it being their turn.</p>
+            
+            <h3>🔧 Recent Fixes Applied:</h3>
+            <ul>
+                <li><strong>Fixed getCurrentPlayerId():</strong> Now properly updates this.currentPlayer when skipping folded/all-in players</li>
+                <li><strong>Enhanced nextPlayer():</strong> Added validation and better logging for turn advancement</li>
+                <li><strong>Improved isBettingRoundComplete():</strong> Added detailed logging for betting round completion logic</li>
+                <li><strong>Fixed startBettingRound():</strong> Replaced recursive nextPlayer() calls with direct index advancement</li>
+                <li><strong>Added comprehensive logging:</strong> Detailed debug logs for all turn-related operations</li>
+            </ul>
+            
+            <h3>🎮 Test Instructions:</h3>
+            <ul>
+                <li>Open this page in multiple browser tabs/windows</li>
+                <li>Join with different player names in each tab</li>
+                <li>Start the game when you have 2+ players</li>
+                <li>Watch the debug logs to see turn advancement</li>
+                <li>Test if buttons are enabled when it's your turn</li>
+                <li>Check if actions are properly processed</li>
+            </ul>
+            
+            <h3>🔍 What to Look For:</h3>
+            <ul>
+                <li><strong>Turn Validation:</strong> Check if getCurrentPlayerId() returns the correct player</li>
+                <li><strong>Button State:</strong> Verify buttons are enabled when isMyTurn is true</li>
+                <li><strong>Action Processing:</strong> Confirm actions are accepted and turn advances</li>
+                <li><strong>Betting Round Logic:</strong> Monitor betting round completion and phase transitions</li>
+            </ul>
         </div>
 
-        <div class="controls">
-            <button class="primary" onclick="connectPlayer1()">Connect Player 1</button>
-            <button class="primary" onclick="connectPlayer2()">Connect Player 2</button>
-            <button class="primary" onclick="connectPlayer3()">Connect Player 3 (Late Join)</button>
-            <button class="success" onclick="startGame()">Start Game</button>
-            <button class="warning" onclick="disconnectPlayer2()">Disconnect Player 2</button>
-            <button class="danger" onclick="disconnectAll()">Disconnect All</button>
-            <button onclick="clearLog()">Clear Log</button>
+        <div class="status">
+            <h3>Connection Status</h3>
+            <div id="connectionStatus">Disconnected</div>
         </div>
 
-        <div class="game-info">
-            <div class="info-card">
-                <h3>Game Status</h3>
-                <div class="value" id="gameStatus">Lobby</div>
-            </div>
-            <div class="info-card">
-                <h3>Phase</h3>
-                <div class="value" id="gamePhase">Lobby</div>
-            </div>
-            <div class="info-card">
-                <h3>Players</h3>
-                <div class="value" id="playerCount">0</div>
-            </div>
-            <div class="info-card">
-                <h3>Current Turn</h3>
-                <div class="value" id="currentTurn">-</div>
-            </div>
+        <div class="status">
+            <h3>Game Status</h3>
+            <div id="gameStatus">Waiting to connect...</div>
         </div>
 
-        <div class="player-list" id="playerList">
-            <div class="status info">No players connected</div>
+        <div class="status">
+            <h3>Turn Information</h3>
+            <div id="turnInfo">No turn information available</div>
         </div>
 
-        <div class="log" id="log"></div>
+        <div class="player-info">
+            <h4>Players</h4>
+            <div id="playersList">No players</div>
+        </div>
+
+        <div class="turn-indicator" id="turnIndicator" style="display: none;">
+            🎯 YOUR TURN!
+        </div>
+
+        <div class="action-buttons" id="actionButtons" style="display: none;">
+            <button class="button" id="foldButton">Fold</button>
+            <button class="button" id="callButton">Call</button>
+            <button class="button" id="raiseButton">Raise</button>
+            <button class="button" id="allInButton">All In</button>
+        </div>
+
+        <div class="action-buttons" id="lobbyButtons" style="display: none;">
+            <button class="button" id="startGameButton">Start Game</button>
+        </div>
+
+        <div class="action-buttons" id="nextRoundButtons" style="display: none;">
+            <button class="button" id="nextRoundButton">Next Round</button>
+        </div>
+
+        <div class="debug-log" id="debugLog">Debug log will appear here...</div>
     </div>
 
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="dependencies/phaser.js"></script>
+    <script src="dependencies/rexui.js"></script>
+    <script src="dependencies/vkbridge.js"></script>
+    <script src="src/config/GameConfig.js"></script>
+    <script src="src/config/AssetConfig.js"></script>
+    <script src="src/config/ButtonConfig.js"></script>
+    <script src="src/config/PlayerConfig.js"></script>
+    <script src="src/utils/EventManager.js"></script>
+    <script src="src/utils/AssetHelper.js"></script>
+    <script src="src/utils/HandEvaluator.js"></script>
+    <script src="src/utils/PositionCalculator.js"></script>
+    <script src="src/utils/NgrokUtils.js"></script>
+    <script src="src/managers/NetworkManager.js"></script>
+    <script src="src/managers/PlayerManager.js"></script>
+    <script src="src/managers/CardManager.js"></script>
+    <script src="src/managers/ButtonManager.js"></script>
+    <script src="src/managers/ChatManager.js"></script>
+    <script src="src/managers/UIManager.js"></script>
+    <script src="src/scripts/vklogic.js"></script>
+    <script src="src/scenes/LoadingScene.js"></script>
+    <script src="src/scenes/LobbyScene.js"></script>
+    <script src="src/scenes/FastGameScene.js"></script>
+    <script src="src/scenes/FriendsGameScene.js"></script>
+    <script src="src/scenes/AIBotScene.js"></script>
+    <script src="src/main.js"></script>
+
     <script>
-        const players = {};
-        let gameState = {};
+        // Enhanced debug logging
+        const originalLog = console.log;
+        const debugLog = document.getElementById('debugLog');
         
-        function log(message, type = 'info') {
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            
             const timestamp = new Date().toLocaleTimeString();
-            const logDiv = document.getElementById('log');
-            const logEntry = document.createElement('div');
-            logEntry.style.color = type === 'error' ? 'red' : type === 'success' ? 'green' : 'black';
-            logEntry.textContent = `[${timestamp}] ${message}`;
-            logDiv.appendChild(logEntry);
-            logDiv.scrollTop = logDiv.scrollHeight;
-        }
-
-        function clearLog() {
-            document.getElementById('log').innerHTML = '';
-        }
-
-        function updateGameInfo() {
-            document.getElementById('gameStatus').textContent = gameState.status || 'Unknown';
-            document.getElementById('gamePhase').textContent = gameState.phase || 'Unknown';
-            document.getElementById('playerCount').textContent = gameState.totalPlayers || 0;
+            const message = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+            ).join(' ');
             
-            const currentPlayerId = gameState.currentPlayer !== undefined ? 
-                (gameState.players && gameState.players[gameState.currentPlayer] ? 
-                 gameState.players[gameState.currentPlayer].name : 'Unknown') : '-';
-            document.getElementById('currentTurn').textContent = currentPlayerId;
-        }
+            debugLog.textContent += `[${timestamp}] ${message}\n`;
+            debugLog.scrollTop = debugLog.scrollHeight;
+        };
 
-        function updatePlayerList() {
-            const playerListDiv = document.getElementById('playerList');
+        // Test-specific logging
+        console.log('🧪 Turn Management Fix Test Started');
+        console.log('🔧 Enhanced logging enabled');
+        console.log('🎯 Focus: Turn validation and button enablement');
+
+        // Override window.isDebug for production
+        window.isDebug = false;
+        console.log('🔧 Debug mode disabled for production');
+
+        // Monitor game state changes
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📱 DOM loaded, monitoring game state...');
             
-            if (!gameState.players || gameState.players.length === 0) {
-                playerListDiv.innerHTML = '<div class="status info">No players connected</div>';
-                return;
-            }
+            // Monitor turn changes
+            const originalUpdateTurnIndicator = FastGameScene.prototype.updateTurnIndicator;
+            FastGameScene.prototype.updateTurnIndicator = function() {
+                console.log('🎯 updateTurnIndicator called');
+                const result = originalUpdateTurnIndicator.call(this);
+                console.log('🎯 updateTurnIndicator result:', result);
+                return result;
+            };
 
-            playerListDiv.innerHTML = gameState.players.map(player => {
-                const isCurrentTurn = player.isCurrentPlayer;
-                const isSpectator = player.isSpectator;
-                const cardClass = isCurrentTurn ? 'player-card current-turn' : 
-                                isSpectator ? 'player-card spectator' : 'player-card';
-                
-                return `
-                    <div class="${cardClass}">
-                        <h3>${player.name}</h3>
-                        <p><strong>ID:</strong> ${player.id}</p>
-                        <p><strong>Bank:</strong> $${player.bank}</p>
-                        <p><strong>Current Bet:</strong> $${player.currentBet}</p>
-                        <p><strong>Status:</strong> 
-                            ${player.folded ? 'Folded' : 
-                              player.allIn ? 'All In' : 
-                              player.isSpectator ? 'Spectator' : 'Active'}
-                        </p>
-                        <p><strong>Ready:</strong> ${player.ready ? 'Yes' : 'No'}</p>
-                        ${isCurrentTurn ? '<p style="color: green; font-weight: bold;">🎯 CURRENT TURN</p>' : ''}
-                        ${isSpectator ? '<p style="color: orange; font-weight: bold;">👁️ SPECTATOR</p>' : ''}
-                    </div>
-                `;
-            }).join('');
-        }
+            // Monitor button updates
+            const originalUpdateActionButtons = FastGameScene.prototype.updateActionButtons;
+            FastGameScene.prototype.updateActionButtons = function() {
+                console.log('🎯 updateActionButtons called');
+                const result = originalUpdateActionButtons.call(this);
+                console.log('🎯 updateActionButtons result:', result);
+                return result;
+            };
 
-        function createPlayer(name, avatarUrl = null) {
-            const socket = io('http://localhost:3000');
-            
-            socket.on('connect', () => {
-                log(`Player ${name} connected with socket ID: ${socket.id}`, 'success');
-                
-                socket.emit('joinGame', {
-                    name: name,
-                    avatarUrl: avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`
-                });
-            });
+            // Monitor action handlers
+            const originalHandleFold = FastGameScene.prototype.handleFold;
+            FastGameScene.prototype.handleFold = function() {
+                console.log('🎯 handleFold called');
+                const result = originalHandleFold.call(this);
+                console.log('🎯 handleFold result:', result);
+                return result;
+            };
 
-            socket.on('gameJoined', (data) => {
-                log(`Player ${name} joined game with ID: ${data.playerId}`, 'success');
-                players[name] = {
-                    socket: socket,
-                    playerId: data.playerId,
-                    isReconnection: data.isReconnection
-                };
-                
-                if (data.gameState) {
-                    gameState = data.gameState;
-                    updateGameInfo();
-                    updatePlayerList();
-                }
-            });
+            const originalHandleCall = FastGameScene.prototype.handleCall;
+            FastGameScene.prototype.handleCall = function() {
+                console.log('🎯 handleCall called');
+                const result = originalHandleCall.call(this);
+                console.log('🎯 handleCall result:', result);
+                return result;
+            };
 
-            socket.on('gameStateUpdate', (data) => {
-                log(`Game state updated for ${name}: ${data.gameState.phase} phase`, 'info');
-                gameState = data.gameState;
-                updateGameInfo();
-                updatePlayerList();
-                
-                if (data.lastAction) {
-                    log(`Last action: ${data.lastAction.playerName} ${data.lastAction.action}`, 'info');
-                }
-                
-                if (data.gameStarted) {
-                    log(`🎮 Game started! All players are now active.`, 'success');
-                }
-                
-                if (data.roomResetToOnePlayer) {
-                    log(`🔄 Room reset to lobby due to only one player remaining`, 'warning');
-                }
-            });
+            const originalHandleRaise = FastGameScene.prototype.handleRaise;
+            FastGameScene.prototype.handleRaise = function() {
+                console.log('🎯 handleRaise called');
+                const result = originalHandleRaise.call(this);
+                console.log('🎯 handleRaise result:', result);
+                return result;
+            };
 
-            socket.on('playerJoined', (data) => {
-                log(`New player joined: ${data.player.name}`, 'info');
-            });
-
-            socket.on('playerDisconnected', (data) => {
-                log(`Player disconnected: ${data.playerName}`, 'warning');
-            });
-
-            socket.on('currentPlayerDisconnected', (data) => {
-                log(`⚠️ Current player disconnected: ${data.playerName}`, 'error');
-            });
-
-            socket.on('error', (data) => {
-                log(`Error for ${name}: ${data.message}`, 'error');
-            });
-
-            socket.on('disconnect', () => {
-                log(`Player ${name} disconnected from server`, 'warning');
-            });
-
-            return socket;
-        }
-
-        function connectPlayer1() {
-            if (players['Alice']) {
-                log('Player Alice already connected', 'error');
-                return;
-            }
-            createPlayer('Alice');
-        }
-
-        function connectPlayer2() {
-            if (players['Bob']) {
-                log('Player Bob already connected', 'error');
-                return;
-            }
-            createPlayer('Bob');
-        }
-
-        function connectPlayer3() {
-            if (players['Charlie']) {
-                log('Player Charlie already connected', 'error');
-                return;
-            }
-            createPlayer('Charlie');
-        }
-
-        function startGame() {
-            const player1 = players['Alice'];
-            const player2 = players['Bob'];
-            
-            if (!player1 || !player2) {
-                log('Need at least 2 players to start game', 'error');
-                return;
-            }
-            
-            log('🎮 Starting game...', 'info');
-            player1.socket.emit('startGame');
-        }
-
-        function disconnectPlayer2() {
-            const player2 = players['Bob'];
-            if (player2) {
-                log('Disconnecting Player 2 (Bob)...', 'warning');
-                player2.socket.disconnect();
-                delete players['Bob'];
-            } else {
-                log('Player 2 not found', 'error');
-            }
-        }
-
-        function disconnectAll() {
-            log('Disconnecting all players...', 'warning');
-            Object.values(players).forEach(player => {
-                player.socket.disconnect();
-            });
-            players = {};
-            gameState = {};
-            updateGameInfo();
-            updatePlayerList();
-        }
-
-        // Auto-test sequence
-        function runAutoTest() {
-            log('🚀 Starting auto-test sequence...', 'info');
-            
-            setTimeout(() => {
-                log('Step 1: Connecting Player 1 (Alice)', 'info');
-                connectPlayer1();
-            }, 1000);
-            
-            setTimeout(() => {
-                log('Step 2: Connecting Player 2 (Bob)', 'info');
-                connectPlayer2();
-            }, 3000);
-            
-            setTimeout(() => {
-                log('Step 3: Starting game', 'info');
-                startGame();
-            }, 5000);
-            
-            setTimeout(() => {
-                log('Step 4: Connecting Player 3 (Charlie) during game', 'info');
-                connectPlayer3();
-            }, 8000);
-            
-            setTimeout(() => {
-                log('Step 5: Disconnecting Player 2 to test turn management', 'info');
-                disconnectPlayer2();
-            }, 12000);
-        }
-
-        // Add auto-test button
-        document.querySelector('.controls').insertAdjacentHTML('beforeend', 
-            '<button onclick="runAutoTest()" style="background: #6f42c1; color: white;">Run Auto Test</button>'
-        );
-
-        log('Turn Management Fix Test loaded. Use the buttons above to test turn management.', 'info');
+            const originalHandleAllIn = FastGameScene.prototype.handleAllIn;
+            FastGameScene.prototype.handleAllIn = function() {
+                console.log('🎯 handleAllIn called');
+                const result = originalHandleAllIn.call(this);
+                console.log('🎯 handleAllIn result:', result);
+                return result;
+            };
+        });
     </script>
 </body>
 </html> 
