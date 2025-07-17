@@ -1103,16 +1103,32 @@ export class FastGameScene extends Phaser.Scene {
         this.allInButtonText.setVisible(false);
         
         // Show start game button if all players are ready
-        if (this.gameState.allPlayersReady) {
+        // Check multiple conditions to ensure button is enabled after reconnection
+        const allPlayersReady = this.gameState.allPlayersReady;
+        const readyCount = this.gameState.readyCount || 0;
+        const totalPlayers = this.gameState.totalPlayers || 0;
+        const connectedPlayers = this.players ? this.players.filter(p => !p.disconnected).length : 0;
+        
+        console.log('FastGameScene: updateLobbyUI - start game button conditions:', {
+            allPlayersReady,
+            readyCount,
+            totalPlayers,
+            connectedPlayers,
+            shouldEnable: (allPlayersReady || (readyCount >= 2 && readyCount === totalPlayers && totalPlayers >= 2))
+        });
+        
+        if (allPlayersReady || (readyCount >= 2 && readyCount === totalPlayers && totalPlayers >= 2)) {
             this.startGameButton.setVisible(true);
             this.startGameButton.setInteractive();
             this.startGameButton.removeAllListeners('pointerdown');
             this.startGameButton.on('pointerdown', () => this.handleStartGame());
             this.startGameButtonText.setVisible(true);
+            console.log('FastGameScene: updateLobbyUI - Start game button enabled');
         } else {
             this.startGameButton.setVisible(false);
             this.startGameButton.disableInteractive();
             this.startGameButtonText.setVisible(false);
+            console.log('FastGameScene: updateLobbyUI - Start game button disabled');
         }
         
         // Hide next round button
@@ -1720,6 +1736,7 @@ export class FastGameScene extends Phaser.Scene {
     }
 
     syncRoomUI() {
+
         // console.log('FastGameScene: syncRoomUI called');
         // Only sync if we have a game state and players
         if (!this.gameState || !this.players || this.players.length === 0) {
@@ -1870,11 +1887,26 @@ export class FastGameScene extends Phaser.Scene {
                     elements.playerName.setVisible(true);
                     elements.bankText.setVisible(true);
                     this.cardManager.showPlayerCards(elements.playerNumber);
-                    // console.log(`FastGameScene: syncRoomUI - Made player visible: ${player.name}`);
+                    console.log(`FastGameScene: syncRoomUI - Made player visible: ${player.name}`);
                 }
             }
         });
-        // console.log('FastGameScene: syncRoomUI complete');
+        
+        // Ensure next round button is properly configured if visible
+        if (this.nextRoundButton.visible) {
+            if (this.canClickNextRound()) {
+                this.nextRoundButton.setInteractive();
+                this.nextRoundButton.setAlpha(1);
+                this.nextRoundButtonText.setFill('#ffffff');
+                console.log('FastGameScene: syncRoomUI - Next round button made interactive');
+            } else {
+                this.nextRoundButton.setAlpha(0.5);
+                this.nextRoundButtonText.setFill('#888888');
+                console.log('FastGameScene: syncRoomUI - Next round button made non-interactive');
+            }
+        }
+        
+        console.log('FastGameScene: syncRoomUI complete');
     }
 
     shutdown() {
@@ -1980,10 +2012,24 @@ export class FastGameScene extends Phaser.Scene {
         
         // If in lobby state, ensure start game button is interactive if conditions are met
         if (this.gameState && this.gameState.status === 'lobby') {
-            if (this.gameState.allPlayersReady) {
+            const allPlayersReady = this.gameState.allPlayersReady;
+            const readyCount = this.gameState.readyCount || 0;
+            const totalPlayers = this.gameState.totalPlayers || 0;
+            
+            console.log('FastGameScene: restoreUIAfterReconnection - start game button check:', {
+                allPlayersReady,
+                readyCount,
+                totalPlayers,
+                shouldEnable: (allPlayersReady || (readyCount >= 2 && readyCount === totalPlayers && totalPlayers >= 2))
+            });
+            
+            if (allPlayersReady || (readyCount >= 2 && readyCount === totalPlayers && totalPlayers >= 2)) {
                 this.startGameButton.setVisible(true);
                 this.startGameButton.setInteractive();
+                this.startGameButton.removeAllListeners('pointerdown');
+                this.startGameButton.on('pointerdown', () => this.handleStartGame());
                 this.startGameButtonText.setVisible(true);
+                console.log('FastGameScene: restoreUIAfterReconnection - Start game button enabled');
             }
         }
         
