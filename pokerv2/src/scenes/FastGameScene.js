@@ -122,7 +122,7 @@ export class FastGameScene extends Phaser.Scene {
         this.allInButton = this.buttonManager.createButton('allIn', 910, 640);
         
         // Create start game button under menu button
-        this.startGameButton = this.buttonManager.createButton('raise', 120, 120, {
+        this.startGameButton = this.buttonManager.createButton('raise', 120, 220, {
             scale: 0.3,
             interactive: true,
             cursor: 'hand'
@@ -202,7 +202,7 @@ export class FastGameScene extends Phaser.Scene {
                 strokeThickness: 1,
             })
             .setOrigin(0.5);
-
+            this.connectionStatusText
         // Create turn indicator text
         this.turnIndicatorText = this.add
             .text(940, 170, '', {
@@ -1395,7 +1395,7 @@ export class FastGameScene extends Phaser.Scene {
                     playerFolded: myPlayer ? myPlayer.folded : 'no player',
                     playerAllIn: myPlayer ? myPlayer.allIn : 'no player'
                 });
-                this.disablePlayerActions();
+                // this.disablePlayerActions();
             }
         } finally {
             this._updatingActionButtons = false;
@@ -1464,7 +1464,7 @@ export class FastGameScene extends Phaser.Scene {
 
     createStartGameButtonLabel() {
         this.startGameButtonText = this.add
-            .text(120, 120, 'НАЧАТЬ РАЗДАЧУ', {
+            .text(120, 220, 'НАЧАТЬ РАЗДАЧУ', {
                 fontFamily: 'Arial',
                 fontSize: '16px',
                 fill: '#ffffff',
@@ -1905,6 +1905,17 @@ export class FastGameScene extends Phaser.Scene {
                 console.log('FastGameScene: syncRoomUI - Next round button made non-interactive');
             }
         }
+        
+        // Check if it's my turn and enable player actions
+        // if (this.gameState && this.gameState.status === 'playing') {
+        //     const isMyTurn = this.networkManager.isMyTurn();
+        //     const myPlayer = this.networkManager.getMyPlayer();
+            
+        //     if (isMyTurn && myPlayer && !myPlayer.folded && !myPlayer.allIn && !myPlayer.isSpectator) {
+        //         this.enablePlayerActions();
+        //         console.log('FastGameScene: syncRoomUI - Enabled player actions for my turn');
+        //     }
+        // }
         
         console.log('FastGameScene: syncRoomUI complete');
     }
