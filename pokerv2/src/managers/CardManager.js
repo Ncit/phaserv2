@@ -348,6 +348,42 @@ export class CardManager {
         });
     }
 
+    // Update card container position
+    updateCardContainerPosition(playerNumber, x, y) {
+        const containerKey = `player${playerNumber}_cards`;
+        const containerData = this.cardContainers.get(containerKey);
+        
+        if (!containerData) {
+            console.warn(`CardManager: No container found for player ${playerNumber}`);
+            return false;
+        }
+
+        // Update container position
+        containerData.container.setPosition(x, y);
+        
+        if (this.isDebug) {
+            console.log(`CardManager: Updated card container position for player ${playerNumber} to (${x}, ${y})`);
+        }
+
+        return true;
+    }
+
+    // Remove card container for a player
+    removeCardContainer(playerNumber) {
+        const containerKey = `player${playerNumber}_cards`;
+        const containerData = this.cardContainers.get(containerKey);
+        
+        if (containerData) {
+            this.clearPlayerCards(playerNumber);
+            containerData.container.destroy();
+            this.cardContainers.delete(containerKey);
+            
+            if (this.isDebug) {
+                console.log(`CardManager: Removed card container for player ${playerNumber}`);
+            }
+        }
+    }
+
     // Get player's cards
     getPlayerCards(playerNumber) {
         const containerKey = `player${playerNumber}_cards`;
@@ -430,22 +466,6 @@ export class CardManager {
 
         if (this.isDebug) {
             console.log(`CardManager: Started dealing ${cardsPerPlayer} cards to ${playerNumbers.length} players`);
-        }
-    }
-
-    // Remove card container for a player
-    removeCardContainer(playerNumber) {
-        const containerKey = `player${playerNumber}_cards`;
-        const containerData = this.cardContainers.get(containerKey);
-        
-        if (containerData) {
-            this.clearPlayerCards(playerNumber);
-            containerData.container.destroy();
-            this.cardContainers.delete(containerKey);
-            
-            if (this.isDebug) {
-                console.log(`CardManager: Removed card container for player ${playerNumber}`);
-            }
         }
     }
 

@@ -1714,18 +1714,99 @@ export class FastGameScene extends Phaser.Scene {
         const currentTime = Date.now();
 
         if (currentTime - this.lastUISyncTime >= 1000) {
-            console.log('FastGameScene: update called');
             this.lastUISyncTime = currentTime;
             this.syncRoomUI();
         }
     }
 
     syncRoomUI() {
-        console.log('FastGameScene: syncRoomUI called');
+        // console.log('FastGameScene: syncRoomUI called');
         // Only sync if we have a game state and players
         if (!this.gameState || !this.players || this.players.length === 0) {
-            console.log('FastGameScene: syncRoomUI - no game state or players, skipping');
+            // console.log('FastGameScene: syncRoomUI - no game state or players, skipping');
             return;
+        }
+        
+        // Get all available positions
+        const positions = [
+            { x: 280, y: 270 }, // Top left
+            { x: 280, y: 460 }, // Bottom left
+            { x: 670, y: 520 }, // Bottom center (human player)
+            { x: 980, y: 270 }, // Top right
+            { x: 980, y: 460 }, // Bottom right
+            { x: 670, y: 200 }  // Top center
+        ];
+        
+        // Check for position conflicts and fix them
+        const positionMap = new Map(); // position index -> player ID
+        const conflicts = [];
+        
+        this.playerElements.forEach((elements, playerId) => {
+            const player = this.players.find(p => p.id === playerId);
+            if (player) {
+                // Try to determine current position by checking avatar position
+                const avatarX = elements.avatar.x;
+                const avatarY = elements.avatar.y;
+                
+                // Find which position this player is currently at
+                let currentPositionIndex = -1;
+                for (let i = 0; i < positions.length; i++) {
+                    if (Math.abs(avatarX - positions[i].x) < 10 && Math.abs(avatarY - positions[i].y) < 10) {
+                        currentPositionIndex = i;
+                        break;
+                    }
+                }
+                
+                if (currentPositionIndex !== -1) {
+                    if (positionMap.has(currentPositionIndex)) {
+                        // Conflict detected - two players at same position
+                        conflicts.push({
+                            playerId: playerId,
+                            playerName: player.name,
+                            positionIndex: currentPositionIndex,
+                            existingPlayerId: positionMap.get(currentPositionIndex)
+                        });
+                    } else {
+                        positionMap.set(currentPositionIndex, playerId);
+                    }
+                }
+            }
+        });
+        
+        // Fix conflicts by reassigning positions
+        if (conflicts.length > 0) {
+            // console.log('FastGameScene: syncRoomUI - Position conflicts detected:', conflicts);
+            
+            conflicts.forEach(conflict => {
+                // Find available position for this player
+                let availablePositionIndex = -1;
+                for (let i = 0; i < positions.length; i++) {
+                    if (!positionMap.has(i)) {
+                        availablePositionIndex = i;
+                        positionMap.set(i, conflict.playerId);
+                        break;
+                    }
+                }
+                
+                if (availablePositionIndex !== -1) {
+                    // Move player to new position
+                    const elements = this.playerElements.get(conflict.playerId);
+                    if (elements) {
+                        const newPosition = positions[availablePositionIndex];
+                        elements.avatar.setPosition(newPosition.x, newPosition.y);
+                        elements.nameBackground.setPosition(newPosition.x - 90, newPosition.y);
+                        elements.playerName.setPosition(newPosition.x - 90, newPosition.y);
+                        elements.bankText.setPosition(newPosition.x, newPosition.y + 70);
+                        
+                        // Update card container position
+                        this.cardManager.updateCardContainerPosition(availablePositionIndex + 1, newPosition.x + 60, newPosition.y + 30);
+                        
+                        // console.log(`FastGameScene: syncRoomUI - Moved ${conflict.playerName} from position ${conflict.positionIndex + 1} to position ${availablePositionIndex + 1}`);
+                    }
+                } else {
+                    // console.warn(`FastGameScene: syncRoomUI - No available position for ${conflict.playerName}`);
+                }
+            });
         }
         
         // Check if all players in the game state have UI elements
@@ -1734,29 +1815,48 @@ export class FastGameScene extends Phaser.Scene {
         });
         
         if (missingPlayers.length > 0) {
-            console.log('FastGameScene: syncRoomUI - missing UI for players:', missingPlayers.map(p => p.name));
+            // console.log('FastGameScene: syncRoomUI - missing UI for players:', missingPlayers.map(p => p.name));
             
-            // Rebuild player UI for missing players
-            missingPlayers.forEach(player => {
-                const playerIndex = this.players.findIndex(p => p.id === player.id);
-                if (playerIndex !== -1) {
-                    const positions = [
-                        { x: 280, y: 270 }, // Top left
-                        { x: 280, y: 460 }, // Bottom left
-                        { x: 670, y: 520 }, // Bottom center (human player)
-                        { x: 980, y: 270 }, // Top right
-                        { x: 980, y: 460 }, // Bottom right
-                        { x: 670, y: 200 }  // Top center
-                    ];
+            // Find which positions are already occupied
+            const occupiedPositions = new Set();
+            this.playerElements.forEach((elements, playerId) => {
+                const player = this.players.find(p => p.id === playerId);
+                if (player) {
+                    const avatarX = elements.avatar.x;
+                    const avatarY = elements.avatar.y;
                     
-                    if (playerIndex < positions.length) {
-                        this.createPlayerUI(player, positions[playerIndex], playerIndex + 1);
-                        console.log(`FastGameScene: syncRoomUI - Created UI for missing player: ${player.name}`);
+                    for (let i = 0; i < positions.length; i++) {
+                        if (Math.abs(avatarX - positions[i].x) < 10 && Math.abs(avatarY - positions[i].y) < 10) {
+                            occupiedPositions.add(i);
+                            break;
+                        }
                     }
                 }
             });
+            
+            // console.log('FastGameScene: syncRoomUI - occupied positions:', Array.from(occupiedPositions));
+            
+            // Rebuild player UI for missing players using available positions
+            missingPlayers.forEach(player => {
+                // Find the first available position
+                let availablePositionIndex = -1;
+                for (let i = 0; i < positions.length; i++) {
+                    if (!occupiedPositions.has(i)) {
+                        availablePositionIndex = i;
+                        occupiedPositions.add(i); // Mark as occupied
+                        break;
+                    }
+                }
+                
+                if (availablePositionIndex !== -1) {
+                    this.createPlayerUI(player, positions[availablePositionIndex], availablePositionIndex + 1);
+                    // console.log(`FastGameScene: syncRoomUI - Created UI for missing player: ${player.name} at position ${availablePositionIndex + 1}`);
+                } else {
+                    // console.warn(`FastGameScene: syncRoomUI - No available position for player: ${player.name}`);
+                }
+            });
         } else {
-            console.log('FastGameScene: syncRoomUI - No missing player UIs');
+            // console.log('FastGameScene: syncRoomUI - No missing player UIs');
         }
         
         // Ensure all existing players are visible
@@ -1770,11 +1870,11 @@ export class FastGameScene extends Phaser.Scene {
                     elements.playerName.setVisible(true);
                     elements.bankText.setVisible(true);
                     this.cardManager.showPlayerCards(elements.playerNumber);
-                    console.log(`FastGameScene: syncRoomUI - Made player visible: ${player.name}`);
+                    // console.log(`FastGameScene: syncRoomUI - Made player visible: ${player.name}`);
                 }
             }
         });
-        console.log('FastGameScene: syncRoomUI complete');
+        // console.log('FastGameScene: syncRoomUI complete');
     }
 
     shutdown() {
