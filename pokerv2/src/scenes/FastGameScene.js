@@ -288,6 +288,9 @@ export class FastGameScene extends Phaser.Scene {
                     // Regular room reset (Next Round button or other reset)
                     this.handleRoomReset();
                 }
+            } else if (data.roomResetToOnePlayer) {
+                // Handle the case where only one player is left in the room
+                this.handleRoomResetToOnePlayer();
             }
             
             // Handle showdown results
@@ -1117,6 +1120,17 @@ export class FastGameScene extends Phaser.Scene {
             // Show next round button
             this.nextRoundButton.setVisible(true);
             this.nextRoundButtonText.setVisible(true);
+
+            // Enable or visually disable next round button based on player permission
+            if (this.canClickNextRound()) {
+                this.nextRoundButton.setInteractive();
+                this.nextRoundButton.setAlpha(1);
+                this.nextRoundButtonText.setFill('#ffffff');
+            } else {
+                this.nextRoundButton.disableInteractive();
+                this.nextRoundButton.setAlpha(0.5);
+                this.nextRoundButtonText.setFill('#888888');
+            }
         } else {
             // Show poker action buttons for active game
             this.foldButton.setVisible(true);
@@ -1135,6 +1149,16 @@ export class FastGameScene extends Phaser.Scene {
             // Update action buttons
             this.updateActionButtons();
         }
+    }
+
+    // Determines if the current player can click the next round button
+    canClickNextRound() {
+        // Example logic: only allow if player is not a spectator, not folded, not all-in, and is dealer or host
+        const myPlayer = this.networkManager.getMyPlayer();
+        if (!myPlayer || myPlayer.isSpectator || myPlayer.folded || myPlayer.allIn) return false;
+        // You can customize this logic as needed (e.g., only dealer can click)
+        // For now, allow all active players to click:
+        return true;
     }
 
     updateCommunityCards() {
@@ -1854,5 +1878,45 @@ export class FastGameScene extends Phaser.Scene {
                 console.log('FastGameScene: Buttons force-enabled after reconnection');
             }
         }
+    }
+
+    handleRoomResetToOnePlayer() {
+        console.log('FastGameScene: Handling room reset to one player');
+        // Clear all cards and community cards
+        this.playerElements.forEach((elements, playerId) => {
+            this.cardManager.safeClearPlayerCards(elements.playerNumber);
+        });
+        this.communityCardsContainer.removeAll(true);
+        this.handRank.setText('Все остальные игроки покинули комнату. Ожидание новых игроков...');
+        this.handRank.setFill('#FFD700');
+        this.clearCardHighlights();
+        this.nextRoundButton.setVisible(false);
+        this.nextRoundButtonText.setVisible(false);
+
+        // Hide all disconnected players, show only the last remaining player
+        this.playerElements.forEach((elements, playerId) => {
+            const player = this.players.find(p => p.id === playerId);
+            if (!player || player.disconnected) {
+                // Hide disconnected or non-existent player
+                elements.avatar.setVisible(false);
+                elements.nameBackground.setVisible(false);
+                elements.playerName.setVisible(false);
+                elements.bankText.setVisible(false);
+                this.cardManager.hidePlayerCards(elements.playerNumber);
+                console.log(`FastGameScene: Hiding disconnected player in room reset: ${player ? player.name : playerId}`);
+            } else {
+                // Show the last remaining player
+                elements.avatar.setVisible(true);
+                elements.nameBackground.setVisible(true);
+                elements.playerName.setVisible(true);
+                elements.bankText.setVisible(true);
+                this.cardManager.showPlayerCards(elements.playerNumber);
+                console.log(`FastGameScene: Showing last remaining player: ${player.name}`);
+            }
+        });
+
+        // Reset UI to lobby state
+        this.updateLobbyUI();
+        console.log('FastGameScene: Room reset to one player complete - only last player visible');
     }
 }
