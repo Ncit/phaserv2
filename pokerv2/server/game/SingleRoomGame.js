@@ -905,10 +905,7 @@ class SingleRoomGame {
         
         const allAllIn = activePlayers.every(p => p.allIn);
         
-        if (this.phase === 'preflop') {
-            return allBetsEqual;
-        }
-        
+        // For all phases including preflop, require both equal bets AND all players to have acted
         return (allBetsEqual && allHaveActed) || allAllIn || (this.phase === 'river' && allBetsEqual);
     }
 

@@ -136,6 +136,7 @@ export class FastGameScene extends Phaser.Scene {
             cursor: 'hand'
         });
         this.nextRoundButton.setVisible(false);
+        this.nextRoundButton.setInteractive();
 
         this.underline = this.add.image(640, 700, 'underline');
         this.underline.setDisplaySize(400, 10);
@@ -812,6 +813,7 @@ export class FastGameScene extends Phaser.Scene {
         this.nextRoundButton.setVisible(true);
         this.nextRoundButtonText.setVisible(true);
         
+        this.nextRoundButton.setInteractive();
         console.log('FastGameScene: Showdown results displayed');
     }
     
@@ -964,6 +966,14 @@ export class FastGameScene extends Phaser.Scene {
         this._updatingUI = true;
         
         try {
+            console.log('FastGameScene: updateUI - game state:', {
+                status: this.gameState ? this.gameState.status : 'null',
+                phase: this.gameState ? this.gameState.phase : 'null',
+                pot: this.gameState ? this.gameState.pot : 'null',
+                readyCount: this.gameState ? this.gameState.readyCount : 'null',
+                totalPlayers: this.gameState ? this.gameState.totalPlayers : null
+            });
+            
             if (!this.gameState) {
                 // Game state is null - this means the room was completely reset
                 // Set UI to empty lobby state
@@ -1004,11 +1014,13 @@ export class FastGameScene extends Phaser.Scene {
             
             // Update phase text based on game status
             if (this.gameState.status === 'lobby') {
+                console.log('FastGameScene: updateUI - calling updateLobbyUI (status is lobby)');
                 this.phaseText.setText(`Лобби (${this.gameState.readyCount}/${this.gameState.totalPlayers} готовы)`);
                 this.raiseCounterText.setText(''); // Hide raise counter in lobby
                 this.turnIndicatorText.setText(''); // Hide turn indicator in lobby
                 this.updateLobbyUI();
             } else {
+                console.log('FastGameScene: updateUI - calling updateGameUI (status is not lobby)');
                 this.phaseText.setText(this.gameState.phase.charAt(0).toUpperCase() + this.gameState.phase.slice(1));
                 
                 // Update raise counter display
@@ -1049,12 +1061,21 @@ export class FastGameScene extends Phaser.Scene {
             return;
         }
 
-        // Get current player
+        // Use the same logic as NetworkManager.isMyTurn() for consistency
+        const isMyTurn = this.networkManager.isMyTurn();
         const currentPlayer = this.players.find(p => p.isCurrentPlayer);
         
+        console.log('FastGameScene: updateTurnIndicator - turn check:', {
+            isMyTurn,
+            currentPlayer: currentPlayer ? {
+                id: currentPlayer.id,
+                name: currentPlayer.name
+            } : null,
+            myPlayerId: this.myPlayerId
+        });
+        
         if (currentPlayer) {
-            // Check if it's the current player's turn
-            if (currentPlayer.id === this.myPlayerId) {
+            if (isMyTurn) {
                 this.turnIndicatorText.setText('🎯 YOUR TURN!');
                 this.turnIndicatorText.setFill('#00FF00'); // Green for your turn
             } else {
@@ -1121,13 +1142,14 @@ export class FastGameScene extends Phaser.Scene {
             this.nextRoundButton.setVisible(true);
             this.nextRoundButtonText.setVisible(true);
 
+            this.nextRoundButton.setInteractive();
             // Enable or visually disable next round button based on player permission
             if (this.canClickNextRound()) {
                 this.nextRoundButton.setInteractive();
                 this.nextRoundButton.setAlpha(1);
                 this.nextRoundButtonText.setFill('#ffffff');
             } else {
-                this.nextRoundButton.disableInteractive();
+                // this.nextRoundButton.disableInteractive();
                 this.nextRoundButton.setAlpha(0.5);
                 this.nextRoundButtonText.setFill('#888888');
             }
@@ -1153,11 +1175,15 @@ export class FastGameScene extends Phaser.Scene {
 
     // Determines if the current player can click the next round button
     canClickNextRound() {
-        // Example logic: only allow if player is not a spectator, not folded, not all-in, and is dealer or host
         const myPlayer = this.networkManager.getMyPlayer();
-        if (!myPlayer || myPlayer.isSpectator || myPlayer.folded || myPlayer.allIn) return false;
-        // You can customize this logic as needed (e.g., only dealer can click)
-        // For now, allow all active players to click:
+        console.log('FastGameScene: canClickNextRound check:', {
+            myPlayer,
+            isSpectator: myPlayer ? myPlayer.isSpectator : undefined,
+            folded: myPlayer ? myPlayer.folded : undefined,
+            allIn: myPlayer ? myPlayer.allIn : undefined,
+            phase: this.gameState ? this.gameState.phase : undefined
+        });
+        if (myPlayer.isSpectator || myPlayer.folded || myPlayer.allIn) return false;
         return true;
     }
 
@@ -1230,6 +1256,7 @@ export class FastGameScene extends Phaser.Scene {
             console.log('FastGameScene: Hiding cards for spectator player:', player.name);
             this.cardManager.safeClearPlayerCards(elements.playerNumber);
             return;
+            
         }
         
         // Only update cards if game has started and player has cards
@@ -1841,6 +1868,12 @@ export class FastGameScene extends Phaser.Scene {
             } else {
                 console.log('FastGameScene: Not my turn after reconnection or player cannot act');
             }
+        }
+        
+        // Force update of next round button if in showdown phase
+        if (this.gameState && this.gameState.phase === 'showdown') {
+            this.updateGameUI();
+            console.log('FastGameScene: Forced updateGameUI after reconnection for showdown phase');
         }
         
         console.log('FastGameScene: UI restoration after reconnection complete');
