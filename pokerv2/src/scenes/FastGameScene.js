@@ -1706,6 +1706,75 @@ export class FastGameScene extends Phaser.Scene {
 
     update() {
         // Game loop updates
+        // Periodic room UI sync every 300ms
+        if (!this.lastUISyncTime) {
+            this.lastUISyncTime = Date.now();
+        }
+        
+        const currentTime = Date.now();
+
+        if (currentTime - this.lastUISyncTime >= 1000) {
+            console.log('FastGameScene: update called');
+            this.lastUISyncTime = currentTime;
+            this.syncRoomUI();
+        }
+    }
+
+    syncRoomUI() {
+        console.log('FastGameScene: syncRoomUI called');
+        // Only sync if we have a game state and players
+        if (!this.gameState || !this.players || this.players.length === 0) {
+            console.log('FastGameScene: syncRoomUI - no game state or players, skipping');
+            return;
+        }
+        
+        // Check if all players in the game state have UI elements
+        const missingPlayers = this.players.filter(player => {
+            return !this.playerElements.has(player.id);
+        });
+        
+        if (missingPlayers.length > 0) {
+            console.log('FastGameScene: syncRoomUI - missing UI for players:', missingPlayers.map(p => p.name));
+            
+            // Rebuild player UI for missing players
+            missingPlayers.forEach(player => {
+                const playerIndex = this.players.findIndex(p => p.id === player.id);
+                if (playerIndex !== -1) {
+                    const positions = [
+                        { x: 280, y: 270 }, // Top left
+                        { x: 280, y: 460 }, // Bottom left
+                        { x: 670, y: 520 }, // Bottom center (human player)
+                        { x: 980, y: 270 }, // Top right
+                        { x: 980, y: 460 }, // Bottom right
+                        { x: 670, y: 200 }  // Top center
+                    ];
+                    
+                    if (playerIndex < positions.length) {
+                        this.createPlayerUI(player, positions[playerIndex], playerIndex + 1);
+                        console.log(`FastGameScene: syncRoomUI - Created UI for missing player: ${player.name}`);
+                    }
+                }
+            });
+        } else {
+            console.log('FastGameScene: syncRoomUI - No missing player UIs');
+        }
+        
+        // Ensure all existing players are visible
+        this.playerElements.forEach((elements, playerId) => {
+            const player = this.players.find(p => p.id === playerId);
+            if (player && !player.disconnected) {
+                // Make sure all UI elements are visible
+                if (!elements.avatar.visible) {
+                    elements.avatar.setVisible(true);
+                    elements.nameBackground.setVisible(true);
+                    elements.playerName.setVisible(true);
+                    elements.bankText.setVisible(true);
+                    this.cardManager.showPlayerCards(elements.playerNumber);
+                    console.log(`FastGameScene: syncRoomUI - Made player visible: ${player.name}`);
+                }
+            }
+        });
+        console.log('FastGameScene: syncRoomUI complete');
     }
 
     shutdown() {
