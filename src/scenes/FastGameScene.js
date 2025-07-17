@@ -121,13 +121,22 @@ export class FastGameScene extends Phaser.Scene {
         this.raiseButton = this.buttonManager.createButton('raise', 710, 640);
         this.allInButton = this.buttonManager.createButton('allIn', 910, 640);
         
-        // Create Next Round button (initially hidden)
-        this.nextRoundButton = this.buttonManager.createButton('call', 1100, 640);
-        this.nextRoundButton.setVisible(false);
+        // Create start game button under menu button
+        this.startGameButton = this.buttonManager.createButton('raise', 120, 220, {
+            scale: 0.3,
+            interactive: true,
+            cursor: 'hand'
+        });
+        // this.startGameButton.setVisible(false);
 
-        // Create start game button only (no ready button)
-        this.startGameButton = this.buttonManager.createButton('call', 440, 100);
-        this.startGameButton.setVisible(false);
+        // Create Next Round button under start game button
+        this.nextRoundButton = this.buttonManager.createButton('raise', 120, 180, {
+            scale: 0.3,
+            interactive: true,
+            cursor: 'hand'
+        });
+        this.nextRoundButton.setVisible(false);
+        this.nextRoundButton.setInteractive();
 
         this.underline = this.add.image(640, 700, 'underline');
         this.underline.setDisplaySize(400, 10);
@@ -193,7 +202,7 @@ export class FastGameScene extends Phaser.Scene {
                 strokeThickness: 1,
             })
             .setOrigin(0.5);
-
+            this.connectionStatusText
         // Create turn indicator text
         this.turnIndicatorText = this.add
             .text(940, 170, '', {
@@ -280,6 +289,9 @@ export class FastGameScene extends Phaser.Scene {
                     // Regular room reset (Next Round button or other reset)
                     this.handleRoomReset();
                 }
+            } else if (data.roomResetToOnePlayer) {
+                // Handle the case where only one player is left in the room
+                this.handleRoomResetToOnePlayer();
             }
             
             // Handle showdown results
@@ -289,6 +301,12 @@ export class FastGameScene extends Phaser.Scene {
             
             this.updateUI();
             this.handleLastAction(data.lastAction);
+            
+            // If this is a reconnected player, ensure UI is properly restored
+            if (data.isReconnection) {
+                console.log('FastGameScene: Detected reconnection in game state update');
+                this.restoreUIAfterReconnection();
+            }
         });
 
         // Player joined event
@@ -367,6 +385,9 @@ export class FastGameScene extends Phaser.Scene {
                 } else {
                     console.log('FastGameScene: Reconnected player - no game state available');
                 }
+                
+                // Force a complete UI refresh to ensure all buttons are properly restored
+                this.restoreUIAfterReconnection();
             } else {
                 this.handRank.setText(`${playerName} переподключился!`);
                 this.handRank.setFill('#00FF00'); // Green color for reconnection
@@ -387,8 +408,8 @@ export class FastGameScene extends Phaser.Scene {
         // Network error event
         this.networkManager.on('networkError', (data) => {
             console.error('FastGameScene: Network error:', data);
-            this.connectionStatusText.setText(`Error: ${data.message}`);
-            this.connectionStatusText.setFill('#FF0000');
+            // this.connectionStatusText.setText(`Error: ${data.message}`);
+            // this.connectionStatusText.setFill('#FF0000');
         });
 
         // Disconnected event
@@ -789,9 +810,10 @@ export class FastGameScene extends Phaser.Scene {
         this.highlightWinningCards(showdownResults.winners);
         
         // Show Next Round button
-        this.nextRoundButton.setVisible(true);
-        this.nextRoundButtonText.setVisible(true);
+        // this.nextRoundButton.setVisible(true);
+        // this.nextRoundButtonText.setVisible(true);
         
+        // this.nextRoundButton.setInteractive();
         console.log('FastGameScene: Showdown results displayed');
     }
     
@@ -875,6 +897,12 @@ export class FastGameScene extends Phaser.Scene {
         }
         
         this.players.forEach((player, index) => {
+            // Don't show cards for spectators
+            if (player.isSpectator) {
+                console.log('FastGameScene: Skipping card display for spectator player:', player.name);
+                return;
+            }
+            
             if (player.hand && player.hand.length > 0) {
                 const playerElements = this.playerElements.get(player.id);
                 if (playerElements) {
@@ -929,73 +957,95 @@ export class FastGameScene extends Phaser.Scene {
     }
 
     updateUI() {
-        if (!this.gameState) {
-            // Game state is null - this means the room was completely reset
-            // Set UI to empty lobby state
-            this.chipBankText.setText('БАНК: 0');
-            this.phaseText.setText('Лобби (0/0 готовы)');
-            this.raiseCounterText.setText('');
-            
-            // Hide all game UI elements
-            this.foldButton.setVisible(false);
-            this.callButton.setVisible(false);
-            this.raiseButton.setVisible(false);
-            this.allInButton.setVisible(false);
-            this.foldButtonText.setVisible(false);
-            this.callButtonText.setVisible(false);
-            this.raiseButtonText.setVisible(false);
-            this.allInButtonText.setVisible(false);
-            
-            // Hide start game button
-            this.startGameButton.setVisible(false);
-            this.startGameButton.disableInteractive();
-            this.startGameButtonText.setVisible(false);
-            
-            // Hide next round button
-            this.nextRoundButton.setVisible(false);
-            this.nextRoundButtonText.setVisible(false);
-            
-            // Clear turn indicator
-            this.turnIndicatorText.setText('');
-            
-            // Clear community cards
-            this.communityCardsContainer.removeAll(true);
-            
+        // Add call stack protection to prevent infinite loops
+        if (this._updatingUI) {
+            console.log('FastGameScene: updateUI called recursively, preventing loop');
             return;
         }
         
-        // Update pot display
-        this.chipBankText.setText(`БАНК: ${this.gameState.pot}`);
+        this._updatingUI = true;
         
-        // Update phase text based on game status
-        if (this.gameState.status === 'lobby') {
-            this.phaseText.setText(`Лобби (${this.gameState.readyCount}/${this.gameState.totalPlayers} готовы)`);
-            this.raiseCounterText.setText(''); // Hide raise counter in lobby
-            this.turnIndicatorText.setText(''); // Hide turn indicator in lobby
-            this.updateLobbyUI();
-        } else {
-            this.phaseText.setText(this.gameState.phase.charAt(0).toUpperCase() + this.gameState.phase.slice(1));
+        try {
+            console.log('FastGameScene: updateUI - game state:', {
+                status: this.gameState ? this.gameState.status : 'null',
+                phase: this.gameState ? this.gameState.phase : 'null',
+                pot: this.gameState ? this.gameState.pot : 'null',
+                readyCount: this.gameState ? this.gameState.readyCount : 'null',
+                totalPlayers: this.gameState ? this.gameState.totalPlayers : null
+            });
             
-            // Update raise counter display
-            if (this.gameState.currentRaisesInRound !== undefined && this.gameState.maxRaisesPerRound !== undefined) {
-                this.raiseCounterText.setText(`Raises: ${this.gameState.currentRaisesInRound}/${this.gameState.maxRaisesPerRound}`);
-            } else {
+            if (!this.gameState) {
+                // Game state is null - this means the room was completely reset
+                // Set UI to empty lobby state
+                this.chipBankText.setText('БАНК: 0');
+                this.phaseText.setText('Лобби (0/0 готовы)');
                 this.raiseCounterText.setText('');
+                
+                // Hide all game UI elements
+                this.foldButton.setVisible(false);
+                this.callButton.setVisible(false);
+                this.raiseButton.setVisible(false);
+                this.allInButton.setVisible(false);
+                this.foldButtonText.setVisible(false);
+                this.callButtonText.setVisible(false);
+                this.raiseButtonText.setVisible(false);
+                this.allInButtonText.setVisible(false);
+                
+                // Hide start game button
+                // this.startGameButton.setVisible(false);
+                // this.startGameButton.disableInteractive();
+                // this.startGameButtonText.setVisible(false);
+                
+                // Hide next round button
+                this.nextRoundButton.setVisible(false);
+                this.nextRoundButtonText.setVisible(false);
+                
+                // Clear turn indicator
+                this.turnIndicatorText.setText('');
+                
+                // Clear community cards
+                this.communityCardsContainer.removeAll(true);
+                
+                return;
             }
             
-            // Update turn indicator
-            this.updateTurnIndicator();
+            // Update pot display
+            this.chipBankText.setText(`БАНК: ${this.gameState.pot}`);
             
-            this.updateGameUI();
+            // Update phase text based on game status
+            if (this.gameState.status === 'lobby') {
+                console.log('FastGameScene: updateUI - calling updateLobbyUI (status is lobby)');
+                this.phaseText.setText(`Лобби (${this.gameState.readyCount}/${this.gameState.totalPlayers} готовы)`);
+                this.raiseCounterText.setText(''); // Hide raise counter in lobby
+                this.turnIndicatorText.setText(''); // Hide turn indicator in lobby
+                this.updateLobbyUI();
+            } else {
+                console.log('FastGameScene: updateUI - calling updateGameUI (status is not lobby)');
+                this.phaseText.setText(this.gameState.phase.charAt(0).toUpperCase() + this.gameState.phase.slice(1));
+                
+                // Update raise counter display
+                if (this.gameState.currentRaisesInRound !== undefined && this.gameState.maxRaisesPerRound !== undefined) {
+                    this.raiseCounterText.setText(`Raises: ${this.gameState.currentRaisesInRound}/${this.gameState.maxRaisesPerRound}`);
+                } else {
+                    this.raiseCounterText.setText('');
+                }
+                
+                // Update turn indicator
+                this.updateTurnIndicator();
+                
+                this.updateGameUI();
+            }
+            
+            // Update community cards
+            this.updateCommunityCards();
+            
+            // Update all player displays
+            this.players.forEach(player => {
+                this.updatePlayerDisplay(player.id);
+            });
+        } finally {
+            this._updatingUI = false;
         }
-        
-        // Update community cards
-        this.updateCommunityCards();
-        
-        // Update all player displays
-        this.players.forEach(player => {
-            this.updatePlayerDisplay(player.id);
-        });
     }
 
     updateTurnIndicator() {
@@ -1011,12 +1061,21 @@ export class FastGameScene extends Phaser.Scene {
             return;
         }
 
-        // Get current player
+        // Use the same logic as NetworkManager.isMyTurn() for consistency
+        const isMyTurn = this.networkManager.isMyTurn();
         const currentPlayer = this.players.find(p => p.isCurrentPlayer);
         
+        console.log('FastGameScene: updateTurnIndicator - turn check:', {
+            isMyTurn,
+            currentPlayer: currentPlayer ? {
+                id: currentPlayer.id,
+                name: currentPlayer.name
+            } : null,
+            myPlayerId: this.myPlayerId
+        });
+        
         if (currentPlayer) {
-            // Check if it's the current player's turn
-            if (currentPlayer.id === this.myPlayerId) {
+            if (isMyTurn) {
                 this.turnIndicatorText.setText('🎯 YOUR TURN!');
                 this.turnIndicatorText.setFill('#00FF00'); // Green for your turn
             } else {
@@ -1044,16 +1103,32 @@ export class FastGameScene extends Phaser.Scene {
         this.allInButtonText.setVisible(false);
         
         // Show start game button if all players are ready
-        if (this.gameState.allPlayersReady) {
+        // Check multiple conditions to ensure button is enabled after reconnection
+        const allPlayersReady = this.gameState.allPlayersReady;
+        const readyCount = this.gameState.readyCount || 0;
+        const totalPlayers = this.gameState.totalPlayers || 0;
+        const connectedPlayers = this.players ? this.players.filter(p => !p.disconnected).length : 0;
+        
+        console.log('FastGameScene: updateLobbyUI - start game button conditions:', {
+            allPlayersReady,
+            readyCount,
+            totalPlayers,
+            connectedPlayers,
+            shouldEnable: (allPlayersReady || (readyCount >= 2 && readyCount === totalPlayers && totalPlayers >= 2))
+        });
+        
+        if (allPlayersReady || (readyCount >= 2 && readyCount === totalPlayers && totalPlayers >= 2)) {
             this.startGameButton.setVisible(true);
             this.startGameButton.setInteractive();
             this.startGameButton.removeAllListeners('pointerdown');
             this.startGameButton.on('pointerdown', () => this.handleStartGame());
             this.startGameButtonText.setVisible(true);
+            console.log('FastGameScene: updateLobbyUI - Start game button enabled');
         } else {
-            this.startGameButton.setVisible(false);
-            this.startGameButton.disableInteractive();
-            this.startGameButtonText.setVisible(false);
+            // this.startGameButton.setVisible(false);
+            // this.startGameButton.disableInteractive();
+            // this.startGameButtonText.setVisible(false);
+            console.log('FastGameScene: updateLobbyUI - Start game button disabled');
         }
         
         // Hide next round button
@@ -1063,9 +1138,9 @@ export class FastGameScene extends Phaser.Scene {
 
     updateGameUI() {
         // Hide start game button and disable it
-        this.startGameButton.setVisible(false);
-        this.startGameButton.disableInteractive();
-        this.startGameButtonText.setVisible(false);
+        // this.startGameButton.setVisible(false);
+        // this.startGameButton.disableInteractive();
+        // this.startGameButtonText.setVisible(false);
         
         // Check if game is in showdown phase
         if (this.gameState.phase === 'showdown') {
@@ -1080,8 +1155,20 @@ export class FastGameScene extends Phaser.Scene {
             this.allInButtonText.setVisible(false);
             
             // Show next round button
-            this.nextRoundButton.setVisible(true);
-            this.nextRoundButtonText.setVisible(true);
+            // this.nextRoundButton.setVisible(true);
+            // this.nextRoundButtonText.setVisible(true);
+
+            this.nextRoundButton.setInteractive();
+            // Enable or visually disable next round button based on player permission
+            if (this.canClickNextRound()) {
+                this.nextRoundButton.setInteractive();
+                this.nextRoundButton.setAlpha(1);
+                this.nextRoundButtonText.setFill('#ffffff');
+            } else {
+                // this.nextRoundButton.disableInteractive();
+                this.nextRoundButton.setAlpha(0.5);
+                this.nextRoundButtonText.setFill('#888888');
+            }
         } else {
             // Show poker action buttons for active game
             this.foldButton.setVisible(true);
@@ -1100,6 +1187,20 @@ export class FastGameScene extends Phaser.Scene {
             // Update action buttons
             this.updateActionButtons();
         }
+    }
+
+    // Determines if the current player can click the next round button
+    canClickNextRound() {
+        const myPlayer = this.networkManager.getMyPlayer();
+        console.log('FastGameScene: canClickNextRound check:', {
+            myPlayer,
+            isSpectator: myPlayer ? myPlayer.isSpectator : undefined,
+            folded: myPlayer ? myPlayer.folded : undefined,
+            allIn: myPlayer ? myPlayer.allIn : undefined,
+            phase: this.gameState ? this.gameState.phase : undefined
+        });
+        if (myPlayer.isSpectator || myPlayer.folded || myPlayer.allIn) return false;
+        return true;
     }
 
     updateCommunityCards() {
@@ -1145,6 +1246,9 @@ export class FastGameScene extends Phaser.Scene {
             if (player.allIn) {
                 displayName += ' [ALL IN]';
             }
+            if (player.isSpectator) {
+                displayName += ' [SPECTATOR]';
+            }
         }
         
         elements.playerName.setText(displayName);
@@ -1163,6 +1267,14 @@ export class FastGameScene extends Phaser.Scene {
     }
 
     updatePlayerCards(player, elements) {
+        // Don't show cards for spectators
+        if (player.isSpectator) {
+            console.log('FastGameScene: Hiding cards for spectator player:', player.name);
+            this.cardManager.safeClearPlayerCards(elements.playerNumber);
+            return;
+            
+        }
+        
         // Only update cards if game has started and player has cards
         if (this.gameState.status !== 'playing' || !player.hand || player.hand.length === 0) {
             // Clear any existing cards if game is not started
@@ -1186,34 +1298,107 @@ export class FastGameScene extends Phaser.Scene {
     }
 
     updateActionButtons() {
-        const isMyTurn = this.networkManager.isMyTurn();
-        const myPlayer = this.networkManager.getMyPlayer();
-        
-        // Disable actions if game is in showdown phase
-        if (this.gameState.phase === 'showdown') {
-            this.disablePlayerActions();
+        // Add call stack protection to prevent infinite loops
+        if (this._updatingActionButtons) {
+            console.log('FastGameScene: updateActionButtons called recursively, preventing loop');
             return;
         }
         
-        if (isMyTurn && myPlayer && !myPlayer.folded && !myPlayer.allIn) {
-            this.enablePlayerActions();
-            
-            console.log('FastGameScene RAISE CHECK');
-            // Check raise limit and disable raise button if limit reached
-            const canRaise = this.networkManager.canRaise();
-            if (!canRaise) {
-                console.log('FastGameScene RAISE FIRST DISABLED');
-                this.raiseButton.disableInteractive();
-                this.raiseButtonText.setFill('#888888'); // Gray out the text
-                console.log('FastGameScene: Raise limit reached, raise button disabled');
-            } else {
-                console.log('FastGameScene RAISE FIRST ENABLED');
-                this.raiseButton.setInteractive();
-                this.raiseButtonText.setFill('#ffffff'); // Normal text color
+        this._updatingActionButtons = true;
+        
+        try {
+            // Check if game state exists and is in playing status
+            if (!this.gameState) {
+                console.log('FastGameScene: No game state available - disabling all actions');
+                this.disablePlayerActions();
+                return;
             }
-        } else {
-            console.log('FastGameScene RAISE SECOND DISABLE');
-            this.disablePlayerActions();
+            
+            if (this.gameState.status !== 'playing') {
+                console.log('FastGameScene: Game not in playing status - disabling all actions');
+                this.disablePlayerActions();
+                return;
+            }
+            
+            const isMyTurn = this.networkManager.isMyTurn();
+            const myPlayer = this.networkManager.getMyPlayer();
+            
+            console.log('FastGameScene: updateActionButtons - detailed check:', {
+                gameState: this.gameState ? {
+                    status: this.gameState.status,
+                    phase: this.gameState.phase
+                } : null,
+                isMyTurn,
+                myPlayer: myPlayer ? {
+                    id: myPlayer.id,
+                    name: myPlayer.name,
+                    folded: myPlayer.folded,
+                    allIn: myPlayer.allIn,
+                    isSpectator: myPlayer.isSpectator
+                } : null
+            });
+            
+            // Disable actions if game is in showdown phase
+            if (this.gameState.phase === 'showdown') {
+                console.log('FastGameScene: Game in showdown phase - disabling all actions');
+                this.disablePlayerActions();
+                return;
+            }
+            
+            // Disable actions if player is a spectator
+            if (myPlayer && myPlayer.isSpectator) {
+                console.log('FastGameScene: Player is spectator - disabling actions');
+                this.disablePlayerActions();
+                return;
+            }
+            
+            if (isMyTurn && myPlayer && !myPlayer.folded && !myPlayer.allIn) {
+                console.log('FastGameScene: All conditions met - enabling action buttons');
+                
+                // Enable basic action buttons (fold, call, all-in)
+                this.foldButton.setInteractive();
+                this.callButton.setInteractive();
+                this.allInButton.setInteractive();
+                
+                // Reset text colors to normal for enabled buttons
+                this.foldButtonText.setFill('#ffffff');
+                this.callButtonText.setFill('#ffffff');
+                this.allInButtonText.setFill('#ffffff');
+                
+                console.log('FastGameScene: Basic action buttons enabled - it is my turn');
+                
+                // Check raise button separately based on raise limit
+                const canRaise = this.networkManager.canRaise();
+                if (canRaise) {
+                    // Enable raise button if raises are still allowed
+                    this.raiseButton.setInteractive();
+                    this.raiseButtonText.setFill('#ffffff'); // Normal text color
+                    console.log('FastGameScene: Raise button enabled - raises still allowed');
+                } else {
+                    // Disable raise button if maximum raises reached
+                    this.raiseButton.disableInteractive();
+                    this.raiseButtonText.setFill('#888888'); // Gray out the text
+                    console.log('FastGameScene: Raise button disabled - maximum raises reached for this round');
+                }
+                
+                // Double-check button interactivity after enabling
+                console.log('FastGameScene: Final button interactivity check:', {
+                    foldButton: this.foldButton.input ? this.foldButton.input.enabled : 'no input',
+                    callButton: this.callButton.input ? this.callButton.input.enabled : 'no input',
+                    raiseButton: this.raiseButton.input ? this.raiseButton.input.enabled : 'no input',
+                    allInButton: this.allInButton.input ? this.allInButton.input.enabled : 'no input'
+                });
+            } else {
+                console.log('FastGameScene: Conditions not met for enabling buttons:', {
+                    isMyTurn,
+                    hasMyPlayer: !!myPlayer,
+                    playerFolded: myPlayer ? myPlayer.folded : 'no player',
+                    playerAllIn: myPlayer ? myPlayer.allIn : 'no player'
+                });
+                // this.disablePlayerActions();
+            }
+        } finally {
+            this._updatingActionButtons = false;
         }
     }
 
@@ -1266,7 +1451,7 @@ export class FastGameScene extends Phaser.Scene {
 
     createNextRoundButtonLabel() {
         this.nextRoundButtonText = this.add
-            .text(1100, 640, 'СЛЕДУЮЩИЙ РАУНД', {
+            .text(120, 180, 'СЛЕДУЮЩИЙ РАУНД', {
                 fontFamily: 'Arial',
                 fontSize: '16px',
                 fill: '#ffffff',
@@ -1279,7 +1464,7 @@ export class FastGameScene extends Phaser.Scene {
 
     createStartGameButtonLabel() {
         this.startGameButtonText = this.add
-            .text(440, 88, 'НАЧАТЬ РАЗДАЧУ', {
+            .text(120, 220, 'НОВАЯ ИГРА', {
                 fontFamily: 'Arial',
                 fontSize: '16px',
                 fill: '#ffffff',
@@ -1287,7 +1472,7 @@ export class FastGameScene extends Phaser.Scene {
                 strokeThickness: 1,
             })
             .setOrigin(0.5);
-        this.startGameButtonText.setVisible(false);
+        // this.startGameButtonText.setVisible(false);
     }
 
     setupButtonHandlers() {
@@ -1306,25 +1491,99 @@ export class FastGameScene extends Phaser.Scene {
     }
 
     enablePlayerActions() {
-        // Enable action buttons for human player
+        console.log('FastGameScene: enablePlayerActions called');
+        
+        // Enable action buttons for human player (excluding raise button which is handled separately)
         this.foldButton.setInteractive();
         this.callButton.setInteractive();
-        this.raiseButton.setInteractive();
         this.allInButton.setInteractive();
+        
+        // Reset text colors to normal
+        this.foldButtonText.setFill('#ffffff');
+        this.callButtonText.setFill('#ffffff');
+        this.allInButtonText.setFill('#ffffff');
+        // Note: raise button is handled separately in updateActionButtons() based on raise limits
+        
+        console.log('FastGameScene: Basic action buttons enabled (raise button handled separately)');
+        
+        // Debug: Check if buttons are actually interactive
+        console.log('FastGameScene: Button interactivity status:', {
+            foldButton: this.foldButton.input ? this.foldButton.input.enabled : 'no input',
+            callButton: this.callButton.input ? this.callButton.input.enabled : 'no input',
+            raiseButton: this.raiseButton.input ? this.raiseButton.input.enabled : 'no input',
+            allInButton: this.allInButton.input ? this.allInButton.input.enabled : 'no input'
+        });
     }
 
     disablePlayerActions() {
+        console.log('FastGameScene: disablePlayerActions called - stack trace:', new Error().stack);
+        
         // Disable action buttons
         this.foldButton.disableInteractive();
         this.callButton.disableInteractive();
         this.raiseButton.disableInteractive();
         this.allInButton.disableInteractive();
+        
+        // Gray out text colors to indicate disabled state
+        this.foldButtonText.setFill('#888888');
+        this.callButtonText.setFill('#888888');
+        this.raiseButtonText.setFill('#888888');
+        this.allInButtonText.setFill('#888888');
+        
+        console.log('FastGameScene: All action buttons disabled');
+    }
+
+    // Debug method to force enable buttons
+    forceEnableButtons() {
+        console.log('FastGameScene: FORCE ENABLING ALL BUTTONS (DEBUG)');
+        
+        // Force enable all buttons
+        this.foldButton.setInteractive();
+        this.callButton.setInteractive();
+        this.raiseButton.setInteractive();
+        this.allInButton.setInteractive();
+        
+        // Reset text colors
+        this.foldButtonText.setFill('#ffffff');
+        this.callButtonText.setFill('#ffffff');
+        this.raiseButtonText.setFill('#ffffff');
+        this.allInButtonText.setFill('#ffffff');
+        
+        console.log('FastGameScene: All buttons force-enabled');
+        
+        // Check button interactivity
+        console.log('FastGameScene: Force-enabled button interactivity status:', {
+            foldButton: this.foldButton.input ? this.foldButton.input.enabled : 'no input',
+            callButton: this.callButton.input ? this.callButton.input.enabled : 'no input',
+            raiseButton: this.raiseButton.input ? this.raiseButton.input.enabled : 'no input',
+            allInButton: this.allInButton.input ? this.allInButton.input.enabled : 'no input'
+        });
     }
 
     handleFold() {
-        if (!this.networkManager.isMyTurn()) return;
-        if (this.gameState.phase === 'showdown') return;
+        console.log('FastGameScene: handleFold called');
         
+        if (!this.networkManager.isMyTurn()) {
+            console.log('FastGameScene: handleFold - not my turn');
+            return;
+        }
+        if (this.gameState.phase === 'showdown') {
+            console.log('FastGameScene: handleFold - game in showdown');
+            return;
+        }
+        
+        const myPlayer = this.networkManager.getMyPlayer();
+        if (myPlayer && myPlayer.isSpectator) {
+            console.log('FastGameScene: Spectators cannot make actions');
+            return;
+        }
+        
+        if (myPlayer && (myPlayer.folded || myPlayer.allIn)) {
+            console.log('FastGameScene: Player cannot act - folded or all-in');
+            return;
+        }
+        
+        console.log('FastGameScene: handleFold - sending action');
         try {
             this.networkManager.sendPokerAction('fold');
             this.disablePlayerActions();
@@ -1337,8 +1596,18 @@ export class FastGameScene extends Phaser.Scene {
         if (!this.networkManager.isMyTurn()) return;
         if (this.gameState.phase === 'showdown') return;
         
+        const myPlayer = this.networkManager.getMyPlayer();
+        if (myPlayer && myPlayer.isSpectator) {
+            console.log('FastGameScene: Spectators cannot make actions');
+            return;
+        }
+        
+        if (myPlayer && (myPlayer.folded || myPlayer.allIn)) {
+            console.log('FastGameScene: Player cannot act - folded or all-in');
+            return;
+        }
+        
         try {
-            const myPlayer = this.networkManager.getMyPlayer();
             const currentBet = this.gameState.currentBet;
             const callAmount = currentBet - myPlayer.currentBet;
             
@@ -1358,14 +1627,24 @@ export class FastGameScene extends Phaser.Scene {
         if (!this.networkManager.isMyTurn()) return;
         if (this.gameState.phase === 'showdown') return;
         
-        // Check if we can still raise
-        if (!this.networkManager.canRaise()) {
-            console.log('FastGameScene: Cannot raise - limit reached');
+        const myPlayer = this.networkManager.getMyPlayer();
+        if (myPlayer && myPlayer.isSpectator) {
+            console.log('FastGameScene: Spectators cannot make actions');
             return;
         }
         
+        if (myPlayer && (myPlayer.folded || myPlayer.allIn)) {
+            console.log('FastGameScene: Player cannot act - folded or all-in');
+            return;
+        }
+        
+        // Check if we can still raise - but don't prevent the button from being enabled
+        if (!this.networkManager.canRaise()) {
+            console.log('FastGameScene: Cannot raise - limit reached, but button remains enabled');
+            // Don't return here - let the server handle the validation
+        }
+        
         try {
-            const myPlayer = this.networkManager.getMyPlayer();
             let totalBetAmount;
             
             // Default big blind if not defined
@@ -1421,8 +1700,18 @@ export class FastGameScene extends Phaser.Scene {
         if (!this.networkManager.isMyTurn()) return;
         if (this.gameState.phase === 'showdown') return;
         
+        const myPlayer = this.networkManager.getMyPlayer();
+        if (myPlayer && myPlayer.isSpectator) {
+            console.log('FastGameScene: Spectators cannot make actions');
+            return;
+        }
+        
+        if (myPlayer && (myPlayer.folded || myPlayer.allIn)) {
+            console.log('FastGameScene: Player cannot act - folded or all-in');
+            return;
+        }
+        
         try {
-            const myPlayer = this.networkManager.getMyPlayer();
             this.networkManager.sendPokerAction('allIn', myPlayer.bank);
             this.disablePlayerActions();
         } catch (error) {
@@ -1466,6 +1755,202 @@ export class FastGameScene extends Phaser.Scene {
 
     update() {
         // Game loop updates
+        // Periodic room UI sync every 300ms
+        if (!this.lastUISyncTime) {
+            this.lastUISyncTime = Date.now();
+        }
+        
+        const currentTime = Date.now();
+
+        if (currentTime - this.lastUISyncTime >= 1000) {
+            this.lastUISyncTime = currentTime;
+            this.syncRoomUI();
+        }
+    }
+
+    syncRoomUI() {
+
+        // console.log('FastGameScene: syncRoomUI called');
+        // Only sync if we have a game state and players
+        if (!this.gameState || !this.players || this.players.length === 0) {
+            // console.log('FastGameScene: syncRoomUI - no game state or players, skipping');
+            return;
+        }
+        
+        // Get all available positions
+        const positions = [
+            { x: 280, y: 270 }, // Top left
+            { x: 280, y: 460 }, // Bottom left
+            { x: 670, y: 520 }, // Bottom center (human player)
+            { x: 980, y: 270 }, // Top right
+            { x: 980, y: 460 }, // Bottom right
+            { x: 670, y: 200 }  // Top center
+        ];
+        
+        // Check for position conflicts and fix them
+        const positionMap = new Map(); // position index -> player ID
+        const conflicts = [];
+        
+        this.playerElements.forEach((elements, playerId) => {
+            const player = this.players.find(p => p.id === playerId);
+            if (player) {
+                // Try to determine current position by checking avatar position
+                const avatarX = elements.avatar.x;
+                const avatarY = elements.avatar.y;
+                
+                // Find which position this player is currently at
+                let currentPositionIndex = -1;
+                for (let i = 0; i < positions.length; i++) {
+                    if (Math.abs(avatarX - positions[i].x) < 10 && Math.abs(avatarY - positions[i].y) < 10) {
+                        currentPositionIndex = i;
+                        break;
+                    }
+                }
+                
+                if (currentPositionIndex !== -1) {
+                    if (positionMap.has(currentPositionIndex)) {
+                        // Conflict detected - two players at same position
+                        conflicts.push({
+                            playerId: playerId,
+                            playerName: player.name,
+                            positionIndex: currentPositionIndex,
+                            existingPlayerId: positionMap.get(currentPositionIndex)
+                        });
+                    } else {
+                        positionMap.set(currentPositionIndex, playerId);
+                    }
+                }
+            }
+        });
+        
+        // Fix conflicts by reassigning positions
+        if (conflicts.length > 0) {
+            // console.log('FastGameScene: syncRoomUI - Position conflicts detected:', conflicts);
+            
+            conflicts.forEach(conflict => {
+                // Find available position for this player
+                let availablePositionIndex = -1;
+                for (let i = 0; i < positions.length; i++) {
+                    if (!positionMap.has(i)) {
+                        availablePositionIndex = i;
+                        positionMap.set(i, conflict.playerId);
+                        break;
+                    }
+                }
+                
+                if (availablePositionIndex !== -1) {
+                    // Move player to new position
+                    const elements = this.playerElements.get(conflict.playerId);
+                    if (elements) {
+                        const newPosition = positions[availablePositionIndex];
+                        elements.avatar.setPosition(newPosition.x, newPosition.y);
+                        elements.nameBackground.setPosition(newPosition.x - 90, newPosition.y);
+                        elements.playerName.setPosition(newPosition.x - 90, newPosition.y);
+                        elements.bankText.setPosition(newPosition.x, newPosition.y + 70);
+                        
+                        // Update card container position
+                        this.cardManager.updateCardContainerPosition(availablePositionIndex + 1, newPosition.x + 60, newPosition.y + 30);
+                        
+                        // console.log(`FastGameScene: syncRoomUI - Moved ${conflict.playerName} from position ${conflict.positionIndex + 1} to position ${availablePositionIndex + 1}`);
+                    }
+                } else {
+                    // console.warn(`FastGameScene: syncRoomUI - No available position for ${conflict.playerName}`);
+                }
+            });
+        }
+        
+        // Check if all players in the game state have UI elements
+        const missingPlayers = this.players.filter(player => {
+            return !this.playerElements.has(player.id);
+        });
+        
+        if (missingPlayers.length > 0) {
+            // console.log('FastGameScene: syncRoomUI - missing UI for players:', missingPlayers.map(p => p.name));
+            
+            // Find which positions are already occupied
+            const occupiedPositions = new Set();
+            this.playerElements.forEach((elements, playerId) => {
+                const player = this.players.find(p => p.id === playerId);
+                if (player) {
+                    const avatarX = elements.avatar.x;
+                    const avatarY = elements.avatar.y;
+                    
+                    for (let i = 0; i < positions.length; i++) {
+                        if (Math.abs(avatarX - positions[i].x) < 10 && Math.abs(avatarY - positions[i].y) < 10) {
+                            occupiedPositions.add(i);
+                            break;
+                        }
+                    }
+                }
+            });
+            
+            // console.log('FastGameScene: syncRoomUI - occupied positions:', Array.from(occupiedPositions));
+            
+            // Rebuild player UI for missing players using available positions
+            missingPlayers.forEach(player => {
+                // Find the first available position
+                let availablePositionIndex = -1;
+                for (let i = 0; i < positions.length; i++) {
+                    if (!occupiedPositions.has(i)) {
+                        availablePositionIndex = i;
+                        occupiedPositions.add(i); // Mark as occupied
+                        break;
+                    }
+                }
+                
+                if (availablePositionIndex !== -1) {
+                    this.createPlayerUI(player, positions[availablePositionIndex], availablePositionIndex + 1);
+                    // console.log(`FastGameScene: syncRoomUI - Created UI for missing player: ${player.name} at position ${availablePositionIndex + 1}`);
+                } else {
+                    // console.warn(`FastGameScene: syncRoomUI - No available position for player: ${player.name}`);
+                }
+            });
+        } else {
+            // console.log('FastGameScene: syncRoomUI - No missing player UIs');
+        }
+        
+        // Ensure all existing players are visible
+        this.playerElements.forEach((elements, playerId) => {
+            const player = this.players.find(p => p.id === playerId);
+            if (player && !player.disconnected) {
+                // Make sure all UI elements are visible
+                if (!elements.avatar.visible) {
+                    elements.avatar.setVisible(true);
+                    elements.nameBackground.setVisible(true);
+                    elements.playerName.setVisible(true);
+                    elements.bankText.setVisible(true);
+                    this.cardManager.showPlayerCards(elements.playerNumber);
+                    console.log(`FastGameScene: syncRoomUI - Made player visible: ${player.name}`);
+                }
+            }
+        });
+        
+        // Ensure next round button is properly configured if visible
+        if (this.nextRoundButton.visible) {
+            if (this.canClickNextRound()) {
+                this.nextRoundButton.setInteractive();
+                this.nextRoundButton.setAlpha(1);
+                this.nextRoundButtonText.setFill('#ffffff');
+                console.log('FastGameScene: syncRoomUI - Next round button made interactive');
+            } else {
+                this.nextRoundButton.setAlpha(0.5);
+                this.nextRoundButtonText.setFill('#888888');
+                console.log('FastGameScene: syncRoomUI - Next round button made non-interactive');
+            }
+        }
+        
+        // Check if it's my turn and enable player actions
+        // if (this.gameState && this.gameState.status === 'playing') {
+        //     const isMyTurn = this.networkManager.isMyTurn();
+        //     const myPlayer = this.networkManager.getMyPlayer();
+            
+        //     if (isMyTurn && myPlayer && !myPlayer.folded && !myPlayer.allIn && !myPlayer.isSpectator) {
+        //         this.enablePlayerActions();
+        //         console.log('FastGameScene: syncRoomUI - Enabled player actions for my turn');
+        //     }
+        // }
+        
+        console.log('FastGameScene: syncRoomUI complete');
     }
 
     shutdown() {
@@ -1558,5 +2043,172 @@ export class FastGameScene extends Phaser.Scene {
             this.cardManager.showPlayerCards(elements.playerNumber);
             console.log(`FastGameScene: Showing reconnected player: ${playerId}`);
         }
+    }
+
+    restoreUIAfterReconnection() {
+        console.log('FastGameScene: Restoring UI after reconnection');
+        
+        // Force a complete UI update
+        this.updateUI();
+        
+        // Ensure all buttons are properly set up
+        this.setupButtonHandlers();
+        
+        // If in lobby state, ensure start game button is interactive if conditions are met
+        if (this.gameState && this.gameState.status === 'lobby') {
+            const allPlayersReady = this.gameState.allPlayersReady;
+            const readyCount = this.gameState.readyCount || 0;
+            const totalPlayers = this.gameState.totalPlayers || 0;
+            
+            console.log('FastGameScene: restoreUIAfterReconnection - start game button check:', {
+                allPlayersReady,
+                readyCount,
+                totalPlayers,
+                shouldEnable: (allPlayersReady || (readyCount >= 2 && readyCount === totalPlayers && totalPlayers >= 2))
+            });
+            
+            if (allPlayersReady || (readyCount >= 2 && readyCount === totalPlayers && totalPlayers >= 2)) {
+                this.startGameButton.setVisible(true);
+                this.startGameButton.setInteractive();
+                this.startGameButton.removeAllListeners('pointerdown');
+                this.startGameButton.on('pointerdown', () => this.handleStartGame());
+                this.startGameButtonText.setVisible(true);
+                console.log('FastGameScene: restoreUIAfterReconnection - Start game button enabled');
+            }
+        }
+        
+        // If in game state, ensure action buttons are properly configured
+        if (this.gameState && this.gameState.status === 'playing') {
+            console.log('FastGameScene: Game is in playing state, updating action buttons');
+            
+            // Check if it's the player's turn
+            const isMyTurn = this.networkManager.isMyTurn();
+            const myPlayer = this.networkManager.getMyPlayer();
+            
+            console.log('FastGameScene: Reconnection turn check:', {
+                isMyTurn,
+                myPlayer: myPlayer ? {
+                    id: myPlayer.id,
+                    name: myPlayer.name,
+                    folded: myPlayer.folded,
+                    allIn: myPlayer.allIn,
+                    isSpectator: myPlayer.isSpectator
+                } : null,
+                gamePhase: this.gameState.phase
+            });
+            
+            // Force update action buttons
+            this.updateActionButtons();
+            
+            // If it's the player's turn, ensure buttons are enabled
+            if (isMyTurn && myPlayer && !myPlayer.folded && !myPlayer.allIn && !myPlayer.isSpectator) {
+                console.log('FastGameScene: It is my turn after reconnection - enabling buttons');
+                this.enablePlayerActions();
+                
+                // Handle raise button separately based on raise limits
+                const canRaise = this.networkManager.canRaise();
+                if (canRaise) {
+                    this.raiseButton.setInteractive();
+                    this.raiseButtonText.setFill('#ffffff');
+                    console.log('FastGameScene: Raise button enabled after reconnection - raises still allowed');
+                } else {
+                    this.raiseButton.disableInteractive();
+                    this.raiseButtonText.setFill('#888888');
+                    console.log('FastGameScene: Raise button disabled after reconnection - maximum raises reached');
+                }
+                
+                // Double-check button interactivity
+                console.log('FastGameScene: Button interactivity check after reconnection:', {
+                    foldButton: this.foldButton.input ? this.foldButton.input.enabled : 'no input',
+                    callButton: this.callButton.input ? this.callButton.input.enabled : 'no input',
+                    raiseButton: this.raiseButton.input ? this.raiseButton.input.enabled : 'no input',
+                    allInButton: this.allInButton.input ? this.allInButton.input.enabled : 'no input'
+                });
+            } else {
+                console.log('FastGameScene: Not my turn after reconnection or player cannot act');
+            }
+        }
+        
+        // Force update of next round button if in showdown phase
+        if (this.gameState && this.gameState.phase === 'showdown') {
+            this.updateGameUI();
+            console.log('FastGameScene: Forced updateGameUI after reconnection for showdown phase');
+        }
+        
+        console.log('FastGameScene: UI restoration after reconnection complete');
+        
+        // Additional safety check: if it's the player's turn, force enable buttons
+        if (this.gameState && this.gameState.status === 'playing') {
+            const isMyTurn = this.networkManager.isMyTurn();
+            const myPlayer = this.networkManager.getMyPlayer();
+            
+            if (isMyTurn && myPlayer && !myPlayer.folded && !myPlayer.allIn && !myPlayer.isSpectator) {
+                console.log('FastGameScene: Safety check - forcing button enable after reconnection');
+                
+                // Force enable basic buttons
+                this.foldButton.setInteractive();
+                this.callButton.setInteractive();
+                this.allInButton.setInteractive();
+                
+                // Reset text colors for basic buttons
+                this.foldButtonText.setFill('#ffffff');
+                this.callButtonText.setFill('#ffffff');
+                this.allInButtonText.setFill('#ffffff');
+                
+                // Handle raise button based on raise limits
+                const canRaise = this.networkManager.canRaise();
+                if (canRaise) {
+                    this.raiseButton.setInteractive();
+                    this.raiseButtonText.setFill('#ffffff');
+                    console.log('FastGameScene: Raise button force-enabled after reconnection - raises allowed');
+                } else {
+                    this.raiseButton.disableInteractive();
+                    this.raiseButtonText.setFill('#888888');
+                    console.log('FastGameScene: Raise button force-disabled after reconnection - max raises reached');
+                }
+                
+                console.log('FastGameScene: Buttons force-enabled after reconnection');
+            }
+        }
+    }
+
+    handleRoomResetToOnePlayer() {
+        console.log('FastGameScene: Handling room reset to one player');
+        // Clear all cards and community cards
+        this.playerElements.forEach((elements, playerId) => {
+            this.cardManager.safeClearPlayerCards(elements.playerNumber);
+        });
+        this.communityCardsContainer.removeAll(true);
+        this.handRank.setText('Все остальные игроки покинули комнату. Ожидание новых игроков...');
+        this.handRank.setFill('#FFD700');
+        this.clearCardHighlights();
+        this.nextRoundButton.setVisible(false);
+        this.nextRoundButtonText.setVisible(false);
+
+        // Hide all disconnected players, show only the last remaining player
+        this.playerElements.forEach((elements, playerId) => {
+            const player = this.players.find(p => p.id === playerId);
+            if (!player || player.disconnected) {
+                // Hide disconnected or non-existent player
+                elements.avatar.setVisible(false);
+                elements.nameBackground.setVisible(false);
+                elements.playerName.setVisible(false);
+                elements.bankText.setVisible(false);
+                this.cardManager.hidePlayerCards(elements.playerNumber);
+                console.log(`FastGameScene: Hiding disconnected player in room reset: ${player ? player.name : playerId}`);
+            } else {
+                // Show the last remaining player
+                elements.avatar.setVisible(true);
+                elements.nameBackground.setVisible(true);
+                elements.playerName.setVisible(true);
+                elements.bankText.setVisible(true);
+                this.cardManager.showPlayerCards(elements.playerNumber);
+                console.log(`FastGameScene: Showing last remaining player: ${player.name}`);
+            }
+        });
+
+        // Reset UI to lobby state
+        this.updateLobbyUI();
+        console.log('FastGameScene: Room reset to one player complete - only last player visible');
     }
 }

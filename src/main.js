@@ -6,7 +6,7 @@ import { FastGameScene } from './scenes/FastGameScene.js';
 import { enableGlobalNgrokHeaders } from './utils/NgrokUtils.js';
 
 // Global debug variable accessible in all files
-window.isDebug = false; // Set to true for development
+window.isDebug = true; // Set to true for development
 window.firstFlop = false;
 
 // Enable ngrok headers for all network requests
