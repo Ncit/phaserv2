@@ -115,6 +115,20 @@ node test-websocket.js
 node test-allin-setup.js
 ```
 
+### **Dependency Management**
+```bash
+# Interactive dependency update tool
+./scripts/update-dependencies.sh
+
+# Quick commands
+./scripts/update-dependencies.sh status    # Check current status
+./scripts/update-dependencies.sh safe      # Safe update
+./scripts/update-dependencies.sh latest    # Update to latest versions
+./scripts/update-dependencies.sh clean     # Clean install
+./scripts/update-dependencies.sh security  # Fix security issues
+./scripts/update-dependencies.sh all       # All-in-one update
+```
+
 ### **Integration Tests**
 ```bash
 # Start server for testing
