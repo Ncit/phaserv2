@@ -49,35 +49,7 @@ class EnvironmentConfig {
      * Detect the current environment based on various indicators
      */
     detectEnvironment() {
-        // // Check for explicit environment setting
-        // if (window.GAME_ENVIRONMENT) {
-        //     return window.GAME_ENVIRONMENT;
-        // }
-
-        // // Check URL parameters
-        // const urlParams = new URLSearchParams(window.location.search);
-        // if (urlParams.has('env')) {
-        //     return urlParams.get('env');
-        // }
-
-        // // Check hostname
-        // const hostname = window.location.hostname;
-        // if (hostname === 'localhost' || hostname === '127.0.0.1') {
-        //     return 'development';
-        // }
-
-        // if (hostname.includes('production') || hostname.includes('app')) {
-        //     return 'production';
-        // }
-
-        // // Check for legacy window.isDebug setting
-        // if (window.isDebug !== undefined) {
-        //     return window.isDebug ? 'development' : 'production';
-        // }
-
-        // // Default to development for safety
         return 'development';
-        // return 'productionVK';
     }
 
     /**
