@@ -7,7 +7,7 @@ export class ButtonManager {
     constructor(scene) {
         this.scene = scene;
         this.buttons = new Map();
-        this.isDebug = window.isDebug || false;
+        this.isDebug = window.gameConfig ? window.gameConfig.isFeatureEnabled('debugLogging') : false;
     }
 
     // Create a button using pattern configuration

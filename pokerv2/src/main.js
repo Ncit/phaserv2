@@ -4,13 +4,18 @@ import { FriendsGameScene } from './scenes/FriendsGameScene.js';
 import { AIBotScene } from './scenes/AIBotScene.js';
 import { FastGameScene } from './scenes/FastGameScene.js';
 import { enableGlobalNgrokHeaders } from './utils/NgrokUtils.js';
+import { EnvironmentConfig, isFeatureEnabled } from './config/EnvironmentConfig.js';
 
-// Global debug variable accessible in all files
-window.isDebug = true; // Set to true for development
+// Initialize environment configuration (this sets up window.gameConfig and window.isDebug)
+const envConfig = new EnvironmentConfig();
+
+// Global variables
 window.firstFlop = false;
 
-// Enable ngrok headers for all network requests
-enableGlobalNgrokHeaders();
+// Enable ngrok headers only if feature is enabled
+if (isFeatureEnabled('ngrokHeaders')) {
+    enableGlobalNgrokHeaders();
+}
 
 const config = {
     type: Phaser.AUTO,

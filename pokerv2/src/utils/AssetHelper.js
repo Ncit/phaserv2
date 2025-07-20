@@ -4,7 +4,7 @@ import { AssetConfig } from '../config/AssetConfig.js';
 export class AssetHelper {
     constructor(scene) {
         this.scene = scene;
-        this.isDebug = window.isDebug || false;
+        this.isDebug = window.gameConfig ? window.gameConfig.isFeatureEnabled('debugLogging') : false;
         this.loadedAssets = new Set();
         this.failedAssets = new Set();
     }

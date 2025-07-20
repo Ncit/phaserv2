@@ -7,7 +7,7 @@ export class PositionCalculator {
         this.screenHeight = screenHeight;
         this.centerX = screenWidth / 2;
         this.centerY = screenHeight / 2;
-        this.isDebug = window.isDebug || false;
+        this.isDebug = window.gameConfig ? window.gameConfig.isFeatureEnabled('debugLogging') : false;
     }
 
     // Calculate relative position from center

@@ -9,7 +9,7 @@ import { CardManager } from './CardManager.js';
 export class UIManager {
     constructor(scene) {
         this.scene = scene;
-        this.isDebug = window.isDebug || false;// Enable debug for troubleshooting
+        this.isDebug = window.gameConfig ? window.gameConfig.isFeatureEnabled('debugLogging') : false;
         
         // Initialize all sub-managers
         this.buttonManager = new ButtonManager(scene);

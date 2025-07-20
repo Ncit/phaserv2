@@ -2,7 +2,7 @@
 export class EventManager {
     constructor() {
         this.listeners = new Map();
-        this.isDebug = window.isDebug || false;
+        this.isDebug = window.gameConfig ? window.gameConfig.isFeatureEnabled('debugLogging') : false;
     }
 
     // Register an event listener

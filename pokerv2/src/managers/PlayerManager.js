@@ -8,7 +8,7 @@ export class PlayerManager {
         this.scene = scene;
         this.players = new Map();
         this.userProfile = null;
-        this.isDebug = window.isDebug || false;
+        this.isDebug = window.gameConfig ? window.gameConfig.isFeatureEnabled('debugLogging') : false;
     }
 
     // Create a player at a specific position

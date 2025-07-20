@@ -10,7 +10,7 @@ export class CardManager {
         this.loadedCards = new Set();
         this.cardContainers = new Map();
         this.positionCalculator = new PositionCalculator();
-        this.isDebug = window.isDebug || false;
+        this.isDebug = window.gameConfig ? window.gameConfig.isFeatureEnabled('debugLogging') : false;
     }
 
     // Load all playing cards

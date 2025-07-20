@@ -25,7 +25,6 @@ export class LoadingScene extends Phaser.Scene {
     }
 
     preload() {
-        initVkBridgeApp();
         // Load splash screen assets
         this.load.image('splash_background', 'assets/space.png');
 
@@ -58,9 +57,12 @@ export class LoadingScene extends Phaser.Scene {
         // Load debug player selection assets
         this.load.image('player_select_bg', 'assets/player_name_placeholder.png');
 
-        setupApp((appData) => {
-            window.appData = appData;
-        });
+        if (window.gameConfig && window.gameConfig.isProductionVK()) {
+            initVkBridgeApp();
+            setupApp((appData) => {
+                window.appData = appData;
+            });
+        }
     }
 
     create() {
@@ -78,14 +80,14 @@ export class LoadingScene extends Phaser.Scene {
             })
             .setOrigin(0.5);
 
-        // Check if we're in debug mode and show player selection
-        if (window.isDebug) {
-            this.createDebugPlayerSelection();
-        } else {
+        // Check if player selection feature is enabled
+        if (window.gameConfig && window.gameConfig.isProductionVK()) {
             // If assets are already loaded (e.g., on restart), start timer immediately
             if (this.load.isReady()) {
                 this.startTimer();
             }
+        } else {
+            this.createDebugPlayerSelection();
         }
     }
 
@@ -276,21 +278,7 @@ export class LoadingScene extends Phaser.Scene {
 }
 
 function setupApp(appDataCallback) {
-    if (window.isDebug) {
-        // In debug mode, we'll set appData when player is selected
-        // For now, set a default player
-        const appData = {
-            vk_user_id: 123,
-            photo_200:
-                'https://gravatar.com/avatar/2ee1f504b415b376c586641aee2c3194?s=400&d=robohash&r=x',
-            first_name: 'Никита',
-        };
-        //
-        appDataCallback(appData);
-        return;
-    }
-
-    vkBridge
+        vkBridge
         .send('VKWebAppGetLaunchParams')
         .then((data) => {
             if (data.vk_user_id) {

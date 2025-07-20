@@ -214,7 +214,7 @@ export class FastGameScene extends Phaser.Scene {
             .setOrigin(0.5);
 
         // Create player info text (debug mode)
-        if (window.isDebug && window.appData) {
+        if (window.gameConfig && window.gameConfig.isFeatureEnabled('debugLogging') && window.appData) {
             this.playerInfoText = this.add
                 .text(640, 170, `Playing as: ${window.appData.first_name} (ID: ${window.appData.vk_user_id})`, {
                     fontFamily: 'Arial',
