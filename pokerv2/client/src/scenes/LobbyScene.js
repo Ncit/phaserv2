@@ -142,6 +142,9 @@ export class LobbyScene extends Phaser.Scene {
 
         // Create bonus button using ButtonManager (preserved functionality)
         this.bonusButton = this.buttonManager.createButton('bonus', 1040, 640);
+        this.settingsButton.on('pointerdown', () => {
+            this.settingsManager.showSettings();
+        });
     }
 
     createButtons() {

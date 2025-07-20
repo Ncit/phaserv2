@@ -1,6 +1,5 @@
 import { ButtonManager } from '../managers/ButtonManager.js';
 import { UIManager } from '../managers/UIManager.js';
-import { SettingsManager } from '../managers/SettingsManager.js';
 import { PlayerManager } from '../managers/PlayerManager.js';
 import { CardManager } from '../managers/CardManager.js';
 

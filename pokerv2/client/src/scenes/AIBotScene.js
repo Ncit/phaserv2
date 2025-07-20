@@ -1,6 +1,5 @@
 import { ButtonManager } from '../managers/ButtonManager.js';
 import { UIManager } from '../managers/UIManager.js';
-import { SettingsManager } from '../managers/SettingsManager.js';
 import { PlayerManager } from '../managers/PlayerManager.js';
 import { CardManager } from '../managers/CardManager.js';
 import { GameConfig } from '../config/GameConfig.js';
@@ -55,7 +54,6 @@ export class AIBotScene extends Phaser.Scene {
         this.buttonManager = new ButtonManager(this);
         this.playerManager = new PlayerManager(this);
         this.cardManager = new CardManager(this);
-        this.settingsManager = new SettingsManager(this);
         
         // Wait a frame to ensure all assets are loaded
         this.time.delayedCall(100, () => {
