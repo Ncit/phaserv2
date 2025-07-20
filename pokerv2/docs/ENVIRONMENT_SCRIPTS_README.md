@@ -85,7 +85,7 @@ This directory contains scripts to easily switch between development and product
 4. **Shows** production environment features
 
 ### Toggle Script
-1. **Detects** current environment by reading `src/config/EnvironmentConfig.js`
+1. **Detects** current environment by reading `client/src/config/EnvironmentConfig.js`
 2. **Switches** the `detectEnvironment()` function return value
 3. **Verifies** the change was successful
 4. **Shows** summary of new environment features
@@ -98,7 +98,7 @@ This directory contains scripts to easily switch between development and product
 
 ## File Changes
 
-The scripts modify this line in `src/config/EnvironmentConfig.js`:
+The scripts modify this line in `client/src/config/EnvironmentConfig.js`:
 
 ```javascript
 // In detectEnvironment() function
@@ -177,7 +177,7 @@ pwd
 ### Environment Not Detected
 ```bash
 # Check if the file has the expected format
-grep -n "return.*development\|return.*productionVK" src/config/EnvironmentConfig.js
+grep -n "return.*development\|return.*productionVK" client/src/config/EnvironmentConfig.js
 ```
 
 ## Integration with Git
@@ -188,7 +188,7 @@ You can add this to your git hooks to ensure production mode before commits:
 ```bash
 #!/bin/bash
 # .git/hooks/pre-commit
-if grep -q "return 'development';" pokerv2/src/config/EnvironmentConfig.js; then
+if grep -q "return 'development';" pokerv2/client/src/config/EnvironmentConfig.js; then
     echo "⚠️  Warning: Environment is set to development mode"
     echo "💡 Consider switching to production mode before committing"
     read -p "Continue anyway? (y/N): " -n 1 -r
@@ -204,8 +204,8 @@ Add these to your `.gitconfig`:
 
 ```ini
 [alias]
-    env-dev = "!cd pokerv2 && ./set-development.sh && git add src/config/EnvironmentConfig.js"
-    env-prod = "!cd pokerv2 && ./set-vk.sh && git add src/config/EnvironmentConfig.js"
+    env-dev = "!cd pokerv2 && ./set-development.sh && git add client/src/config/EnvironmentConfig.js"
+    env-prod = "!cd pokerv2 && ./set-vk.sh && git add client/src/config/EnvironmentConfig.js"
     env-status = "!cd pokerv2 && ./check-environment.sh"
 ```
 
@@ -218,6 +218,6 @@ Add these to your `.gitconfig`:
 
 ## Related Files
 
-- `src/config/EnvironmentConfig.js` - Main configuration file
+- `client/src/config/EnvironmentConfig.js` - Main configuration file
 - `ENVIRONMENT_MIGRATION_GUIDE.md` - Detailed migration guide
 - `restore-dev-mode.sh` - Legacy development mode script 

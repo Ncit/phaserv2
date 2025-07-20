@@ -151,7 +151,7 @@ A test page `test-raise-fix.html` was created to verify the fix:
 
 ## Files Modified
 
-1. **`src/scenes/FastGameScene.js`**
+1. **`client/src/scenes/FastGameScene.js`**
    - Fixed `handleRaise` method with proper raise calculation
    - Added detailed logging for debugging
    - Changed to send total bet amount instead of additional amount

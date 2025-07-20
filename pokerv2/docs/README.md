@@ -49,7 +49,7 @@ open http://localhost:8000
 
 ```
 pokerv2/
-├── 📁 src/                    # Source code
+├── 📁 client/src/                    # Source code
 │   ├── 📁 config/            # Configuration files
 │   ├── 📁 managers/          # Game managers
 │   ├── 📁 scenes/            # Phaser game scenes
@@ -282,7 +282,7 @@ bash -n scripts/*.sh
 - **Environment Management**: Enhanced with three-environment system
 
 ### Code Organization
-- **Source Code**: `src/` directory with platform integration scripts
+- **Source Code**: `client/src/` directory with platform integration scripts
 - **Scripts**: `scripts/` directory for environment management
 - **Server Scripts**: `server-scripts/` directory for server automation
 - **Tests**: `tests/` directory with platform integration tests

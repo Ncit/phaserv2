@@ -6,7 +6,7 @@ Phaser.js-based poker game project (pokerv2)
 ## Current Structure
 - **Framework**: Phaser.js v3 (7.8MB library included)
 - **Entry Point**: index.html
-- **Source**: src/ directory with game scenes
+- **Source**: pokerv2/client/src/ directory with game scenes
 - **Assets**: assets/ directory with game images
 - **Project Type**: Browser-based HTML5 game
 
@@ -18,5 +18,5 @@ Phaser.js-based poker game project (pokerv2)
 
 ## Project Status
 - Basic Phaser.js game structure exists
-- Main scenes located in src/scenes/
+- Main scenes located in pokerv2/client/src/scenes/
 - Ready for feature development or bug fixes

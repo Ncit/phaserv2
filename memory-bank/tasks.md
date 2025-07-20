@@ -355,12 +355,12 @@
 - [x] Deleted old `Start.js` file ✅
 
 **Files Updated:**
-1. `pokerv2/src/scenes/LobbyScene.js` - New file created ✅
-2. `pokerv2/src/main.js` - Import and scene array updated ✅
-3. `pokerv2/src/managers/UIManager.js` - Scene references updated ✅
-4. `pokerv2/src/scenes/GameScene.js` - Scene transition updated ✅
-5. `pokerv2/src/scenes/Splash.js` - Scene transition updated ✅
-6. `pokerv2/src/scenes/Start.js` - File deleted ✅
+1. `pokerv2/pokerv2/client/src/scenes/LobbyScene.js` - New file created ✅
+2. `pokerv2/pokerv2/client/src/main.js` - Import and scene array updated ✅
+3. `pokerv2/pokerv2/client/src/managers/UIManager.js` - Scene references updated ✅
+4. `pokerv2/pokerv2/client/src/scenes/GameScene.js` - Scene transition updated ✅
+5. `pokerv2/pokerv2/client/src/scenes/Splash.js` - Scene transition updated ✅
+6. `pokerv2/pokerv2/client/src/scenes/Start.js` - File deleted ✅
 
 **Result**: Scene successfully renamed with all references properly updated and functionality preserved. The lobby scene now uses a more descriptive and professional name that better reflects its purpose as the main menu/lobby interface.
 
@@ -376,9 +376,9 @@
 - [x] Deleted old `Splash.js` file ✅
 
 **Files Updated:**
-1. `pokerv2/src/scenes/LoadingScene.js` - New file created ✅
-2. `pokerv2/src/main.js` - Import and scene array updated ✅
-3. `pokerv2/src/scenes/Splash.js` - File deleted ✅
+1. `pokerv2/pokerv2/client/src/scenes/LoadingScene.js` - New file created ✅
+2. `pokerv2/pokerv2/client/src/main.js` - Import and scene array updated ✅
+3. `pokerv2/pokerv2/client/src/scenes/Splash.js` - File deleted ✅
 
 **Result**: Scene successfully renamed with all references properly updated and functionality preserved. The loading scene now uses a more descriptive and professional name that better reflects its purpose as the asset loading and initialization interface.
 
@@ -485,7 +485,7 @@
 ### 🔧 Pre-Push Hook Strategy
 
 **Hook Trigger**: `git push` operations to GitHub remotes
-**Target File**: `pokerv2/src/main.js`
+**Target File**: `pokerv2/pokerv2/client/src/main.js`
 **Modification Pattern**: `window.isDebug = false` → `window.isDebug = true`
 
 ### Implementation Phases
@@ -530,10 +530,10 @@ window.isDebug = true; // Set to true for GitHub production
 **Sed Command Strategy:**
 ```bash
 # Enable for GitHub push
-sed -i '' 's/window\.isDebug = false/window.isDebug = true/g' pokerv2/src/main.js
+sed -i '' 's/window\.isDebug = false/window.isDebug = true/g' pokerv2/pokerv2/client/src/main.js
 
 # Restore for development
-sed -i '' 's/window\.isDebug = true/window.isDebug = false/g' pokerv2/src/main.js
+sed -i '' 's/window\.isDebug = true/window.isDebug = false/g' pokerv2/pokerv2/client/src/main.js
 ```
 
 ## Challenges & Mitigations
@@ -569,7 +569,7 @@ fi
 ### File Modification Validation
 ```bash
 # Verify current state before modification
-if grep -q "window.isDebug = false" pokerv2/src/main.js; then
+if grep -q "window.isDebug = false" pokerv2/pokerv2/client/src/main.js; then
     # Safe to modify
     ORIGINAL_STATE="false"
 else
@@ -583,7 +583,7 @@ fi
 # On failure, restore original state
 cleanup_on_failure() {
     if [[ $ORIGINAL_STATE == "false" ]]; then
-        sed -i '' 's/window\.isDebug = true/window.isDebug = false/g' pokerv2/src/main.js
+        sed -i '' 's/window\.isDebug = true/window.isDebug = false/g' pokerv2/pokerv2/client/src/main.js
     fi
 }
 ```
@@ -655,7 +655,7 @@ cleanup_on_failure() {
 ## Implementation Environment
 - **Platform**: macOS development environment ✅
 - **Git**: Standard git workflow with GitHub integration ✅
-- **Target File**: `pokerv2/src/main.js` (line 6) ✅
+- **Target File**: `pokerv2/pokerv2/client/src/main.js` (line 6) ✅
 - **Hook Location**: `../.git/hooks/pre-push` 
 - **Current isDebug State**: `false` (development ready) ✅
 
@@ -667,7 +667,7 @@ cleanup_on_failure() {
 
 ### 🔧 Files Created/Modified
 1. `../.git/hooks/pre-push` - Pre-push git hook (185 lines) ✅
-2. `pokerv2/src/main.js` - Updated isDebug to true for development ✅  
+2. `pokerv2/pokerv2/client/src/main.js` - Updated isDebug to true for development ✅  
 3. `restore-dev-mode.sh` - Helper script for manual restoration ✅
 
 ### 🧪 Testing Results
@@ -687,7 +687,7 @@ cleanup_on_failure() {
 **For GitHub Push:**
 - Hook automatically switches to `isDebug = false`
 - Push proceeds with production settings
-- Manual restore: `git checkout -- pokerv2/src/main.js` or `./restore-dev-mode.sh`
+- Manual restore: `git checkout -- pokerv2/pokerv2/client/src/main.js` or `./restore-dev-mode.sh`
 
 ### 🎯 MISSION ACCOMPLISHED
 **Automated debug flag management successfully implemented with comprehensive error handling and user-friendly workflow integration.**

@@ -123,7 +123,7 @@
         
         async function loadTelegramLogic() {
             try {
-                telegramFunctions = await import('./src/scripts/telegramlogic.js');
+                telegramFunctions = await import('./client/src/scripts/telegramlogic.js');
                 return true;
             } catch (error) {
                 console.error('Failed to load Telegram logic:', error);
@@ -138,7 +138,7 @@
             
             try {
                 // Load environment config
-                const { EnvironmentConfig } = await import('./src/config/EnvironmentConfig.js');
+                const { EnvironmentConfig } = await import('./client/src/config/EnvironmentConfig.js');
                 const config = new EnvironmentConfig();
                 
                 const environment = config.getEnvironment();
@@ -291,7 +291,7 @@
             
             try {
                 // Test environment config
-                const { EnvironmentConfig } = await import('./src/config/EnvironmentConfig.js');
+                const { EnvironmentConfig } = await import('./client/src/config/EnvironmentConfig.js');
                 const config = new EnvironmentConfig();
                 
                 // Test game config

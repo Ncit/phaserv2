@@ -17,7 +17,7 @@ Poker Game v2 is a comprehensive poker application with a clean, decoupled archi
 ```
 pokerv2/
 ├── client/                  # 🎮 Client Application
-│   ├── src/                # Source code
+│   ├── client/src/                # Source code
 │   │   ├── config/         # Configuration files
 │   │   ├── managers/       # Game managers
 │   │   ├── scenes/         # Phaser.js scenes
@@ -33,7 +33,7 @@ pokerv2/
 ├── server/                  # 🖥️ Server Application
 │   ├── game/               # Game logic modules
 │   ├── scripts/            # Server automation scripts
-│   ├── src/                # Server source code
+│   ├── client/src/                # Server source code
 │   ├── package.json        # Node.js dependencies
 │   └── server.js           # Main server entry point
 ├── scripts/                 # 🔧 Project Scripts
@@ -226,7 +226,7 @@ node test-allin-setup.js
 ### **Client Development**
 ```bash
 cd client
-# Edit source files in src/
+# Edit source files in client/src/
 # Add assets to assets/
 # Update tests in tests/
 ```
@@ -235,7 +235,7 @@ cd client
 ```bash
 cd server
 # Edit game logic in game/
-# Update server code in src/
+# Update server code in client/src/
 # Modify scripts in scripts/
 ```
 

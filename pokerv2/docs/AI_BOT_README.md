@@ -47,12 +47,12 @@ The AI Bot Scene is a complete Texas Hold'em poker game implementation with 5 AI
 ## Technical Implementation
 
 ### Files Created/Modified
-- `src/scenes/AIBotScene.js` - Main game scene
-- `src/utils/HandEvaluator.js` - Hand evaluation logic
-- `src/managers/UIManager.js` - Added AI Bot scene initialization
-- `src/config/AssetConfig.js` - Added AI Bot button asset
-- `src/scenes/LobbyScene.js` - Added AI Bot button
-- `src/main.js` - Registered AI Bot scene
+- `client/src/scenes/AIBotScene.js` - Main game scene
+- `client/src/utils/HandEvaluator.js` - Hand evaluation logic
+- `client/src/managers/UIManager.js` - Added AI Bot scene initialization
+- `client/src/config/AssetConfig.js` - Added AI Bot button asset
+- `client/src/scenes/LobbyScene.js` - Added AI Bot button
+- `client/src/main.js` - Registered AI Bot scene
 
 ### Key Components
 

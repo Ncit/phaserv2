@@ -17,7 +17,7 @@ Poker Game v2 is a modern multiplayer poker game built with Phaser.js, featuring
 
 ```
 pokerv2/
-├── 📁 src/                    # Source code
+├── 📁 client/src/                    # Source code
 │   ├── 📁 config/            # Configuration files
 │   ├── 📁 managers/          # Game managers
 │   ├── 📁 scenes/            # Phaser game scenes

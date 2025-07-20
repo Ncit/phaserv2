@@ -46,9 +46,10 @@ client/
 │   │   └── PositionCalculator.js
 │   └── main.js            # Main entry point
 ├── assets/                # Game assets
-│   ├── cards/            # Card images
+│   ├── cards/            # Card images (52 playing cards)
 │   ├── fonts/            # Custom fonts
-│   └── ui/               # UI elements
+│   ├── *.png             # UI elements, buttons, backgrounds
+│   └── *.jpg             # Additional game assets
 ├── dependencies/          # External libraries
 │   ├── phaser.js
 │   ├── rexui.js
@@ -76,16 +77,34 @@ python3 -m http.server 8000
 open http://localhost:8000
 ```
 
+**Note**: All game assets are included in the `client/assets/` directory for self-contained deployment.
+
 ### **Environment Setup**
 ```bash
-# Set development environment
-../scripts/set-development.sh
+# Check current environment
+./scripts/check-environment.sh
 
-# Set VK production environment
-../scripts/set-vk.sh
+# Toggle between environments (Development ↔ VK ↔ Telegram)
+./scripts/toggle-environment.sh
 
-# Set Telegram production environment
-../scripts/set-telegram.sh
+# Set specific environment
+./scripts/set-development.sh
+./scripts/set-vk.sh
+./scripts/set-telegram.sh
+```
+
+**Note**: All scripts use relative paths (`src/config/EnvironmentConfig.js`) since they run from within the client directory.
+
+### **Asset Verification**
+```bash
+# Verify all game assets are present
+./scripts/verify-assets.sh
+
+# Check specific asset categories
+./scripts/verify-assets.sh critical  # Critical UI assets
+./scripts/verify-assets.sh cards     # Playing cards
+./scripts/verify-assets.sh fonts     # Font files
+./scripts/verify-assets.sh stats     # Asset statistics
 ```
 
 ## 🎮 **Game Features**

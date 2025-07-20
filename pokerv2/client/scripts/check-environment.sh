@@ -3,7 +3,7 @@
 # Environment Status Check Script
 # Shows current environment configuration without making changes
 
-TARGET_FILE="client/src/config/EnvironmentConfig.js"
+TARGET_FILE="src/config/EnvironmentConfig.js"
 
 echo "🔍 Environment Status Check"
 echo "=========================="

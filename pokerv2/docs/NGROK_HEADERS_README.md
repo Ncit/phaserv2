@@ -9,7 +9,7 @@ The application automatically adds the `ngrok-skip-browser-warning: 69420` heade
 ## Implementation Details
 
 ### 1. NgrokUtils.js
-Located at `src/utils/NgrokUtils.js`, this utility file provides:
+Located at `client/src/utils/NgrokUtils.js`, this utility file provides:
 
 - **`fetchWithNgrokHeaders(url, options)`** - Makes fetch requests with ngrok headers
 - **`getNgrokHeaders()`** - Returns the ngrok headers object
@@ -37,7 +37,7 @@ this.socket = io(this.serverUrl, socketOptions);
 ```
 
 ### 3. Global Fetch Override
-In `src/main.js`, global ngrok headers are enabled for all fetch requests:
+In `client/src/main.js`, global ngrok headers are enabled for all fetch requests:
 
 ```javascript
 import { enableGlobalNgrokHeaders } from './utils/NgrokUtils.js';
@@ -161,7 +161,7 @@ The ngrok header bypasses ngrok's browser warning, which is intended for develop
 
 ## Files Modified
 
-- `src/utils/NgrokUtils.js` - New utility file
-- `src/managers/NetworkManager.js` - Updated to use ngrok headers
-- `src/main.js` - Added global header enablement
+- `client/src/utils/NgrokUtils.js` - New utility file
+- `client/src/managers/NetworkManager.js` - Updated to use ngrok headers
+- `client/src/main.js` - Added global header enablement
 - `test-ngrok-headers.html` - Test file for verification 

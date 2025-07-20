@@ -56,7 +56,7 @@ All notable changes to the Poker Game v2 project will be documented in this file
 - **`docs/`**: Comprehensive documentation
 
 #### **Client Organization**
-- **`client/src/`**: All source code (config, managers, scenes, scripts, utils)
+- **`client/client/src/`**: All source code (config, managers, scenes, scripts, utils)
 - **`client/assets/`**: Game assets (cards, UI, fonts)
 - **`client/dependencies/`**: External libraries (Phaser.js, RexUI, VK Bridge)
 - **`client/tests/`**: All client test files
@@ -65,7 +65,7 @@ All notable changes to the Poker Game v2 project will be documented in this file
 #### **Server Organization**
 - **`server/game/`**: Game logic modules
 - **`server/scripts/`**: Server automation scripts
-- **`server/src/`**: Server source code
+- **`server/client/src/`**: Server source code
 - **`server/package.json`**: Node.js dependencies
 
 #### **Reorganized Files**

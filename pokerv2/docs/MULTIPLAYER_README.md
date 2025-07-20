@@ -27,7 +27,7 @@ server/
 ### Client Components
 
 ```
-src/
+client/src/
 ├── managers/
 │   └── NetworkManager.js  # WebSocket communication and event handling
 └── scenes/

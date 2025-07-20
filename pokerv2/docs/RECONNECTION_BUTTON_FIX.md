@@ -17,7 +17,7 @@ The issue was in the `restoreUIAfterReconnection()` method in `FastGameScene.js`
 
 ### 1. Enhanced `restoreUIAfterReconnection()` Method
 
-**File:** `pokerv2/src/scenes/FastGameScene.js`
+**File:** `pokerv2/client/src/scenes/FastGameScene.js`
 
 **Changes:**
 - Added detailed logging for reconnection process
@@ -102,7 +102,7 @@ restoreUIAfterReconnection() {
 
 ### 2. Enhanced `enablePlayerActions()` Method
 
-**File:** `pokerv2/src/scenes/FastGameScene.js`
+**File:** `pokerv2/client/src/scenes/FastGameScene.js`
 
 **Changes:**
 - Added button interactivity status logging
@@ -241,7 +241,7 @@ This fix ensures that:
 
 ## 📋 Related Files
 
-- `pokerv2/src/scenes/FastGameScene.js` - Main fix implementation
+- `pokerv2/client/src/scenes/FastGameScene.js` - Main fix implementation
 - `pokerv2/test-reconnection-buttons.html` - Test file for verification
 - `pokerv2/RECONNECTION_BUTTON_FIX.md` - This documentation
 

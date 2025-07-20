@@ -3,7 +3,7 @@
 # Environment Toggle Script
 # Switches between development and productionVK environments
 
-TARGET_FILE="client/src/config/EnvironmentConfig.js"
+TARGET_FILE="src/config/EnvironmentConfig.js"
 
 echo "🔄 Environment Toggle Script"
 echo "=============================="

@@ -194,7 +194,7 @@ The server provides clear logging for spectator-related events:
 ## Implementation Files
 
 - **Server**: `pokerv2/server/game/SingleRoomGame.js`
-- **Client**: `pokerv2/src/scenes/FastGameScene.js`
+- **Client**: `pokerv2/client/src/scenes/FastGameScene.js`
 - **Test**: `pokerv2/test-spectator-functionality.html`
 
 ## Key Methods

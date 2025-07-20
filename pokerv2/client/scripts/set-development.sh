@@ -3,7 +3,7 @@
 # Set Environment to Development Script
 # Explicitly sets the environment to development mode
 
-TARGET_FILE="client/src/config/EnvironmentConfig.js"
+TARGET_FILE="src/config/EnvironmentConfig.js"
 
 echo "🛠️  Setting Environment to DEVELOPMENT"
 echo "====================================="

@@ -130,12 +130,12 @@ A test page `test-stack-overflow-fix.html` was created to verify the fix:
 
 ## Files Modified
 
-1. **`src/managers/NetworkManager.js`**
+1. **`client/src/managers/NetworkManager.js`**
    - Removed circular event handling
    - Simplified socket event processing
    - Removed redundant handler methods
 
-2. **`src/utils/EventManager.js`**
+2. **`client/src/utils/EventManager.js`**
    - Added cleanup method for compatibility
 
 3. **`test-stack-overflow-fix.html`** (new)

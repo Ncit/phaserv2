@@ -135,7 +135,7 @@ AIBotScene: 📈 🎯 Tight Aggressive (tight_aggressive) raises $60
 
 ## File Structure
 
-- `src/scenes/AIBotScene.js` - Main AI implementation
+- `client/src/scenes/AIBotScene.js` - Main AI implementation
 - `test-enhanced-ai.html` - AI personality showcase
 - `ENHANCED_AI_README.md` - This documentation
 

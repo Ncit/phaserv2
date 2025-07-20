@@ -107,7 +107,7 @@
         let myPlayer = null;
         
         // Import the NetworkManager
-        import('./src/managers/NetworkManager.js').then(({ NetworkManager }) => {
+        import('./client/src/managers/NetworkManager.js').then(({ NetworkManager }) => {
             networkManager = new NetworkManager();
             updateStatus('NetworkManager loaded successfully', 'success');
             document.getElementById('connectBtn').disabled = false;

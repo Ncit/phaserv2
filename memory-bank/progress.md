@@ -8,7 +8,7 @@
 - **Status**: ✅ COMPLETED 
 - **Duration**: ~2.5 hours development
 - **Outcome**: 5 interactive buttons with disabled carousel functionality
-- **File Modified**: `pokerv2/src/scenes/Start.js`
+- **File Modified**: `pokerv2/pokerv2/client/src/scenes/Start.js`
 
 ## Current Scene State Analysis
 - **Background**: lobby_background.png loaded and displayed

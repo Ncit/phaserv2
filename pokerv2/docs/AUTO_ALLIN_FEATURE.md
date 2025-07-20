@@ -140,8 +140,8 @@ handleRaise() {
 
 ## Files Modified
 
-- `src/scenes/FastGameScene.js` - Updated `handleRaise()` method
-- `src/scenes/AIBotScene.js` - Updated `handleRaise()` method
+- `client/src/scenes/FastGameScene.js` - Updated `handleRaise()` method
+- `client/src/scenes/AIBotScene.js` - Updated `handleRaise()` method
 
 ## Testing
 

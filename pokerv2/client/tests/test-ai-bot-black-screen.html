@@ -71,30 +71,30 @@
     <script src="dependencies/vkbridge.js"></script>
     
     <!-- Load configs -->
-    <script src="src/config/AssetConfig.js"></script>
-    <script src="src/config/ButtonConfig.js"></script>
-    <script src="src/config/GameConfig.js"></script>
-    <script src="src/config/PlayerConfig.js"></script>
+    <script src="client/src/config/AssetConfig.js"></script>
+    <script src="client/src/config/ButtonConfig.js"></script>
+    <script src="client/src/config/GameConfig.js"></script>
+    <script src="client/src/config/PlayerConfig.js"></script>
     
     <!-- Load utils -->
-    <script src="src/utils/AssetHelper.js"></script>
-    <script src="src/utils/EventManager.js"></script>
-    <script src="src/utils/HandEvaluator.js"></script>
-    <script src="src/utils/PositionCalculator.js"></script>
+    <script src="client/src/utils/AssetHelper.js"></script>
+    <script src="client/src/utils/EventManager.js"></script>
+    <script src="client/src/utils/HandEvaluator.js"></script>
+    <script src="client/src/utils/PositionCalculator.js"></script>
     
     <!-- Load managers -->
-    <script src="src/managers/ButtonManager.js"></script>
-    <script src="src/managers/CardManager.js"></script>
-    <script src="src/managers/NetworkManager.js"></script>
-    <script src="src/managers/PlayerManager.js"></script>
-    <script src="src/managers/UIManager.js"></script>
+    <script src="client/src/managers/ButtonManager.js"></script>
+    <script src="client/src/managers/CardManager.js"></script>
+    <script src="client/src/managers/NetworkManager.js"></script>
+    <script src="client/src/managers/PlayerManager.js"></script>
+    <script src="client/src/managers/UIManager.js"></script>
     
     <!-- Load scenes -->
-    <script src="src/scenes/LobbyScene.js"></script>
-    <script src="src/scenes/AIBotScene.js"></script>
+    <script src="client/src/scenes/LobbyScene.js"></script>
+    <script src="client/src/scenes/AIBotScene.js"></script>
     
     <!-- Load main -->
-    <script src="src/main.js"></script>
+    <script src="client/src/main.js"></script>
 
     <script>
         // Mock VK data for testing
@@ -181,7 +181,7 @@
             console.log(`Creating AI Bot Scene with key: ${sceneKey}`);
             
             // Import and create a new AIBotScene instance with unique key
-            import('./src/scenes/AIBotScene.js').then(({ AIBotScene }) => {
+            import('./client/src/scenes/AIBotScene.js').then(({ AIBotScene }) => {
                 console.log('AIBotScene module loaded successfully');
                 
                 // Check if scene already exists

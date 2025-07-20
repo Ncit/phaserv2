@@ -12,8 +12,8 @@
 
 ## Architecture
 - Entry point: index.html
-- Game logic: src/main.js
-- Scene management: src/scenes/
+- Game logic: pokerv2/client/src/main.js
+- Scene management: pokerv2/client/src/scenes/
 - Assets: assets/ directory
 
 ## Development Environment

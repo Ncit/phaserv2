@@ -9,7 +9,7 @@ This document summarizes the complete reorganization of the Poker Game v2 projec
 ### **Before (Monolithic Structure)**
 ```
 pokerv2/
-├── src/                    # Mixed client/server code
+├── client/src/                    # Mixed client/server code
 ├── server/                 # Server code
 ├── server-scripts/         # Server scripts
 ├── assets/                 # Game assets
@@ -25,7 +25,7 @@ pokerv2/
 ```
 pokerv2/
 ├── client/                  # 🎮 Complete Client Application
-│   ├── src/                # Client source code
+│   ├── client/src/                # Client source code
 │   │   ├── config/         # Configuration files
 │   │   ├── managers/       # Game managers
 │   │   ├── scenes/         # Phaser.js scenes
@@ -44,7 +44,7 @@ pokerv2/
 ├── server/                  # 🖥️ Server Application
 │   ├── game/               # Game logic modules
 │   ├── scripts/            # Server automation scripts
-│   ├── src/                # Server source code
+│   ├── client/src/                # Server source code
 │   ├── package.json        # Node.js dependencies
 │   ├── package-lock.json   # Dependency lock file
 │   └── server.js           # Main server entry point
@@ -63,7 +63,7 @@ pokerv2/
 ## 🔄 **Migration Details**
 
 ### **Client Migration**
-- **Source Code**: Moved from `src/` to `client/src/`
+- **Source Code**: Moved from `client/src/` to `client/client/src/`
 - **Assets**: Moved from `assets/` to `client/assets/`
 - **Dependencies**: Moved from `dependencies/` to `client/dependencies/`
 - **Tests**: Moved from `tests/` to `client/tests/`
@@ -73,12 +73,12 @@ pokerv2/
 ### **Server Migration**
 - **Game Logic**: Organized in `server/game/`
 - **Server Scripts**: Moved from `server-scripts/` to `server/scripts/`
-- **Server Code**: Organized in `server/src/`
+- **Server Code**: Organized in `server/client/src/`
 - **Dependencies**: Maintained in `server/package.json`
 
 ### **Script Updates**
-- **Environment Scripts**: Updated all paths to use `client/src/config/`
-- **Pre-push Hook**: Updated to use `client/src/main.js`
+- **Environment Scripts**: Updated all paths to use `client/client/src/config/`
+- **Pre-push Hook**: Updated to use `client/client/src/main.js`
 - **Documentation**: Updated all references to new structure
 
 ## ✅ **Benefits Achieved**
@@ -112,14 +112,14 @@ pokerv2/
 ### **Environment Scripts**
 All environment scripts have been updated to work with the new structure:
 
-- **`scripts/set-development.sh`**: Points to `client/src/config/EnvironmentConfig.js`
-- **`scripts/set-vk.sh`**: Points to `client/src/config/EnvironmentConfig.js`
-- **`scripts/set-telegram.sh`**: Points to `client/src/config/EnvironmentConfig.js`
-- **`scripts/check-environment.sh`**: Points to `client/src/config/EnvironmentConfig.js`
-- **`scripts/toggle-environment.sh`**: Points to `client/src/config/EnvironmentConfig.js`
+- **`scripts/set-development.sh`**: Points to `client/client/src/config/EnvironmentConfig.js`
+- **`scripts/set-vk.sh`**: Points to `client/client/src/config/EnvironmentConfig.js`
+- **`scripts/set-telegram.sh`**: Points to `client/client/src/config/EnvironmentConfig.js`
+- **`scripts/check-environment.sh`**: Points to `client/client/src/config/EnvironmentConfig.js`
+- **`scripts/toggle-environment.sh`**: Points to `client/client/src/config/EnvironmentConfig.js`
 
 ### **Git Hooks**
-- **Pre-push Hook**: Updated to use `client/src/main.js`
+- **Pre-push Hook**: Updated to use `client/client/src/main.js`
 - **Smart Detection**: Handles documentation-only branches gracefully
 
 ## 📚 **Updated Documentation**

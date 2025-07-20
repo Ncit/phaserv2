@@ -17,7 +17,7 @@ The issue was in the `updateActionButtons()` method in `FastGameScene.js`. The m
 
 ### 1. Updated `updateActionButtons()` Method
 
-**File:** `pokerv2/src/scenes/FastGameScene.js`
+**File:** `pokerv2/client/src/scenes/FastGameScene.js`
 
 **Changes:**
 - Separated raise button logic from other action buttons
@@ -59,7 +59,7 @@ updateActionButtons() {
 
 ### 2. Updated `enablePlayerActions()` Method
 
-**File:** `pokerv2/src/scenes/FastGameScene.js`
+**File:** `pokerv2/client/src/scenes/FastGameScene.js`
 
 **Changes:**
 - Removed automatic raise button enable
@@ -85,7 +85,7 @@ enablePlayerActions() {
 
 ### 3. Updated Reconnection Logic
 
-**File:** `pokerv2/src/scenes/FastGameScene.js`
+**File:** `pokerv2/client/src/scenes/FastGameScene.js`
 
 **Changes:**
 - Enhanced `restoreUIAfterReconnection()` method to handle raise button state
@@ -203,8 +203,8 @@ This fix ensures that:
 
 ## 📋 Related Files
 
-- `pokerv2/src/scenes/FastGameScene.js` - Main fix implementation
-- `pokerv2/src/managers/NetworkManager.js` - Raise tracking methods
+- `pokerv2/client/src/scenes/FastGameScene.js` - Main fix implementation
+- `pokerv2/client/src/managers/NetworkManager.js` - Raise tracking methods
 - `pokerv2/test-raise-button-disable.html` - Test file for verification
 - `pokerv2/RAISE_BUTTON_DISABLE_FIX.md` - This documentation
 

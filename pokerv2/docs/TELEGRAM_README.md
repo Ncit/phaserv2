@@ -33,7 +33,7 @@ The poker game now supports Telegram Mini Apps, allowing players to enjoy the ga
 
 ### **Core Components**
 
-#### **1. Telegram Bridge (`src/scripts/telegramlogic.js`)**
+#### **1. Telegram Bridge (`client/src/scripts/telegramlogic.js`)**
 - **Purpose**: Handles all Telegram Web App API interactions
 - **Features**:
   - User authentication and data retrieval
@@ -41,14 +41,14 @@ The poker game now supports Telegram Mini Apps, allowing players to enjoy the ga
   - Haptic feedback and platform integration
   - Theme and platform detection
 
-#### **2. Environment Configuration (`src/config/EnvironmentConfig.js`)**
+#### **2. Environment Configuration (`client/src/config/EnvironmentConfig.js`)**
 - **Purpose**: Manages environment-specific settings
 - **Features**:
   - Automatic Telegram environment detection
   - Platform-specific feature flags
   - Production optimizations
 
-#### **3. Loading Scene Integration (`src/scenes/LoadingScene.js`)**
+#### **3. Loading Scene Integration (`client/src/scenes/LoadingScene.js`)**
 - **Purpose**: Handles Telegram initialization and user setup
 - **Features**:
   - Automatic Telegram Web App initialization
@@ -285,7 +285,7 @@ const keyboard = {
 3. **Test Telegram functions**:
    ```javascript
    // Test in browser console
-   import('./src/scripts/telegramlogic.js').then(({ isTelegramEnvironment }) => {
+   import('./client/src/scripts/telegramlogic.js').then(({ isTelegramEnvironment }) => {
        console.log('Telegram environment:', isTelegramEnvironment());
    });
    ```
@@ -354,11 +354,11 @@ if (!TelegramWebApp) {
 ./scripts/check-environment.sh
 
 # View environment configuration
-cat src/config/EnvironmentConfig.js
+cat client/src/config/EnvironmentConfig.js
 
 # Test environment detection
 node -e "
-import('./src/config/EnvironmentConfig.js').then(({ EnvironmentConfig }) => {
+import('./client/src/config/EnvironmentConfig.js').then(({ EnvironmentConfig }) => {
     const config = new EnvironmentConfig();
     console.log('Environment:', config.getEnvironment());
 });
