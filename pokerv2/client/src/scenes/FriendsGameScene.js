@@ -106,7 +106,7 @@ export class FriendsGameScene extends Phaser.Scene {
                 name: window.appData.first_name,
                 bank: '1200',
                 position: { x: 590, y: 520 },
-                avatarUrl: window.appData.userAvatar,
+                avatarUrl: this.getSafeAvatarUrl(window.appData.userAvatar),
             },
             {
                 name: 'Козлова',
@@ -133,6 +133,34 @@ export class FriendsGameScene extends Phaser.Scene {
                 this.createCustomPlayer(index + 1, player);
             });
         });
+    }
+
+    /**
+     * Get safe avatar URL with fallback to avatar.png
+     * @param {string} avatarUrl - The original avatar URL
+     * @returns {string} - Safe avatar URL with fallback
+     */
+    getSafeAvatarUrl(avatarUrl) {
+        // Check if avatar URL is empty, null, undefined, or just whitespace
+        if (!avatarUrl || avatarUrl.trim() === '' || avatarUrl === 'null' || avatarUrl === 'undefined') {
+            console.log('📱 Avatar URL is empty/null, using fallback avatar.png');
+            return 'assets/avatar.png';
+            }
+        
+        // Check if the URL is valid (basic validation)
+        try {
+            const url = new URL(avatarUrl);
+            if (!url.protocol || !url.hostname) {
+                console.log('📱 Invalid avatar URL format, using fallback avatar.png');
+                return 'assets/avatar.png';
+            }
+        } catch (error) {
+            console.log('📱 Avatar URL parsing failed, using fallback avatar.png');
+            return 'assets/avatar.png';
+        }
+        
+        console.log('📱 Using provided avatar URL:', avatarUrl);
+        return avatarUrl;
     }
 
     createButtonLabels() {

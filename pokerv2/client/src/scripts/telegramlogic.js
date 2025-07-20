@@ -1,4 +1,32 @@
 /**
+ * Get safe avatar URL with fallback to avatar.png
+ * @param {string} avatarUrl - The original avatar URL from Telegram/VK
+ * @returns {string} - Safe avatar URL with fallback
+ */
+function getSafeAvatarUrl(avatarUrl) {
+    // Check if avatar URL is empty, null, undefined, or just whitespace
+    if (!avatarUrl || avatarUrl.trim() === '' || avatarUrl === 'null' || avatarUrl === 'undefined') {
+        console.log('📱 Avatar URL is empty/null, using fallback avatar.png');
+        return 'assets/avatar.png';
+    }
+    
+    // Check if the URL is valid (basic validation)
+    try {
+        const url = new URL(avatarUrl);
+        if (!url.protocol || !url.hostname) {
+            console.log('📱 Invalid avatar URL format, using fallback avatar.png');
+            return 'assets/avatar.png';
+        }
+    } catch (error) {
+        console.log('📱 Avatar URL parsing failed, using fallback avatar.png');
+        return 'assets/avatar.png';
+    }
+    
+    console.log('📱 Using provided avatar URL:', avatarUrl);
+    return avatarUrl;
+}
+
+/**
  * Telegram Mini App Integration
  * Handles Telegram Web App API integration for the poker game
  */
@@ -83,7 +111,7 @@ function setupTelegramApp(appDataCallback) {
                 last_name: user.last_name || '',
                 username: user.username || '',
                 language_code: user.language_code || 'en',
-                userAvatar: user.photo_url || 'https://avatar.iran.liara.run/public',
+                userAvatar: getSafeAvatarUrl(user.photo_url),
                 // Add Telegram-specific fields
                 is_premium: user.is_premium || false,
                 added_to_attachment_menu: user.added_to_attachment_menu || false,
@@ -103,7 +131,7 @@ function setupTelegramApp(appDataCallback) {
                 last_name: '',
                 username: 'telegram_user',
                 language_code: 'en',
-                userAvatar: '',
+                userAvatar: getSafeAvatarUrl(''),
                 is_premium: false,
                 added_to_attachment_menu: false,
                 allows_write_to_pm: false
@@ -126,7 +154,7 @@ function setupTelegramApp(appDataCallback) {
             last_name: '',
             username: 'telegram_user',
             language_code: 'en',
-            userAvatar: '',
+            userAvatar: getSafeAvatarUrl(''),
             is_premium: false,
             added_to_attachment_menu: false,
             allows_write_to_pm: false

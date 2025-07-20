@@ -10,13 +10,37 @@ export class LobbyScene extends Phaser.Scene {
     }
 
     preload() {
-        // Check if appData exists, otherwise use default avatar
-        if (window.appData && window.appData.userAvatar) {
-            this.load.image('avatarQ', window.appData.userAvatar);
-        } else {
-            // Use a default avatar or placeholder
-            this.load.image('avatarQ', 'assets/avatar.png');
+        // Get safe avatar URL with fallback
+        const safeAvatarUrl = this.getSafeAvatarUrl(window.appData?.userAvatar);
+        this.load.image('avatarQ', safeAvatarUrl);
+    }
+
+    /**
+     * Get safe avatar URL with fallback to avatar.png
+     * @param {string} avatarUrl - The original avatar URL
+     * @returns {string} - Safe avatar URL with fallback
+     */
+    getSafeAvatarUrl(avatarUrl) {
+        // Check if avatar URL is empty, null, undefined, or just whitespace
+        if (!avatarUrl || avatarUrl.trim() === '' || avatarUrl === 'null' || avatarUrl === 'undefined') {
+            console.log('📱 Avatar URL is empty/null, using fallback avatar.png');
+            return 'assets/avatar.png';
         }
+        
+        // Check if the URL is valid (basic validation)
+        try {
+            const url = new URL(avatarUrl);
+            if (!url.protocol || !url.hostname) {
+                console.log('📱 Invalid avatar URL format, using fallback avatar.png');
+                return 'assets/avatar.png';
+            }
+        } catch (error) {
+            console.log('📱 Avatar URL parsing failed, using fallback avatar.png');
+            return 'assets/avatar.png';
+        }
+        
+        console.log('📱 Using provided avatar URL:', avatarUrl);
+        return avatarUrl;
     }
 
     create() {

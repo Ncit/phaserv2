@@ -101,6 +101,34 @@ export class FastGameScene extends Phaser.Scene {
         });
     }
 
+    /**
+     * Get safe avatar URL with fallback to avatar.png
+     * @param {string} avatarUrl - The original avatar URL
+     * @returns {string} - Safe avatar URL with fallback
+     */
+    getSafeAvatarUrl(avatarUrl) {
+        // Check if avatar URL is empty, null, undefined, or just whitespace
+        if (!avatarUrl || avatarUrl.trim() === '' || avatarUrl === 'null' || avatarUrl === 'undefined') {
+            console.log('📱 Avatar URL is empty/null, using fallback avatar.png');
+            return 'assets/avatar.png';
+        }
+        
+        // Check if the URL is valid (basic validation)
+        try {
+            const url = new URL(avatarUrl);
+            if (!url.protocol || !url.hostname) {
+                console.log('📱 Invalid avatar URL format, using fallback avatar.png');
+                return 'assets/avatar.png';
+            }
+        } catch (error) {
+            console.log('📱 Avatar URL parsing failed, using fallback avatar.png');
+            return 'assets/avatar.png';
+        }
+        
+        console.log('📱 Using provided avatar URL:', avatarUrl);
+        return avatarUrl;
+    }
+
     createUI() {
         // Create background elements
         this.background = this.add.image(640, 360, 'game_bg');
@@ -236,7 +264,7 @@ export class FastGameScene extends Phaser.Scene {
             // Join game with player data
             const playerData = {
                 name: window.appData?.first_name,
-                avatarUrl: window.appData?.userAvatar,
+                avatarUrl: this.getSafeAvatarUrl(window.appData?.userAvatar),
                 bank: 1000,
                 vk_user_id: window.appData?.vk_user_id || 0,
                 telegram_user_id: window.appData?.telegram_user_id || 0,

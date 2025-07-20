@@ -243,6 +243,34 @@ export class AIBotScene extends Phaser.Scene {
         console.log('AIBotScene: Scene state reset completed');
     }
 
+    /**
+     * Get safe avatar URL with fallback to avatar.png
+     * @param {string} avatarUrl - The original avatar URL
+     * @returns {string} - Safe avatar URL with fallback
+     */
+    getSafeAvatarUrl(avatarUrl) {
+        // Check if avatar URL is empty, null, undefined, or just whitespace
+        if (!avatarUrl || avatarUrl.trim() === '' || avatarUrl === 'null' || avatarUrl === 'undefined') {
+            console.log('📱 Avatar URL is empty/null, using fallback avatar.png');
+            return 'assets/avatar.png';
+        }
+        
+        // Check if the URL is valid (basic validation)
+        try {
+            const url = new URL(avatarUrl);
+            if (!url.protocol || !url.hostname) {
+                console.log('📱 Invalid avatar URL format, using fallback avatar.png');
+                return 'assets/avatar.png';
+            }
+        } catch (error) {
+            console.log('📱 Avatar URL parsing failed, using fallback avatar.png');
+            return 'assets/avatar.png';
+        }
+        
+        console.log('📱 Using provided avatar URL:', avatarUrl);
+        return avatarUrl;
+    }
+
     initializeGame() {
         // Create 4 AI players with different levels and 1 human player
         const playerData = [
@@ -280,7 +308,7 @@ export class AIBotScene extends Phaser.Scene {
                 name: window.appData?.first_name || 'Player',
                 bank: 1000,
                 position: { x: 670, y: 520 },
-                avatarUrl: window.appData?.userAvatar || 'https://gravatar.com/avatar/3?s=400&d=robohash&r=x',
+                avatarUrl: this.getSafeAvatarUrl(window.appData?.userAvatar),
                 isAI: false,
                 vk_user_id: window.appData?.vk_user_id || 0
             },
