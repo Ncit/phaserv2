@@ -65,9 +65,9 @@ Scripts for running tests and development tasks.
 - Comprehensive test list with descriptions
 - Cross-platform compatibility (macOS/Linux)
 
-#### `start-multiplayer.sh`
+#### `start-multiplayer.sh` (Moved to server-scripts/)
 **Purpose**: Start the multiplayer game server
-**Usage**: `./scripts/start-multiplayer.sh`
+**Usage**: `./server-scripts/start-multiplayer.sh`
 **Features**:
 - Starts Node.js server for multiplayer functionality
 - Handles server dependencies
@@ -109,7 +109,7 @@ Scripts for project documentation and help.
 ./scripts/run-tests.sh
 
 # Start multiplayer server
-./scripts/start-multiplayer.sh
+./server-scripts/start-multiplayer.sh
 ```
 
 ### Help & Documentation
@@ -140,7 +140,7 @@ scripts/
 ├── set-production.sh            # Set production environment
 ├── toggle-environment.sh        # Toggle between environments
 ├── run-tests.sh                 # Interactive test runner
-├── start-multiplayer.sh         # Multiplayer server starter
+├── start-multiplayer.sh         # Multiplayer server starter (moved to server-scripts/)
 └── list-scripts.sh              # Script help and documentation
 ```
 
@@ -158,7 +158,7 @@ scripts/
 ./scripts/run-tests.sh
 
 # 4. Start multiplayer server
-./scripts/start-multiplayer.sh
+./server-scripts/start-multiplayer.sh
 ```
 
 ### Production Preparation
@@ -219,7 +219,7 @@ node --version
 cd server && npm install
 
 # Start server
-./scripts/start-multiplayer.sh
+./server-scripts/start-multiplayer.sh
 ```
 
 ### Debug Commands
@@ -296,5 +296,5 @@ echo "✅ Script completed successfully"
 | Set Production | `./scripts/set-production.sh` |
 | Toggle Environment | `./scripts/toggle-environment.sh` |
 | Run Tests | `./scripts/run-tests.sh` |
-| Start Server | `./scripts/start-multiplayer.sh` |
+| Start Server | `./server-scripts/start-multiplayer.sh` |
 | Show Help | `./scripts/list-scripts.sh` | 

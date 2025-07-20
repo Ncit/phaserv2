@@ -27,7 +27,7 @@ open http://localhost:8000
 ./scripts/set-production.sh
 
 # 2. Start multiplayer server (optional)
-./scripts/start-multiplayer.sh
+./server-scripts/start-multiplayer.sh
 
 # 3. Deploy to VKontakte platform
 ```
@@ -45,8 +45,11 @@ pokerv2/
 ├── 📁 scripts/               # Automation scripts
 │   ├── 🔧 Environment management
 │   ├── 🧪 Testing tools
-│   ├── 🚀 Server scripts
 │   └── 📚 Documentation
+├── 📁 server-scripts/         # Server management scripts
+│   ├── 🚀 Server startup
+│   ├── 🧪 Server testing
+│   └── 🔧 Server debugging
 ├── 📁 docs/                  # Project documentation
 │   ├── 📋 Comprehensive guides
 │   ├── 🔧 Environment docs
@@ -86,7 +89,7 @@ pokerv2/
 ./scripts/run-tests.sh
 
 # Start multiplayer server
-./scripts/start-multiplayer.sh
+./server-scripts/start-multiplayer.sh
 ```
 
 ### Help & Documentation
@@ -209,7 +212,7 @@ python3 -m http.server 8000
 ./scripts/set-production.sh
 
 # Start multiplayer server
-./scripts/start-multiplayer.sh
+./server-scripts/start-multiplayer.sh
 
 # Deploy to VKontakte
 ```
@@ -245,7 +248,7 @@ node --version
 cd server && npm install
 
 # Start server
-./scripts/start-multiplayer.sh
+./server-scripts/start-multiplayer.sh
 ```
 
 ### Debug Commands
@@ -293,7 +296,7 @@ bash -n scripts/*.sh
 | Set Development | `./scripts/set-development.sh` |
 | Set Production | `./scripts/set-production.sh` |
 | Run Tests | `./scripts/run-tests.sh` |
-| Start Server | `./scripts/start-multiplayer.sh` |
+| Start Server | `./server-scripts/start-multiplayer.sh` |
 | Show Help | `./scripts/list-scripts.sh` |
 | View Docs | `open docs/README.md` |
 
