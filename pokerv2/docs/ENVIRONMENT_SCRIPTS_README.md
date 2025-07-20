@@ -6,52 +6,52 @@ This directory contains scripts to easily switch between development and product
 
 ### 🛠️ `set-development.sh`
 **Purpose**: Explicitly sets environment to development mode
-**Usage**: `./set-development.sh`
+**Usage**: `./scripts/set-development.sh`
 
 ### 🚀 `set-production.sh`
 **Purpose**: Explicitly sets environment to production VK mode
-**Usage**: `./set-production.sh`
+**Usage**: `./scripts/set-production.sh`
 
 ### 🔄 `toggle-environment.sh`
 **Purpose**: Toggles between development and productionVK environments
-**Usage**: `./toggle-environment.sh`
+**Usage**: `./scripts/toggle-environment.sh`
 
 ### 🔍 `check-environment.sh`
 **Purpose**: Shows current environment status without making changes
-**Usage**: `./check-environment.sh`
+**Usage**: `./scripts/check-environment.sh`
 
 ## Quick Start
 
 ### Option 1: Explicit Environment Setting
 1. **Check current environment:**
    ```bash
-   ./check-environment.sh
+   ./scripts/check-environment.sh
    ```
 
 2. **Set to development mode:**
    ```bash
-   ./set-development.sh
+   ./scripts/set-development.sh
    ```
 
 3. **Set to production VK mode:**
    ```bash
-   ./set-production.sh
+   ./scripts/set-production.sh
    ```
 
 ### Option 2: Toggle Between Environments
 1. **Check current environment:**
    ```bash
-   ./check-environment.sh
+   ./scripts/check-environment.sh
    ```
 
 2. **Toggle environment:**
    ```bash
-   ./toggle-environment.sh
+   ./scripts/toggle-environment.sh
    ```
 
 3. **Toggle back:**
    ```bash
-   ./toggle-environment.sh
+   ./scripts/toggle-environment.sh
    ```
 
 ## Environment Modes
@@ -131,28 +131,28 @@ After running the toggle script:
 ### Development Workflow
 ```bash
 # Start in development mode
-./set-development.sh
+./scripts/set-development.sh
 
 # Work on features with debug enabled
 # ... development work ...
 
 # Switch to production mode for testing
-./set-production.sh
+./scripts/set-production.sh
 
 # Test production behavior
 # ... testing ...
 
 # Switch back to development
-./set-development.sh
+./scripts/set-development.sh
 ```
 
 ### Production Deployment
 ```bash
 # Ensure production mode before deployment
-./set-production.sh
+./scripts/set-production.sh
 
 # Verify production settings
-./check-environment.sh
+./scripts/check-environment.sh
 
 # Deploy to production
 # ... deployment process ...
@@ -163,8 +163,8 @@ After running the toggle script:
 ### Script Not Found
 ```bash
 # Make sure scripts are executable
-chmod +x toggle-environment.sh
-chmod +x check-environment.sh
+chmod +x scripts/toggle-environment.sh
+chmod +x scripts/check-environment.sh
 ```
 
 ### File Not Found
