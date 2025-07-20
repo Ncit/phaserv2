@@ -64,8 +64,79 @@ class EnvironmentConfig {
      * Detect the current environment based on various indicators
      */
     detectEnvironment() {
-        // Force Telegram environment
+        // Check for URL parameters first (highest priority)
+        const urlParams = new URLSearchParams(window.location.search);
+        const envParam = urlParams.get('env');
+        
+        if (envParam) {
+            // Validate the environment parameter
+            if (this.environments[envParam]) {
+                console.log(`🌐 Environment set via URL parameter: ${envParam}`);
+                return envParam;
+            } else {
+                console.warn(`⚠️ Invalid environment in URL parameter: ${envParam}`);
+                console.warn(`Available environments: ${Object.keys(this.environments).join(', ')}`);
+            }
+        }
+        
+        // Check for hash-based environment switching
+        const hashEnv = this.detectEnvironmentFromHash();
+        if (hashEnv) {
+            console.log(`🌐 Environment set via URL hash: ${hashEnv}`);
+            return hashEnv;
+        }
+        
+        // Check for platform-specific detection
+        const platformEnv = this.detectEnvironmentFromPlatform();
+        if (platformEnv) {
+            console.log(`🌐 Environment detected from platform: ${platformEnv}`);
+            return platformEnv;
+        }
+        
+        // Default to development
+        console.log(`🌐 Using default environment: development`);
         return 'development';
+    }
+
+    /**
+     * Detect environment from URL hash
+     */
+    detectEnvironmentFromHash() {
+        const hash = window.location.hash.toLowerCase();
+        
+        if (hash.includes('#vk') || hash.includes('#vkontakte')) {
+            return 'productionVK';
+        } else if (hash.includes('#telegram') || hash.includes('#tg')) {
+            return 'productionTelegram';
+        } else if (hash.includes('#dev') || hash.includes('#development')) {
+            return 'development';
+        }
+        
+        return null;
+    }
+
+    /**
+     * Detect environment from platform indicators
+     */
+    detectEnvironmentFromPlatform() {
+        // Check for VKontakte platform
+        if (window.VK || window.vkBridge || document.referrer.includes('vk.com')) {
+            return 'productionVK';
+        }
+        
+        // Check for Telegram platform
+        if (window.Telegram || window.TelegramWebApp || document.referrer.includes('t.me')) {
+            return 'productionTelegram';
+        }
+        
+        // Check for localhost/development
+        if (window.location.hostname === 'localhost' || 
+            window.location.hostname === '127.0.0.1' ||
+            window.location.hostname.includes('ngrok.io')) {
+            return 'development';
+        }
+        
+        return null;
     }
 
     /**
@@ -142,15 +213,51 @@ class EnvironmentConfig {
     /**
      * Override environment (useful for testing)
      */
-    setEnvironment(environmentName) {
+    setEnvironment(environmentName, updateUrl = true) {
         if (this.environments[environmentName]) {
             this.currentEnvironment = environmentName;
             this.config = this.environments[environmentName];
             this.initializeGlobalConfig();
             console.log(`🔄 Environment changed to: ${environmentName}`);
+            
+            // Update URL if requested
+            if (updateUrl) {
+                this.updateUrlWithEnvironment(environmentName);
+            }
         } else {
             console.error(`❌ Invalid environment: ${environmentName}`);
+            console.error(`Available environments: ${Object.keys(this.environments).join(', ')}`);
         }
+    }
+
+    /**
+     * Update URL with environment parameter
+     */
+    updateUrlWithEnvironment(environmentName) {
+        const url = new URL(window.location);
+        url.searchParams.set('env', environmentName);
+        
+        // Update URL without reloading the page
+        window.history.replaceState({}, '', url);
+        console.log(`🌐 URL updated with environment: ${environmentName}`);
+    }
+
+    /**
+     * Get current environment from URL
+     */
+    getEnvironmentFromUrl() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('env');
+    }
+
+    /**
+     * Remove environment parameter from URL
+     */
+    removeEnvironmentFromUrl() {
+        const url = new URL(window.location);
+        url.searchParams.delete('env');
+        window.history.replaceState({}, '', url);
+        console.log(`🌐 Environment parameter removed from URL`);
     }
 
     /**
@@ -191,3 +298,9 @@ export const getEnvironment = () => environmentConfig.getEnvironment();
 export const isDevelopment = () => environmentConfig.isDevelopment();
 export const isProductionVK = () => environmentConfig.isProductionVK();
 export const isProductionTelegram = () => environmentConfig.isProductionTelegram();
+
+// Export URL-based environment methods
+export const setEnvironment = (environmentName, updateUrl = true) => environmentConfig.setEnvironment(environmentName, updateUrl);
+export const getEnvironmentFromUrl = () => environmentConfig.getEnvironmentFromUrl();
+export const updateUrlWithEnvironment = (environmentName) => environmentConfig.updateUrlWithEnvironment(environmentName);
+export const removeEnvironmentFromUrl = () => environmentConfig.removeEnvironmentFromUrl();
