@@ -1,6 +1,6 @@
 # Poker Game v2
 
-A multiplayer poker game built with Phaser.js, featuring AI bots, real-time multiplayer, and VKontakte integration.
+A modern multiplayer poker game built with Phaser.js, featuring AI bots, real-time multiplayer, and multi-platform integration (VKontakte & Telegram Mini Apps).
 
 ## 🚀 **Quick Start**
 
@@ -22,6 +22,8 @@ open http://localhost:8000
 ```
 
 ### Production Setup
+
+#### VKontakte Platform
 ```bash
 # 1. Set VK production environment
 ./scripts/set-vk.sh
@@ -32,6 +34,17 @@ open http://localhost:8000
 # 3. Deploy to VKontakte platform
 ```
 
+#### Telegram Mini App
+```bash
+# 1. Set Telegram production environment
+./scripts/set-telegram.sh
+
+# 2. Start multiplayer server (optional)
+./scripts/start-multiplayer.sh
+
+# 3. Deploy to Telegram Mini App platform
+```
+
 ## 📁 **Project Structure**
 
 ```
@@ -40,6 +53,7 @@ pokerv2/
 │   ├── 📁 config/            # Configuration files
 │   ├── 📁 managers/          # Game managers
 │   ├── 📁 scenes/            # Phaser game scenes
+│   ├── 📁 scripts/           # Platform integration scripts
 │   ├── 📁 utils/             # Utility functions
 │   └── main.js               # Main entry point
 ├── 📁 scripts/               # Automation scripts
@@ -47,9 +61,14 @@ pokerv2/
 │   ├── 🧪 Testing tools
 │   ├── 🚀 Server scripts
 │   └── 📚 Documentation
+├── 📁 server-scripts/        # Server automation scripts
+│   ├── start-multiplayer.sh  # Multiplayer server startup
+│   ├── test-server.js        # Server testing
+│   └── README.md             # Server documentation
 ├── 📁 tests/                 # Test files
 │   ├── 🧪 Environment tests
 │   ├── 🎮 Game functionality tests
+│   ├── 📱 Platform integration tests
 │   └── 📋 Comprehensive documentation
 ├── 📁 assets/                # Game assets
 ├── 📁 dependencies/          # External libraries
@@ -70,7 +89,10 @@ pokerv2/
 # Set VK production mode
 ./scripts/set-vk.sh
 
-# Toggle between modes
+# Set Telegram production mode
+./scripts/set-telegram.sh
+
+# Toggle between all environments
 ./scripts/toggle-environment.sh
 ```
 
@@ -99,10 +121,10 @@ pokerv2/
 - **Spectator Mode**: Watch games without playing
 
 ### Platform Integration
-- **VKontakte**: Native VK platform integration
-- **Telegram**: Telegram Mini App integration
-- **VK Bridge**: Seamless VK app functionality
-- **User Authentication**: VK user data integration
+- **VKontakte**: Native VK platform integration with VK Bridge
+- **Telegram**: Telegram Mini App integration with Web App API
+- **User Authentication**: Platform-specific user data integration
+- **Avatar Management**: Unified `userAvatar` field across platforms
 - **Social Features**: Friend invites and sharing
 
 ### Development Features
@@ -113,13 +135,13 @@ pokerv2/
 
 ## 🔧 **Environment Configuration**
 
-The game supports multiple environments with feature flags:
+The game supports three environments with feature flags:
 
-| Environment | Debug Features | Production Features | Use Case |
-|-------------|----------------|-------------------|----------|
-| **Development** | ✅ All enabled | ❌ Disabled | Local development |
-| **Staging** | ⚠️ Limited | ⚠️ Limited | Testing |
-| **ProductionVK** | ❌ Disabled | ✅ All enabled | VK platform |
+| Environment | Debug Features | Production Features | Platform | Use Case |
+|-------------|----------------|-------------------|----------|----------|
+| **Development** | ✅ All enabled | ❌ Disabled | Web Browser | Local development |
+| **ProductionVK** | ❌ Disabled | ✅ All enabled | VKontakte | VK platform deployment |
+| **ProductionTelegram** | ❌ Disabled | ✅ All enabled | Telegram | Telegram Mini App deployment |
 
 ### Feature Flags
 - `playerSelection`: Debug player selection UI
@@ -146,6 +168,8 @@ open http://localhost:8000/tests/test-environment-config.html
 - **Chat Tests**: Communication system
 - **Connection Tests**: Network and multiplayer
 - **UI Tests**: User interface components
+- **Platform Integration Tests**: VK and Telegram integration
+- **Avatar Management Tests**: `userAvatar` field functionality
 
 ## 🚀 **Deployment**
 
@@ -162,6 +186,8 @@ python3 -m http.server 8000
 ```
 
 ### Production
+
+#### VKontakte Platform
 ```bash
 # Set VK production environment
 ./scripts/set-vk.sh
@@ -172,12 +198,25 @@ python3 -m http.server 8000
 # Deploy to VKontakte
 ```
 
+#### Telegram Mini App
+```bash
+# Set Telegram production environment
+./scripts/set-telegram.sh
+
+# Start multiplayer server
+./scripts/start-multiplayer.sh
+
+# Deploy to Telegram Mini App
+```
+
 ## 📚 **Documentation**
 
 - **[Scripts Documentation](scripts/README.md)**: Complete script reference
-- **[Tests Documentation](tests/README.md)**: Test suite documentation
+- **[Telegram Integration](TELEGRAM_README.md)**: Telegram Mini App integration guide
 - **[Environment Scripts](ENVIRONMENT_SCRIPTS_README.md)**: Environment management guide
 - **[Server Documentation](server/README.md)**: Multiplayer server guide
+- **[Server Scripts](server-scripts/README.md)**: Server automation scripts
+- **[Changelog](CHANGELOG.md)**: Complete project change history
 
 ## 🔍 **Troubleshooting**
 
@@ -210,7 +249,7 @@ node --version
 cd server && npm install
 
 # Start server
-./scripts/start-multiplayer.sh
+./server-scripts/start-multiplayer.sh
 ```
 
 ### Debug Commands
@@ -232,22 +271,33 @@ bash -n scripts/*.sh
 2. **Make changes**: Edit source files
 3. **Run tests**: `./scripts/run-tests.sh`
 4. **Test functionality**: Use development server
-5. **Commit changes**: Follow project conventions
+5. **Test platform integration**: Use platform-specific tests
+6. **Commit changes**: Follow project conventions
+
+### Recent Major Changes
+- **Avatar Management**: Refactored from `photo_200` to `userAvatar` for consistency
+- **Script Organization**: Renamed `set-production.sh` to `set-vk.sh` for clarity
+- **Server Scripts**: Moved to dedicated `server-scripts/` directory
+- **Telegram Integration**: Added full Telegram Mini App support
+- **Environment Management**: Enhanced with three-environment system
 
 ### Code Organization
-- **Source Code**: `src/` directory
-- **Scripts**: `scripts/` directory
-- **Tests**: `tests/` directory
-- **Assets**: `assets/` directory
+- **Source Code**: `src/` directory with platform integration scripts
+- **Scripts**: `scripts/` directory for environment management
+- **Server Scripts**: `server-scripts/` directory for server automation
+- **Tests**: `tests/` directory with platform integration tests
+- **Assets**: `assets/` directory with game resources
 - **Documentation**: README files in each directory
 
 ## 📊 **Project Statistics**
 
-- **Total Scripts**: 7 organized scripts
-- **Test Files**: 71 comprehensive tests
-- **Source Files**: 20+ organized modules
-- **Environments**: 3 supported environments
+- **Total Scripts**: 8 organized scripts (including server scripts)
+- **Test Files**: 71+ comprehensive tests including platform integration
+- **Source Files**: 20+ organized modules with platform integration
+- **Environments**: 3 supported environments (Development, VK, Telegram)
 - **Feature Flags**: 5 configurable flags
+- **Platforms**: 2 production platforms (VKontakte, Telegram)
+- **Avatar Management**: Unified `userAvatar` field across platforms
 
 ## 🎯 **Quick Reference**
 
@@ -256,8 +306,10 @@ bash -n scripts/*.sh
 | Check Environment | `./scripts/check-environment.sh` |
 | Set Development | `./scripts/set-development.sh` |
 | Set VK Production | `./scripts/set-vk.sh` |
+| Set Telegram Production | `./scripts/set-telegram.sh` |
+| Toggle Environments | `./scripts/toggle-environment.sh` |
 | Run Tests | `./scripts/run-tests.sh` |
-| Start Server | `./scripts/start-multiplayer.sh` |
+| Start Server | `./server-scripts/start-multiplayer.sh` |
 | Show Help | `./scripts/list-scripts.sh` |
 
 ## 📄 **License**
@@ -268,5 +320,6 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 - **Phaser.js**: Game framework
 - **VK Bridge**: VKontakte integration
+- **Telegram Web App API**: Telegram Mini App integration
 - **Socket.io**: Real-time multiplayer
 - **Node.js**: Server runtime 

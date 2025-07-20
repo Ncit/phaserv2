@@ -35,19 +35,19 @@ Scripts for managing environment configuration and feature flags.
 - Provides confirmation of changes
 
 #### `set-vk.sh`
-**Purpose**: Set environment to productionVK mode
+**Purpose**: Set environment to VK production mode
 **Usage**: `./scripts/set-vk.sh`
 **Features**:
 - Modifies `detectEnvironment()` function to return 'productionVK'
 - Disables debug features
-- Enables production-specific features
+- Enables VK-specific production features
 - Provides confirmation of changes
 
 #### `toggle-environment.sh`
-**Purpose**: Toggle between development and productionVK modes
+**Purpose**: Toggle between development, VK production, and Telegram production modes
 **Usage**: `./scripts/toggle-environment.sh`
 **Features**:
-- Switches from current environment to opposite mode
+- Cycles through all three environments (development → VK → Telegram → development)
 - Maintains environment state between toggles
 - Shows before/after environment status
 - Provides confirmation of changes
@@ -64,6 +64,15 @@ Scripts for running tests and development tasks.
 - Browser opening for selected tests
 - Comprehensive test list with descriptions
 - Cross-platform compatibility (macOS/Linux)
+
+#### `set-telegram.sh`
+**Purpose**: Set environment to Telegram production mode
+**Usage**: `./scripts/set-telegram.sh`
+**Features**:
+- Modifies `detectEnvironment()` function to return 'productionTelegram'
+- Disables debug features
+- Enables Telegram-specific production features
+- Provides confirmation of changes
 
 #### `start-multiplayer.sh` (Moved to server-scripts/)
 **Purpose**: Start the multiplayer game server
@@ -96,8 +105,11 @@ Scripts for project documentation and help.
 # Set to development mode
 ./scripts/set-development.sh
 
-# Set to production mode
+# Set to VK production mode
 ./scripts/set-vk.sh
+
+# Set to Telegram production mode
+./scripts/set-telegram.sh
 
 # Toggle between modes
 ./scripts/toggle-environment.sh
@@ -122,13 +134,13 @@ Scripts for project documentation and help.
 
 The environment scripts manage these feature flags:
 
-| Flag | Development | ProductionVK | Description |
-|------|-------------|--------------|-------------|
-| `playerSelection` | ✅ | ❌ | Debug player selection UI |
-| `debugLogging` | ✅ | ❌ | Console logging and debugging |
-| `mockData` | ✅ | ❌ | Mock data for testing |
-| `ngrokHeaders` | ✅ | ❌ | Ngrok tunnel headers |
-| `verboseErrors` | ✅ | ❌ | Detailed error messages |
+| Flag | Development | ProductionVK | ProductionTelegram | Description |
+|------|-------------|--------------|-------------------|-------------|
+| `playerSelection` | ✅ | ❌ | ❌ | Debug player selection UI |
+| `debugLogging` | ✅ | ❌ | ❌ | Console logging and debugging |
+| `mockData` | ✅ | ❌ | ❌ | Mock data for testing |
+| `ngrokHeaders` | ✅ | ✅ | ✅ | Ngrok tunnel headers |
+| `verboseErrors` | ✅ | ❌ | ❌ | Detailed error messages |
 
 ## 📁 **File Structure**
 
@@ -137,10 +149,10 @@ scripts/
 ├── README.md                    # This documentation
 ├── check-environment.sh         # Environment status checker
 ├── set-development.sh           # Set development environment
-├── set-vk.sh            # Set production environment
-├── toggle-environment.sh        # Toggle between environments
+├── set-vk.sh                    # Set VK production environment
+├── set-telegram.sh              # Set Telegram production environment
+├── toggle-environment.sh        # Toggle between all environments
 ├── run-tests.sh                 # Interactive test runner
-├── start-multiplayer.sh         # Multiplayer server starter (moved to server-scripts/)
 └── list-scripts.sh              # Script help and documentation
 ```
 
@@ -162,9 +174,23 @@ scripts/
 ```
 
 ### Production Preparation
+
+#### VK Platform
 ```bash
-# 1. Set production environment
+# 1. Set VK production environment
 ./scripts/set-vk.sh
+
+# 2. Verify environment
+./scripts/check-environment.sh
+
+# 3. Test production features
+./scripts/run-tests.sh
+```
+
+#### Telegram Platform
+```bash
+# 1. Set Telegram production environment
+./scripts/set-telegram.sh
 
 # 2. Verify environment
 ./scripts/check-environment.sh
@@ -175,7 +201,7 @@ scripts/
 
 ### Quick Environment Switch
 ```bash
-# Toggle between development and production
+# Toggle between all environments (development → VK → Telegram → development)
 ./scripts/toggle-environment.sh
 
 # Check current status
