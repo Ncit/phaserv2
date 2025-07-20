@@ -165,7 +165,14 @@ export class LoadingScene extends Phaser.Scene {
             
             // Create player avatar
             const avatar = this.add.image(buttonX, buttonY - 40, 'avatar');
-            avatar.setScale(0.2);
+            
+            // Import and use the avatar scale function
+            import('../scripts/telegramlogic.js').then(({ getAvatarScale }) => {
+                avatar.setScale(getAvatarScale(true)); // true = fallback avatar
+            }).catch(() => {
+                // Fallback to original logic if import fails
+                avatar.setScale(0.15);
+            });
             
             // Load player avatar from URL
             const avatarKey = `debug_avatar_${player.id}`;
@@ -224,7 +231,14 @@ export class LoadingScene extends Phaser.Scene {
         this.playerButtons.forEach(buttonElements => {
             buttonElements.bg.setTint(0xffffff);
             buttonElements.nameText.setFill('#ffffff');
-            buttonElements.avatar.setScale(0.2);
+            
+            // Import and use the avatar scale function
+            import('../scripts/telegramlogic.js').then(({ getAvatarScale }) => {
+                buttonElements.avatar.setScale(getAvatarScale(true)); // true = fallback avatar
+            }).catch(() => {
+                // Fallback to original logic if import fails
+                buttonElements.avatar.setScale(0.15);
+            });
         });
 
         // Highlight selected button
