@@ -117,7 +117,7 @@ export class CardManager {
             
             card = this.scene.add.image(cardPosition.x, cardPosition.y, cardKey);
             // Use different scales for front and back cards
-            const cardScale = faceUp ? 0.15 : 0.36;
+            const cardScale = faceUp ? 0.1 : 0.36;
             card.setScale(cardScale);
             
             // Apply rotation based on card index (first card: -8°, second card: 8°)
@@ -217,7 +217,7 @@ export class CardManager {
         cardData.sprite.setTexture(newCardKey);
         
         // Update card scale based on face up/down state
-        const cardScale = cardData.faceUp ? 0.15 : 0.36;
+        const cardScale = cardData.faceUp ? 0.1 : 0.36;
         cardData.sprite.setScale(cardScale);
         
         // Maintain rotation when flipping cards
