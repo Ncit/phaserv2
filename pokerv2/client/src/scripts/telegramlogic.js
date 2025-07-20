@@ -64,7 +64,8 @@ function setupTelegramApp(appDataCallback) {
             console.error('❌ Telegram Web App not initialized');
             throw new Error('Telegram Web App not initialized');
         }
-
+        TelegramWebApp.requestFullscreen();
+        TelegramWebApp.lockOrientation("landscape");
         console.log('📱 Setting up Telegram app...');
         console.log('📱 TelegramWebApp:', TelegramWebApp);
         console.log('📱 TelegramWebApp.initDataUnsafe:', TelegramWebApp.initDataUnsafe);
