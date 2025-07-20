@@ -282,12 +282,6 @@ export class LoadingScene extends Phaser.Scene {
     initializeTelegram() {
         // Check if we're actually in Telegram environment
         if (typeof window.Telegram === 'undefined' || !window.Telegram.WebApp) {
-            console.log('--------------------------------');
-            console.log(window.Telegram);
-            console.log('--------------------------------');
-            console.log('📱 Telegram environment detected but Web App not available (testing mode)');
-            console.log('📱 This is normal when testing outside of Telegram');
-            
             // Create mock Telegram data for testing
             const mockTelegramData = {
                 telegram_user_id: 123456789,
