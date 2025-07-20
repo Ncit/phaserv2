@@ -221,4 +221,4 @@ When creating new tests:
 - Browser Developer Tools (F12)
 - Console logging
 - Network tab for request debugging
-- Environment configuration scripts (`./check-environment.sh`) 
+- Environment configuration scripts (`../scripts/check-environment.sh`) 
