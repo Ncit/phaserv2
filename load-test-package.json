@@ -1,0 +1,33 @@
+{
+  "name": "poker-game-load-test",
+  "version": "1.0.0",
+  "description": "Load testing tool for Poker Game WebSocket server",
+  "main": "load-test.js",
+  "scripts": {
+    "test": "node load-test.js",
+    "test:light": "node load-test.js --connections=10 --duration=30000",
+    "test:medium": "node load-test.js --connections=50 --duration=60000",
+    "test:heavy": "node load-test.js --connections=200 --duration=120000",
+    "test:stress": "node load-test.js --connections=500 --duration=180000",
+    "test:custom": "node load-test.js --url=ws://localhost:3000 --connections=100 --duration=60000"
+  },
+  "keywords": [
+    "load-testing",
+    "websocket",
+    "poker",
+    "game",
+    "performance",
+    "stress-testing"
+  ],
+  "author": "Ncit",
+  "license": "MIT",
+  "dependencies": {
+    "ws": "^8.14.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+} 
