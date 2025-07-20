@@ -120,11 +120,23 @@ export class FastGameScene extends Phaser.Scene {
                 console.log('📱 Invalid avatar URL format, using fallback avatar.png');
                 return 'assets/avatar.png';
             }
+            
+            // Check for CORS-prone domains (Telegram, VK, etc.)
+            const corsProneDomains = ['t.me', 'telegram.org', 'vk.com', 'vk.ru', 'vk.me'];
+            const isCorsProne = corsProneDomains.some(domain => url.hostname.includes(domain));
+            
+            if (isCorsProne) {
+                console.log('📱 Avatar URL from CORS-prone domain detected, using fallback avatar.png');
+                console.log('📱 CORS-prone URL:', avatarUrl);
+                return 'assets/avatar.png';
+            }
+            
         } catch (error) {
             console.log('📱 Avatar URL parsing failed, using fallback avatar.png');
             return 'assets/avatar.png';
         }
         
+        // For non-CORS-prone URLs, we can try to use them
         console.log('📱 Using provided avatar URL:', avatarUrl);
         return avatarUrl;
     }

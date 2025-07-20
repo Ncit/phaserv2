@@ -17,6 +17,7 @@ export class LobbyScene extends Phaser.Scene {
 
     /**
      * Get safe avatar URL with fallback to avatar.png
+     * Handles CORS issues with external avatar URLs
      * @param {string} avatarUrl - The original avatar URL
      * @returns {string} - Safe avatar URL with fallback
      */
@@ -34,11 +35,23 @@ export class LobbyScene extends Phaser.Scene {
                 console.log('📱 Invalid avatar URL format, using fallback avatar.png');
                 return 'assets/avatar.png';
             }
+            
+            // Check for CORS-prone domains (Telegram, VK, etc.)
+            const corsProneDomains = ['t.me', 'telegram.org', 'vk.com', 'vk.ru', 'vk.me'];
+            const isCorsProne = corsProneDomains.some(domain => url.hostname.includes(domain));
+            
+            if (isCorsProne) {
+                console.log('📱 Avatar URL from CORS-prone domain detected, using fallback avatar.png');
+                console.log('📱 CORS-prone URL:', avatarUrl);
+                return 'assets/avatar.png';
+            }
+            
         } catch (error) {
             console.log('📱 Avatar URL parsing failed, using fallback avatar.png');
             return 'assets/avatar.png';
         }
         
+        // For non-CORS-prone URLs, we can try to use them
         console.log('📱 Using provided avatar URL:', avatarUrl);
         return avatarUrl;
     }
@@ -86,9 +99,7 @@ export class LobbyScene extends Phaser.Scene {
         // Create user profile elements (preserved exactly)
         this.userAvatar = this.add.image(120, 46, 'avatarQ');
         // Use different scale based on whether it's fallback avatar or user avatar
-        const isFallbackAvatar = window.appData?.userAvatar === 'assets/avatar.png' || 
-                                !window.appData?.userAvatar || 
-                                window.appData?.userAvatar.trim() === '';
+        const isFallbackAvatar = safeAvatarUrl === 'assets/avatar.png';
         this.userAvatar.scale = isFallbackAvatar ? 0.15 : 0.3;
         this.crown = this.add.image(138, 60, 'crown');
         // Get user name from appData or use default

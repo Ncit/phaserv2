@@ -140,12 +140,12 @@ export class FriendsGameScene extends Phaser.Scene {
      * @param {string} avatarUrl - The original avatar URL
      * @returns {string} - Safe avatar URL with fallback
      */
-    getSafeAvatarUrl(avatarUrl) {
+        getSafeAvatarUrl(avatarUrl) {
         // Check if avatar URL is empty, null, undefined, or just whitespace
         if (!avatarUrl || avatarUrl.trim() === '' || avatarUrl === 'null' || avatarUrl === 'undefined') {
             console.log('📱 Avatar URL is empty/null, using fallback avatar.png');
             return 'assets/avatar.png';
-            }
+        }
         
         // Check if the URL is valid (basic validation)
         try {
@@ -154,11 +154,23 @@ export class FriendsGameScene extends Phaser.Scene {
                 console.log('📱 Invalid avatar URL format, using fallback avatar.png');
                 return 'assets/avatar.png';
             }
+            
+            // Check for CORS-prone domains (Telegram, VK, etc.)
+            const corsProneDomains = ['t.me', 'telegram.org', 'vk.com', 'vk.ru', 'vk.me'];
+            const isCorsProne = corsProneDomains.some(domain => url.hostname.includes(domain));
+            
+            if (isCorsProne) {
+                console.log('📱 Avatar URL from CORS-prone domain detected, using fallback avatar.png');
+                console.log('📱 CORS-prone URL:', avatarUrl);
+                return 'assets/avatar.png';
+            }
+            
         } catch (error) {
             console.log('📱 Avatar URL parsing failed, using fallback avatar.png');
             return 'assets/avatar.png';
         }
         
+        // For non-CORS-prone URLs, we can try to use them
         console.log('📱 Using provided avatar URL:', avatarUrl);
         return avatarUrl;
     }

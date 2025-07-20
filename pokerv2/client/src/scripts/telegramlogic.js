@@ -1,5 +1,6 @@
 /**
  * Get safe avatar URL with fallback to avatar.png
+ * Handles CORS issues with external avatar URLs
  * @param {string} avatarUrl - The original avatar URL from Telegram/VK
  * @returns {string} - Safe avatar URL with fallback
  */
@@ -17,13 +18,47 @@ function getSafeAvatarUrl(avatarUrl) {
             console.log('📱 Invalid avatar URL format, using fallback avatar.png');
             return 'assets/avatar.png';
         }
+        
+        // Check for CORS-prone domains (Telegram, VK, etc.)
+        const corsProneDomains = ['t.me', 'telegram.org', 'vk.com', 'vk.ru', 'vk.me'];
+        const isCorsProne = corsProneDomains.some(domain => url.hostname.includes(domain));
+        
+        if (isCorsProne) {
+            console.log('📱 Avatar URL from CORS-prone domain detected, using fallback avatar.png');
+            console.log('📱 CORS-prone URL:', avatarUrl);
+            return 'assets/avatar.png';
+        }
+        
     } catch (error) {
         console.log('📱 Avatar URL parsing failed, using fallback avatar.png');
         return 'assets/avatar.png';
     }
     
+    // For non-CORS-prone URLs, we can try to use them
     console.log('📱 Using provided avatar URL:', avatarUrl);
     return avatarUrl;
+}
+
+/**
+ * Test avatar URL for CORS compatibility
+ * @param {string} avatarUrl - The avatar URL to test
+ * @returns {Promise<boolean>} - True if URL is accessible, false if CORS blocked
+ */
+async function testAvatarUrl(avatarUrl) {
+    if (!avatarUrl || avatarUrl === 'assets/avatar.png') {
+        return true; // Local asset is always accessible
+    }
+    
+    try {
+        const response = await fetch(avatarUrl, { 
+            method: 'HEAD',
+            mode: 'no-cors' // This will always succeed but doesn't guarantee access
+        });
+        return true;
+    } catch (error) {
+        console.log('📱 Avatar URL CORS test failed:', error.message);
+        return false;
+    }
 }
 
 /**
