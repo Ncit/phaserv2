@@ -61,6 +61,7 @@ export class LoadingScene extends Phaser.Scene {
         this.load.image('player_select_bg', 'assets/player_name_placeholder.png');
 
         if (window.gameConfig && window.gameConfig.isProductionVK()) {
+            console.log('QWE VK init');
             this.intiializeVK();
         } else if (window.gameConfig && window.gameConfig.isProductionTelegram()) {
             this.initializeTelegram();
@@ -237,6 +238,7 @@ export class LoadingScene extends Phaser.Scene {
         initVkBridgeApp();
         setupApp((appData) => {
             window.appData = appData;
+            console.log('QWE VK init', appData);
         });
     }
 
