@@ -77,7 +77,8 @@ function initTelegramWebApp() {
         // Check if Telegram WebApp is available
         if (typeof window.Telegram !== 'undefined' && window.Telegram.WebApp) {
             TelegramWebApp = window.Telegram.WebApp;
-            
+            TelegramWebApp.expand(); // Request fullscreen
+            TelegramWebApp.enableClosingConfirmation(); // Optional: Prevent accidental exit
             console.log('📱 Telegram WebApp object found:', TelegramWebApp);
             
             // Initialize the Web App with error handling
