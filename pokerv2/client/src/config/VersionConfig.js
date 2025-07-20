@@ -3,14 +3,14 @@
 
 export const VersionConfig = {
     // App version - will be updated by git hooks
-    version: '1.0.6',
+    version: '1.0.8',
     
     // Build information
     buildDate: '2025-07-20',
-    buildTime: '21:48:16',
+    buildTime: '22:01:03',
     
     // Git information (will be populated by build process)
-    gitCommit: '5a12ebc',
+    gitCommit: 'a270e40',
     gitBranch: 'publish_website',
     
     // App metadata
