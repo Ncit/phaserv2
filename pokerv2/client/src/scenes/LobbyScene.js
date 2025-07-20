@@ -1,5 +1,6 @@
 import { ButtonManager } from '../managers/ButtonManager.js';
 import { UIManager } from '../managers/UIManager.js';
+import { SettingsManager } from '../managers/SettingsManager.js';
 import { GameConfig } from '../config/GameConfig.js';
 import { ButtonConfig } from '../config/ButtonConfig.js';
 import { AssetConfig } from '../config/AssetConfig.js';
@@ -60,6 +61,7 @@ export class LobbyScene extends Phaser.Scene {
         // Initialize managers
         this.buttonManager = new ButtonManager(this);
         this.uiManager = new UIManager(this);
+        this.settingsManager = new SettingsManager(this);
 
         // Create background elements (preserved exactly)
         this.background = this.add.image(640, 360, 'background');

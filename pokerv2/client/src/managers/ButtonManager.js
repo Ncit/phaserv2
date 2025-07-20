@@ -201,6 +201,15 @@ export class ButtonManager {
         return createdButtons;
     }
 
+    // Handle settings button click
+    handleSettings() {
+        if (this.scene.settingsManager) {
+            this.scene.settingsManager.showSettings();
+        } else {
+            console.warn('ButtonManager: SettingsManager not available in scene');
+        }
+    }
+
     // Create game mode buttons with automatic positioning
     createGameModeButtons() {
         const buttonKeys = ['fastGame', 'highBid', 'trainGame', 'randomMatch', 'friendsGame'];

@@ -1,5 +1,6 @@
 import { ButtonManager } from '../managers/ButtonManager.js';
 import { UIManager } from '../managers/UIManager.js';
+import { SettingsManager } from '../managers/SettingsManager.js';
 import { PlayerManager } from '../managers/PlayerManager.js';
 import { CardManager } from '../managers/CardManager.js';
 
@@ -26,6 +27,7 @@ export class FriendsGameScene extends Phaser.Scene {
         this.buttonManager = new ButtonManager(this);
         this.playerManager = new PlayerManager(this);
         this.cardManager = new CardManager(this);
+        this.settingsManager = new SettingsManager(this);
         // Initialize UI Manager for Game Scene
         this.uiManager = new UIManager(this);
         this.uiManager.initializeFriendsGameScene();
