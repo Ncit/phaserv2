@@ -4,6 +4,14 @@ This directory contains scripts to easily switch between development and product
 
 ## Scripts Overview
 
+### 🛠️ `set-development.sh`
+**Purpose**: Explicitly sets environment to development mode
+**Usage**: `./set-development.sh`
+
+### 🚀 `set-production.sh`
+**Purpose**: Explicitly sets environment to production VK mode
+**Usage**: `./set-production.sh`
+
 ### 🔄 `toggle-environment.sh`
 **Purpose**: Toggles between development and productionVK environments
 **Usage**: `./toggle-environment.sh`
@@ -14,6 +22,23 @@ This directory contains scripts to easily switch between development and product
 
 ## Quick Start
 
+### Option 1: Explicit Environment Setting
+1. **Check current environment:**
+   ```bash
+   ./check-environment.sh
+   ```
+
+2. **Set to development mode:**
+   ```bash
+   ./set-development.sh
+   ```
+
+3. **Set to production VK mode:**
+   ```bash
+   ./set-production.sh
+   ```
+
+### Option 2: Toggle Between Environments
 1. **Check current environment:**
    ```bash
    ./check-environment.sh
@@ -46,6 +71,18 @@ This directory contains scripts to easily switch between development and product
 - **Verbose Errors**: Disabled
 
 ## What the Scripts Do
+
+### Development Script
+1. **Checks** current environment setting
+2. **Switches** to development mode if not already set
+3. **Verifies** the change was successful
+4. **Shows** development environment features
+
+### Production Script
+1. **Checks** current environment setting
+2. **Switches** to production VK mode if not already set
+3. **Verifies** the change was successful
+4. **Shows** production environment features
 
 ### Toggle Script
 1. **Detects** current environment by reading `src/config/EnvironmentConfig.js`
@@ -83,25 +120,25 @@ After running the toggle script:
 ### Development Workflow
 ```bash
 # Start in development mode
-./check-environment.sh
+./set-development.sh
 
 # Work on features with debug enabled
 # ... development work ...
 
 # Switch to production mode for testing
-./toggle-environment.sh
+./set-production.sh
 
 # Test production behavior
 # ... testing ...
 
 # Switch back to development
-./toggle-environment.sh
+./set-development.sh
 ```
 
 ### Production Deployment
 ```bash
 # Ensure production mode before deployment
-./toggle-environment.sh
+./set-production.sh
 
 # Verify production settings
 ./check-environment.sh
@@ -156,8 +193,8 @@ Add these to your `.gitconfig`:
 
 ```ini
 [alias]
-    env-dev = "!cd pokerv2 && ./toggle-environment.sh && git add src/config/EnvironmentConfig.js"
-    env-prod = "!cd pokerv2 && ./toggle-environment.sh && git add src/config/EnvironmentConfig.js"
+    env-dev = "!cd pokerv2 && ./set-development.sh && git add src/config/EnvironmentConfig.js"
+    env-prod = "!cd pokerv2 && ./set-production.sh && git add src/config/EnvironmentConfig.js"
     env-status = "!cd pokerv2 && ./check-environment.sh"
 ```
 
