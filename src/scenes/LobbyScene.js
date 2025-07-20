@@ -11,8 +11,8 @@ export class LobbyScene extends Phaser.Scene {
 
     preload() {
         // Get safe avatar URL with fallback
-        const safeAvatarUrl = this.getSafeAvatarUrl(window.appData?.userAvatar);
-        this.load.image('avatarQ', safeAvatarUrl);
+        this.safeAvatarUrl = this.getSafeAvatarUrl(window.appData?.userAvatar);
+        this.load.image('avatarQ', this.safeAvatarUrl);
     }
 
     /**
@@ -99,7 +99,7 @@ export class LobbyScene extends Phaser.Scene {
         // Create user profile elements (preserved exactly)
         this.userAvatar = this.add.image(120, 46, 'avatarQ');
         // Use different scale based on whether it's fallback avatar or user avatar
-        const isFallbackAvatar = safeAvatarUrl === 'assets/avatar.png';
+        const isFallbackAvatar = this.safeAvatarUrl === 'assets/avatar.png';
         this.userAvatar.scale = isFallbackAvatar ? 0.15 : 0.3;
         this.crown = this.add.image(138, 60, 'crown');
         // Get user name from appData or use default
