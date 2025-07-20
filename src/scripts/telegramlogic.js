@@ -82,7 +82,7 @@ function setupTelegramApp(appDataCallback) {
                 last_name: user.last_name || '',
                 username: user.username || '',
                 language_code: user.language_code || 'en',
-                userAvatar: user.photo_url || '',
+                userAvatar: user.photo || '',
                 // Add Telegram-specific fields
                 is_premium: user.is_premium || false,
                 added_to_attachment_menu: user.added_to_attachment_menu || false,
