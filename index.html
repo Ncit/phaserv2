@@ -2,7 +2,11 @@
     <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="orientation" content="landscape">
         <title>pokerv2</title>
         <!-- PF Din Text Comp Pro Font -->
         <link rel="stylesheet" href="./assets/fonts/fonts.css">
@@ -25,6 +29,48 @@
                 line-height: 1;
                 font-family: var(--font-primary);
                 background-color: #040218;
+                /* Force landscape orientation */
+                min-height: 100vh;
+                min-width: 100vw;
+                overflow: hidden;
+            }
+
+            /* Landscape orientation styles */
+            @media screen and (orientation: portrait) {
+                body {
+                    transform: rotate(90deg);
+                    transform-origin: left top;
+                    width: 100vh;
+                    height: 100vw;
+                    overflow-x: hidden;
+                    position: absolute;
+                    top: 100%;
+                    left: 0;
+                }
+            }
+            
+            @media screen and (orientation: landscape) {
+                body {
+                    transform: none;
+                    width: 100vw;
+                    height: 100vh;
+                }
+            }
+            
+            #game-container {
+                width: 100vw !important;
+                height: 100vh !important;
+                max-width: none !important;
+                max-height: none !important;
+                position: relative;
+                overflow: hidden;
+            }
+            
+            canvas {
+                width: 100% !important;
+                height: 100% !important;
+                object-fit: contain;
+                display: block;
             }
     
             ol, ul {

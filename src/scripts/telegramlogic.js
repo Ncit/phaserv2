@@ -7,6 +7,87 @@
 let TelegramWebApp = null;
 
 /**
+ * Force landscape orientation for Telegram Web App
+ */
+function forceLandscapeOrientation() {
+    if (!TelegramWebApp) {
+        console.log('📱 Telegram WebApp not available for orientation control');
+        return false;
+    }
+
+    try {
+        // Check if orientation control is available
+        if (typeof TelegramWebApp.setViewportSettings === 'function') {
+            // Set viewport to landscape
+            TelegramWebApp.setViewportSettings({
+                resize_keyboard: true,
+                can_minimize: true
+            });
+            console.log('✅ Landscape viewport settings applied');
+        }
+
+        // Try to expand to full height for better landscape experience
+        if (typeof TelegramWebApp.expand === 'function') {
+            TelegramWebApp.expand();
+            console.log('✅ WebApp expanded for landscape mode');
+        }
+
+        // Set CSS for landscape orientation
+        document.documentElement.style.setProperty('--tg-viewport-height', '100vh');
+        document.documentElement.style.setProperty('--tg-viewport-width', '100vw');
+        
+        // Force landscape CSS
+        const landscapeCSS = `
+            @media screen and (orientation: portrait) {
+                body {
+                    transform: rotate(90deg);
+                    transform-origin: left top;
+                    width: 100vh;
+                    height: 100vw;
+                    overflow-x: hidden;
+                    position: absolute;
+                    top: 100%;
+                    left: 0;
+                }
+            }
+            
+            @media screen and (orientation: landscape) {
+                body {
+                    transform: none;
+                    width: 100vw;
+                    height: 100vh;
+                }
+            }
+            
+            #game-container {
+                width: 100vw !important;
+                height: 100vh !important;
+                max-width: none !important;
+                max-height: none !important;
+            }
+            
+            canvas {
+                width: 100% !important;
+                height: 100% !important;
+                object-fit: contain;
+            }
+        `;
+        
+        // Inject landscape CSS
+        const style = document.createElement('style');
+        style.id = 'telegram-landscape-css';
+        style.textContent = landscapeCSS;
+        document.head.appendChild(style);
+        
+        console.log('✅ Landscape CSS applied');
+        return true;
+    } catch (error) {
+        console.error('❌ Error forcing landscape orientation:', error);
+        return false;
+    }
+}
+
+/**
  * Initialize Telegram Web App
  */
 function initTelegramWebApp() {
@@ -28,6 +109,9 @@ function initTelegramWebApp() {
             } catch (readyError) {
                 console.warn('⚠️ Error calling TelegramWebApp.ready():', readyError);
             }
+            
+            // Force landscape orientation
+            forceLandscapeOrientation();
             
             // Expand the Web App to full height with error handling
             try {
