@@ -163,72 +163,33 @@ deploy_files() {
     # Remove all existing files
     git rm -rf . 2>/dev/null || true
     
-    # Check if client directory exists and copy files
-    if [[ -d "$CLIENT_DIR" ]]; then
+    # Store the original directory path
+    ORIGINAL_DIR=$(pwd)
+    
+    # Check if we're in the gh-pages branch (which won't have pokerv2 directory)
+    if [[ ! -d "$CLIENT_DIR" ]]; then
+        # We're in gh-pages branch, need to copy from the original branch
+        log "Client directory not found in current branch, copying from original branch..."
+        
+        # Temporarily checkout the original branch to copy files
+        git checkout "$CURRENT_BRANCH" -- "$CLIENT_DIR"
+        
+        if [[ -d "$CLIENT_DIR" ]]; then
+            # Copy all files from client directory
+            cp -r "$CLIENT_DIR"/* .
+            log_success "Copied files from $CLIENT_DIR directory"
+            
+            # Clean up the temporary checkout
+            git reset HEAD "$CLIENT_DIR"
+            rm -rf "$CLIENT_DIR"
+        else
+            log_error "Could not copy files from $CLIENT_DIR"
+            exit 1
+        fi
+    else
         # Copy all files from client directory
         cp -r "$CLIENT_DIR"/* .
         log_success "Copied files from $CLIENT_DIR directory"
-    else
-        # If no client directory, copy essential files from current directory or pokerv2 subdirectory
-        log "Client directory not found, copying essential files from current directory or pokerv2 subdirectory..."
-        
-        # First try to copy from pokerv2 subdirectory
-        if [[ -d "pokerv2/assets" ]]; then
-            cp -r pokerv2/assets/ .
-            log_success "Copied pokerv2/assets directory"
-        fi
-        
-        if [[ -d "pokerv2/src" ]]; then
-            cp -r pokerv2/src/ .
-            log_success "Copied pokerv2/src directory"
-        fi
-        
-        if [[ -d "pokerv2/dependencies" ]]; then
-            cp -r pokerv2/dependencies/ .
-            log_success "Copied pokerv2/dependencies directory"
-        fi
-        
-        if [[ -f "pokerv2/index.html" ]]; then
-            cp pokerv2/index.html .
-            log_success "Copied pokerv2/index.html"
-        fi
-        
-        # Then try current directory if pokerv2 doesn't have the files
-        if [[ -d "assets" ]] && [[ ! -d "assets/cards" ]]; then
-            cp -r assets/ .
-            log_success "Copied assets directory"
-        fi
-        
-        if [[ -d "src" ]] && [[ ! -d "src/config" ]]; then
-            cp -r src/ .
-            log_success "Copied src directory"
-        fi
-        
-        if [[ -d "dependencies" ]]; then
-            cp -r dependencies/ .
-            log_success "Copied dependencies directory"
-        fi
-        
-        if [[ -d "scripts" ]]; then
-            cp -r scripts/ .
-            log_success "Copied scripts directory"
-        fi
-        
-        # Copy HTML files from current directory
-        for html_file in *.html; do
-            if [[ -f "$html_file" ]]; then
-                cp "$html_file" .
-                log_success "Copied $html_file"
-            fi
-        done
-        
-        # Copy any other essential files
-        for file in *.js *.css *.json; do
-            if [[ -f "$file" ]]; then
-                cp "$file" .
-                log_success "Copied $file"
-            fi
-        done
     fi
     
     # Remove any hidden files that shouldn't be deployed
