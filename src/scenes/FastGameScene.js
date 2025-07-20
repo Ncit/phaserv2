@@ -1,6 +1,5 @@
 import { ButtonManager } from '../managers/ButtonManager.js';
 import { UIManager } from '../managers/UIManager.js';
-import { SettingsManager } from '../managers/SettingsManager.js';
 import { PlayerManager } from '../managers/PlayerManager.js';
 import { CardManager } from '../managers/CardManager.js';
 import { NetworkManager } from '../managers/NetworkManager.js';
@@ -69,7 +68,6 @@ export class FastGameScene extends Phaser.Scene {
         this.playerManager = new PlayerManager(this);
         this.cardManager = new CardManager(this);
         this.uiManager = new UIManager(this);
-        this.settingsManager = new SettingsManager(this);
         this.chatManager = new ChatManager(this, this.networkManager);
         
         // Wait for assets to load
