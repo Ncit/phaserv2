@@ -327,7 +327,7 @@ function setupApp(appDataCallback) {
         .then((data) => {
             if (data.vk_user_id) {
                 userInfo(data.vk_user_id, function (authData) {
-                console.log('QWE VK init', appData);
+                console.log('VK init', authData);
                     appDataCallback({
                         id: authData.id,
                         first_name: authData.first_name,
