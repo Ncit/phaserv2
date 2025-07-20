@@ -30,7 +30,7 @@ log_error() {
 }
 
 # Configuration
-CLIENT_DIR="client"
+CLIENT_DIR="pokerv2/client"
 GH_PAGES_BRANCH="gh-pages"
 COMMIT_MESSAGE="Deploy to GitHub Pages"
 
