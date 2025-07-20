@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="orientation" content="landscape">
+    <title>Telegram Landscape Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            min-width: 100vw;
+            overflow: hidden;
+        }
+
+        .container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .status {
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .status.success {
+            background: rgba(76, 175, 80, 0.2);
+            border-color: rgba(76, 175, 80, 0.5);
+        }
+
+        .status.warning {
+            background: rgba(255, 193, 7, 0.2);
+            border-color: rgba(255, 193, 7, 0.5);
+        }
+
+        .button {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 15px 30px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .button.success {
+            background: rgba(76, 175, 80, 0.3);
+            border-color: rgba(76, 175, 80, 0.5);
+        }
+
+        .data-display {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin: 10px 0;
+        }
+
+        h1, h2, h3 {
+            margin: 0 0 15px 0;
+        }
+
+        .orientation-indicator {
+            font-size: 48px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔄 Telegram Landscape Test</h1>
+        
+        <div class="orientation-indicator" id="orientation-icon">
+            📱
+        </div>
+
+        <div class="status" id="status">
+            <h3>Testing Telegram landscape orientation...</h3>
+        </div>
+
+        <div class="status" id="telegram-status">
+            <h3>Telegram Integration Status</h3>
+            <div id="telegram-info" class="data-display">
+                Loading Telegram information...
+            </div>
+        </div>
+
+        <div class="status" id="landscape-status">
+            <h3>Landscape Orientation Status</h3>
+            <div id="landscape-info" class="data-display">
+                Loading landscape information...
+            </div>
+        </div>
+
+        <div>
+            <button class="button" onclick="testTelegramLandscape()">Test Telegram Landscape</button>
+            <button class="button" onclick="forceLandscape()">Force Landscape</button>
+            <button class="button success" onclick="startGame()">Start Game</button>
+        </div>
+
+        <div class="status warning">
+            <h3>💡 Instructions</h3>
+            <p>1. Open this page in Telegram Mini App</p>
+            <p>2. Test the landscape orientation functionality</p>
+            <p>3. Check if the game starts in landscape mode</p>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import Telegram logic
+        import { initTelegramWebApp, forceTelegramLandscape } from './src/scripts/telegramlogic.js';
+
+        // Telegram Landscape Test
+        class TelegramLandscapeTest {
+            constructor() {
+                this.init();
+            }
+
+            init() {
+                this.updateStatus();
+                this.updateTelegramInfo();
+                this.updateLandscapeInfo();
+                
+                // Listen for orientation changes
+                window.addEventListener('orientationchange', () => {
+                    setTimeout(() => this.updateLandscapeInfo(), 100);
+                });
+                
+                window.addEventListener('resize', () => {
+                    this.updateLandscapeInfo();
+                });
+            }
+
+            updateStatus() {
+                const statusDiv = document.getElementById('status');
+                const iconDiv = document.getElementById('orientation-icon');
+                
+                const isTelegram = typeof window.Telegram !== 'undefined' && window.Telegram.WebApp;
+                const orientation = this.getOrientation();
+                const isLandscape = orientation === 'landscape';
+                
+                let status = 'warning';
+                let message = '';
+                let icon = '📱';
+                
+                if (isTelegram && isLandscape) {
+                    status = 'success';
+                    message = '✅ Telegram Mini App in landscape mode!';
+                    icon = '🔄';
+                } else if (isTelegram && !isLandscape) {
+                    status = 'warning';
+                    message = '⚠️ Telegram Mini App detected but not in landscape';
+                    icon = '📱';
+                } else if (!isTelegram) {
+                    status = 'warning';
+                    message = '⚠️ Not running in Telegram Mini App';
+                    icon = '🌐';
+                }
+                
+                statusDiv.className = `status ${status}`;
+                statusDiv.innerHTML = `
+                    <h3>${message}</h3>
+                    <p>Environment: ${isTelegram ? 'Telegram Mini App' : 'Browser'}</p>
+                    <p>Orientation: ${orientation}</p>
+                `;
+                
+                iconDiv.textContent = icon;
+            }
+
+            getOrientation() {
+                if (window.orientation !== undefined) {
+                    return Math.abs(window.orientation) === 90 ? 'landscape' : 'portrait';
+                }
+                
+                if (screen.orientation && screen.orientation.type) {
+                    return screen.orientation.type;
+                }
+                
+                return window.innerWidth > window.innerHeight ? 'landscape' : 'portrait';
+            }
+
+            updateTelegramInfo() {
+                const infoDiv = document.getElementById('telegram-info');
+                
+                const telegramInfo = {
+                    telegramAvailable: typeof window.Telegram !== 'undefined',
+                    webAppAvailable: typeof window.Telegram?.WebApp !== 'undefined',
+                    platform: window.Telegram?.WebApp?.platform || 'unknown',
+                    version: window.Telegram?.WebApp?.version || 'unknown',
+                    viewportHeight: window.Telegram?.WebApp?.viewportHeight || 'unknown',
+                    viewportStableHeight: window.Telegram?.WebApp?.viewportStableHeight || 'unknown',
+                    isExpanded: window.Telegram?.WebApp?.isExpanded || 'unknown',
+                    colorScheme: window.Telegram?.WebApp?.colorScheme || 'unknown',
+                    themeParams: window.Telegram?.WebApp?.themeParams || 'unknown'
+                };
+                
+                infoDiv.textContent = JSON.stringify(telegramInfo, null, 2);
+            }
+
+            updateLandscapeInfo() {
+                const infoDiv = document.getElementById('landscape-info');
+                
+                const landscapeInfo = {
+                    orientation: this.getOrientation(),
+                    screenWidth: screen.width,
+                    screenHeight: screen.height,
+                    windowWidth: window.innerWidth,
+                    windowHeight: window.innerHeight,
+                    devicePixelRatio: window.devicePixelRatio,
+                    userAgent: navigator.userAgent.substring(0, 100) + '...',
+                    cssTransform: getComputedStyle(document.body).transform,
+                    gameContainer: document.getElementById('game-container') ? 'Found' : 'Not Found'
+                };
+                
+                infoDiv.textContent = JSON.stringify(landscapeInfo, null, 2);
+            }
+        }
+
+        // Test functions
+        window.testTelegramLandscape = async function() {
+            console.log('🧪 Testing Telegram Landscape...');
+            
+            try {
+                // Test Telegram initialization
+                const initResult = initTelegramWebApp();
+                console.log('📱 Telegram init result:', initResult);
+                
+                // Test landscape forcing
+                if (typeof window.Telegram !== 'undefined' && window.Telegram.WebApp) {
+                    const landscapeResult = forceTelegramLandscape();
+                    console.log('🔄 Landscape forcing result:', landscapeResult);
+                }
+                
+                // Update test display
+                new TelegramLandscapeTest();
+                
+            } catch (error) {
+                console.error('❌ Error testing Telegram landscape:', error);
+            }
+        };
+
+        window.forceLandscape = function() {
+            console.log('🔄 Forcing landscape manually...');
+            
+            // Apply landscape CSS manually
+            const landscapeCSS = `
+                body {
+                    transform: rotate(90deg) !important;
+                    transform-origin: left top !important;
+                    width: 100vh !important;
+                    height: 100vw !important;
+                    position: absolute !important;
+                    top: 100% !important;
+                    left: 0 !important;
+                }
+            `;
+            
+            const style = document.createElement('style');
+            style.id = 'manual-landscape';
+            style.textContent = landscapeCSS;
+            document.head.appendChild(style);
+            
+            console.log('✅ Manual landscape CSS applied');
+        };
+
+        window.startGame = function() {
+            console.log('🎮 Starting Game...');
+            window.location.href = 'index.html?env=productionTelegram';
+        };
+
+        // Initialize test when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new TelegramLandscapeTest();
+        });
+    </script>
+</body>
+</html> 
