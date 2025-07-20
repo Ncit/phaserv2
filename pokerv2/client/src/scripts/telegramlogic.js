@@ -410,27 +410,6 @@ function getTelegramVersion() {
     }
 }
 
-/**
- * Get appropriate avatar scale based on environment
- * @param {boolean} isFallbackAvatar - Whether this is a fallback avatar (avatar.png)
- * @returns {number} The appropriate scale value
- */
-function getAvatarScale(isFallbackAvatar = false) {
-    const isTelegram = isTelegramEnvironment();
-    
-    if (isTelegram) {
-        // In Telegram Mini App, use 0.5 for all avatars
-        return 0.5;
-    } else {
-        // In other environments, use the original scaling logic
-        if (isFallbackAvatar) {
-            return 0.15; // Fallback avatar scale
-        } else {
-            return 0.3; // User avatar scale
-        }
-    }
-}
-
 // Export functions for use in other modules
 export {
     initTelegramWebApp,
@@ -447,6 +426,5 @@ export {
     getTelegramThemeParams,
     isTelegramEnvironment,
     getTelegramPlatform,
-    getTelegramVersion,
-    getAvatarScale
+    getTelegramVersion
 }; 
