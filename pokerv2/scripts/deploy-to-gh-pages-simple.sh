@@ -90,9 +90,10 @@ check_prerequisites() {
         exit 1
     fi
     
-    # Check if client directory exists
-    if [[ ! -d "$CLIENT_DIR" ]]; then
+    # Check if client directory exists or if we have essential files
+    if [[ ! -d "$CLIENT_DIR" ]] && [[ ! -d "assets" ]] && [[ ! -d "src" ]]; then
         log_error "Client directory '$CLIENT_DIR' not found."
+        log_error "Please ensure you have game files to deploy."
         exit 1
     fi
     
@@ -162,8 +163,73 @@ deploy_files() {
     # Remove all existing files
     git rm -rf . 2>/dev/null || true
     
-    # Copy all files from client directory
-    cp -r "$CLIENT_DIR"/* .
+    # Check if client directory exists and copy files
+    if [[ -d "$CLIENT_DIR" ]]; then
+        # Copy all files from client directory
+        cp -r "$CLIENT_DIR"/* .
+        log_success "Copied files from $CLIENT_DIR directory"
+    else
+        # If no client directory, copy essential files from current directory or pokerv2 subdirectory
+        log "Client directory not found, copying essential files from current directory or pokerv2 subdirectory..."
+        
+        # First try to copy from pokerv2 subdirectory
+        if [[ -d "pokerv2/assets" ]]; then
+            cp -r pokerv2/assets/ .
+            log_success "Copied pokerv2/assets directory"
+        fi
+        
+        if [[ -d "pokerv2/src" ]]; then
+            cp -r pokerv2/src/ .
+            log_success "Copied pokerv2/src directory"
+        fi
+        
+        if [[ -d "pokerv2/dependencies" ]]; then
+            cp -r pokerv2/dependencies/ .
+            log_success "Copied pokerv2/dependencies directory"
+        fi
+        
+        if [[ -f "pokerv2/index.html" ]]; then
+            cp pokerv2/index.html .
+            log_success "Copied pokerv2/index.html"
+        fi
+        
+        # Then try current directory if pokerv2 doesn't have the files
+        if [[ -d "assets" ]] && [[ ! -d "assets/cards" ]]; then
+            cp -r assets/ .
+            log_success "Copied assets directory"
+        fi
+        
+        if [[ -d "src" ]] && [[ ! -d "src/config" ]]; then
+            cp -r src/ .
+            log_success "Copied src directory"
+        fi
+        
+        if [[ -d "dependencies" ]]; then
+            cp -r dependencies/ .
+            log_success "Copied dependencies directory"
+        fi
+        
+        if [[ -d "scripts" ]]; then
+            cp -r scripts/ .
+            log_success "Copied scripts directory"
+        fi
+        
+        # Copy HTML files from current directory
+        for html_file in *.html; do
+            if [[ -f "$html_file" ]]; then
+                cp "$html_file" .
+                log_success "Copied $html_file"
+            fi
+        done
+        
+        # Copy any other essential files
+        for file in *.js *.css *.json; do
+            if [[ -f "$file" ]]; then
+                cp "$file" .
+                log_success "Copied $file"
+            fi
+        done
+    fi
     
     # Remove any hidden files that shouldn't be deployed
     find . -name ".DS_Store" -delete 2>/dev/null || true
