@@ -236,6 +236,16 @@ open http://localhost:8000
 - **Documentation**: Comprehensive and up-to-date
 - **Testing**: Full test coverage for all features
 - **Platform Support**: VKontakte and Telegram Mini App ready
+- **Git Hooks**: Automated environment management for deployment
+
+## 🔧 **Git Hooks**
+
+### **Pre-push Hook**
+- **Purpose**: Automatic environment management for gh-pages deployment
+- **Trigger**: Push to `gh-pages` branch
+- **Action**: Sets environment to VK production automatically
+- **Safety**: Creates backups and provides restoration on failure
+- **Benefits**: Ensures production-ready deployment without manual intervention
 
 ## 🔮 **Future Roadmap**
 

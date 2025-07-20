@@ -115,6 +115,10 @@ All notable changes to the Poker Game v2 project will be documented in this file
 - **Fixed**: Documentation references to old script names
 - **Fixed**: Server script organization
 
+#### **Git Hooks**
+- **Updated**: Pre-push hook to set VK environment for gh-pages deployment
+- **Enhanced**: Environment management automation for production deployment
+
 ### 📊 **Statistics**
 
 #### **Files Changed**
