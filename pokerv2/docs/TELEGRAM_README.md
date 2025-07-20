@@ -305,7 +305,7 @@ const keyboard = {
 ./scripts/set-development.sh
 ./scripts/check-environment.sh
 
-./scripts/set-production.sh
+./scripts/set-vk.sh
 ./scripts/check-environment.sh
 
 ./scripts/set-telegram.sh

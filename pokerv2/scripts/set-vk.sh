@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Set Environment to Production VK Script
-# Explicitly sets the environment to production VK mode
+# Set Environment to VK Production Script
+# Explicitly sets the environment to VK production mode
 
 TARGET_FILE="src/config/EnvironmentConfig.js"
 
-echo "🚀 Setting Environment to PRODUCTION VK"
+echo "🚀 Setting Environment to VK PRODUCTION"
 echo "======================================"
 
 if [[ ! -f "$TARGET_FILE" ]]; then
@@ -15,26 +15,26 @@ fi
 
 # Check current environment setting
 if grep -q "return 'productionVK';" "$TARGET_FILE"; then
-    echo "📝 Current environment: PRODUCTION VK (already set)"
+    echo "📝 Current environment: VK PRODUCTION (already set)"
     echo "✅ No changes needed"
 else
     echo "📝 Current environment: DEVELOPMENT"
-    echo "🔄 Switching to: PRODUCTION VK"
+    echo "🔄 Switching to: VK PRODUCTION"
     
     # Switch to production VK
     sed -i '' 's/return '\''development'\'';/return '\''productionVK'\'';/g' "$TARGET_FILE"
     
     # Verify the change
     if grep -q "return 'productionVK';" "$TARGET_FILE"; then
-        echo "✅ Successfully switched to PRODUCTION VK mode"
+        echo "✅ Successfully switched to VK PRODUCTION mode"
     else
-        echo "❌ Error: Failed to switch to production VK"
+        echo "❌ Error: Failed to switch to VK production"
         exit 1
     fi
 fi
 
 echo ""
-echo "📋 Production VK Environment Features:"
+echo "📋 VK Production Environment Features:"
 echo "====================================="
 echo "🔧 Debug: Disabled"
 echo "👥 Player Selection: Disabled (direct game entry)"
