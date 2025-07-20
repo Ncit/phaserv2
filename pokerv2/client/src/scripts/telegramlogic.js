@@ -10,20 +10,47 @@ let TelegramWebApp = null;
  * Initialize Telegram Web App
  */
 function initTelegramWebApp() {
-    // Check if Telegram WebApp is available
-    if (typeof window.Telegram !== 'undefined' && window.Telegram.WebApp) {
-        TelegramWebApp = window.Telegram.WebApp;
-        
-        // Initialize the Web App
-        TelegramWebApp.ready();
-        
-        // Expand the Web App to full height
-        TelegramWebApp.expand();
-        
-        console.log('✅ Telegram Web App initialized');
-        return true;
-    } else {
-        console.warn('⚠️ Telegram Web App not available');
+    try {
+        // Check if Telegram WebApp is available
+        if (typeof window.Telegram !== 'undefined' && window.Telegram.WebApp) {
+            TelegramWebApp = window.Telegram.WebApp;
+            
+            console.log('📱 Telegram WebApp object found:', TelegramWebApp);
+            
+            // Initialize the Web App with error handling
+            try {
+                if (typeof TelegramWebApp.ready === 'function') {
+                    TelegramWebApp.ready();
+                    console.log('✅ Telegram WebApp ready() called');
+                } else {
+                    console.warn('⚠️ TelegramWebApp.ready() not available');
+                }
+            } catch (readyError) {
+                console.warn('⚠️ Error calling TelegramWebApp.ready():', readyError);
+            }
+            
+            // Expand the Web App to full height with error handling
+            try {
+                if (typeof TelegramWebApp.expand === 'function') {
+                    TelegramWebApp.expand();
+                    console.log('✅ Telegram WebApp expand() called');
+                } else {
+                    console.warn('⚠️ TelegramWebApp.expand() not available');
+                }
+            } catch (expandError) {
+                console.warn('⚠️ Error calling TelegramWebApp.expand():', expandError);
+            }
+            
+            console.log('✅ Telegram Web App initialized successfully');
+            return true;
+        } else {
+            console.warn('⚠️ Telegram Web App not available');
+            console.log('📱 window.Telegram:', typeof window.Telegram);
+            console.log('📱 window.Telegram.WebApp:', typeof window.Telegram?.WebApp);
+            return false;
+        }
+    } catch (error) {
+        console.error('❌ Error initializing Telegram Web App:', error);
         return false;
     }
 }
@@ -32,16 +59,22 @@ function initTelegramWebApp() {
  * Setup Telegram app with user data
  */
 function setupTelegramApp(appDataCallback) {
-    if (!TelegramWebApp) {
-        console.error('❌ Telegram Web App not initialized');
-        return;
-    }
-
     try {
+        if (!TelegramWebApp) {
+            console.error('❌ Telegram Web App not initialized');
+            throw new Error('Telegram Web App not initialized');
+        }
+
+        console.log('📱 Setting up Telegram app...');
+        console.log('📱 TelegramWebApp:', TelegramWebApp);
+        console.log('📱 TelegramWebApp.initDataUnsafe:', TelegramWebApp.initDataUnsafe);
+
         // Get user data from Telegram Web App
         const user = TelegramWebApp.initDataUnsafe?.user;
         
         if (user) {
+            console.log('📱 Telegram user data found:', user);
+            
             // Format user data to match app expectations
             const appData = {
                 telegram_user_id: user.id,
@@ -56,10 +89,12 @@ function setupTelegramApp(appDataCallback) {
                 allows_write_to_pm: user.allows_write_to_pm || false
             };
             
-            console.log('✅ Telegram user data received:', appData);
+            console.log('✅ Telegram user data formatted:', appData);
             appDataCallback(appData);
         } else {
             console.warn('⚠️ No user data available from Telegram');
+            console.log('📱 TelegramWebApp.initDataUnsafe:', TelegramWebApp.initDataUnsafe);
+            
             // Provide fallback data for development
             const fallbackData = {
                 telegram_user_id: 123456789,
@@ -72,10 +107,17 @@ function setupTelegramApp(appDataCallback) {
                 added_to_attachment_menu: false,
                 allows_write_to_pm: false
             };
+            console.log('📱 Using fallback data:', fallbackData);
             appDataCallback(fallbackData);
         }
     } catch (error) {
         console.error('❌ Error setting up Telegram app:', error);
+        console.error('❌ Error details:', {
+            message: error.message,
+            stack: error.stack,
+            TelegramWebApp: TelegramWebApp
+        });
+        
         // Provide fallback data on error
         const fallbackData = {
             telegram_user_id: 123456789,
@@ -88,6 +130,7 @@ function setupTelegramApp(appDataCallback) {
             added_to_attachment_menu: false,
             allows_write_to_pm: false
         };
+        console.log('📱 Using error fallback data:', fallbackData);
         appDataCallback(fallbackData);
     }
 }
