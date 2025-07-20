@@ -310,7 +310,7 @@ export class FriendsGameScene extends Phaser.Scene {
                     position.y,
                     'avatar'
                 );
-                this[`${playerPrefix}Avatar`].scale = 0.15; // Always 0.15 for fallback avatar
+                this[`${playerPrefix}Avatar`].scale = 0.2; // Always 0.2 for fallback avatar
             }
         });
         

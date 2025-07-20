@@ -165,7 +165,7 @@ export class LoadingScene extends Phaser.Scene {
             
             // Create player avatar
             const avatar = this.add.image(buttonX, buttonY - 40, 'avatar');
-            avatar.setScale(0.15);
+            avatar.setScale(0.2);
             
             // Load player avatar from URL
             const avatarKey = `debug_avatar_${player.id}`;
@@ -224,7 +224,7 @@ export class LoadingScene extends Phaser.Scene {
         this.playerButtons.forEach(buttonElements => {
             buttonElements.bg.setTint(0xffffff);
             buttonElements.nameText.setFill('#ffffff');
-            buttonElements.avatar.setScale(0.15);
+            buttonElements.avatar.setScale(0.2);
         });
 
         // Highlight selected button
