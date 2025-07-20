@@ -54,6 +54,13 @@
             margin-right: 15px;
             border: 2px solid #FFD700;
             object-fit: cover;
+            transition: all 0.3s ease;
+        }
+
+        .avatar-image.fallback {
+            width: 40px;
+            height: 40px;
+            border-color: #FFC107;
         }
 
         .avatar-info {
@@ -292,11 +299,13 @@
             avatarUrlDiv.textContent = avatarUrl;
             
             if (avatarUrl === 'assets/avatar.png') {
-                avatarStatus.textContent = 'Using Fallback';
+                avatarStatus.textContent = 'Using Fallback (Scale: 0.2)';
                 avatarStatus.className = 'status fallback';
+                avatarImg.classList.add('fallback');
             } else {
-                avatarStatus.textContent = 'Using Provided URL';
+                avatarStatus.textContent = 'Using Provided URL (Scale: 0.3)';
                 avatarStatus.className = 'status success';
+                avatarImg.classList.remove('fallback');
             }
         }
 

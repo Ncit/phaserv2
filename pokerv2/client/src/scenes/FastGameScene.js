@@ -492,7 +492,9 @@ export class FastGameScene extends Phaser.Scene {
         
         // Create avatar
         const avatar = this.add.image(x, y, 'avatar');
-        avatar.setScale(0.3);
+        // Use different scale based on whether it's fallback avatar or user avatar
+        const isFallbackAvatar = player.avatarUrl === 'assets/avatar.png';
+        avatar.setScale(isFallbackAvatar ? 0.2 : 0.3);
         
         // Load avatar from URL
         const avatarKey = `avatar_${player.id}`;

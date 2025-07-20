@@ -288,7 +288,9 @@ export class FriendsGameScene extends Phaser.Scene {
                     position.y,
                     avatarKey
                 );
-                this[`${playerPrefix}Avatar`].scale = 0.3;
+                // Use different scale based on whether it's fallback avatar or user avatar
+                const isFallbackAvatar = avatarUrl === 'assets/avatar.png';
+                this[`${playerPrefix}Avatar`].scale = isFallbackAvatar ? 0.2 : 0.3;
             } else {
                 // Fallback to default avatar if URL loading fails
                 this[`${playerPrefix}Avatar`] = this.add.image(
@@ -296,7 +298,7 @@ export class FriendsGameScene extends Phaser.Scene {
                     position.y,
                     'avatar'
                 );
-                this[`${playerPrefix}Avatar`].scale = 0.3;
+                this[`${playerPrefix}Avatar`].scale = 0.2; // Always 0.2 for fallback avatar
             }
         });
         

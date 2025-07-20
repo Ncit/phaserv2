@@ -1625,7 +1625,9 @@ export class AIBotScene extends Phaser.Scene {
         
         // Create temporary avatar placeholder first
         const avatar = this.add.image(x, y, 'avatar');
-        avatar.setScale(0.3);
+        // Use different scale based on whether it's fallback avatar or user avatar
+        const isFallbackAvatar = playerData.avatarUrl === 'assets/avatar.png';
+        avatar.setScale(isFallbackAvatar ? 0.2 : 0.3);
         
         // Load and create avatar from URL
         const avatarKey = `avatar${playerNumber}`;
