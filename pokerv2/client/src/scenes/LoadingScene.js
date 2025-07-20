@@ -60,10 +60,22 @@ export class LoadingScene extends Phaser.Scene {
         // Load debug player selection assets
         this.load.image('player_select_bg', 'assets/player_name_placeholder.png');
 
+        // Debug environment detection
+        console.log('🔍 Environment Detection:');
+        console.log('  - gameConfig:', window.gameConfig);
+        console.log('  - isProductionVK:', window.gameConfig?.isProductionVK());
+        console.log('  - isProductionTelegram:', window.gameConfig?.isProductionTelegram());
+        console.log('  - Telegram WebApp available:', typeof window.Telegram !== 'undefined' && window.Telegram.WebApp);
+        console.log('  - VK Bridge available:', typeof window.vkBridge !== 'undefined');
+
         if (window.gameConfig && window.gameConfig.isProductionVK()) {
+            console.log('🚀 Initializing VK environment');
             this.intiializeVK();
         } else if (window.gameConfig && window.gameConfig.isProductionTelegram()) {
+            console.log('🚀 Initializing Telegram environment');
             this.initializeTelegram();
+        } else {
+            console.log('🚀 Using debug mode (no production environment detected)');
         }
     }
 
@@ -268,6 +280,44 @@ export class LoadingScene extends Phaser.Scene {
     }
 
     initializeTelegram() {
+        // Check if we're actually in Telegram environment
+        if (typeof window.Telegram === 'undefined' || !window.Telegram.WebApp) {
+            console.log('📱 Telegram environment detected but Web App not available (testing mode)');
+            console.log('📱 This is normal when testing outside of Telegram');
+            
+            // Create mock Telegram data for testing
+            const mockTelegramData = {
+                telegram_user_id: 123456789,
+                first_name: 'Telegram User',
+                last_name: '',
+                username: 'telegram_user',
+                language_code: 'en',
+                userAvatar: 'assets/avatar.png',
+                is_premium: false,
+                added_to_attachment_menu: false,
+                allows_write_to_pm: false
+            };
+            
+            window.appData = mockTelegramData;
+            console.log('📱 Mock Telegram app data set for testing:', mockTelegramData);
+            
+            // Show testing message
+            this.instructionText = this.add
+                .text(640, 500, 'Telegram Mode (Testing)', {
+                    fontFamily: 'Arial',
+                    fontSize: '24px',
+                    fill: '#FFD700',
+                })
+                .setOrigin(0.5);
+
+            // Transition to lobby after short delay
+            this.time.delayedCall(1500, () => {
+                this.scene.start('LobbyScene');
+            });
+            
+            return;
+        }
+
         // Import Telegram functions dynamically
         import('../scripts/telegramlogic.js').then(({ initTelegramWebApp, setupTelegramApp }) => {
             // Initialize Telegram Web App
