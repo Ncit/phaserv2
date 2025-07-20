@@ -114,6 +114,17 @@ After running the toggle script:
 1. **Refresh your browser** to see the changes
 2. **Or restart your development server** if needed
 3. **Check the console** for environment detection logs
+4. **Run environment tests**:
+   ```bash
+   # Start server
+   python3 -m http.server 8000
+   
+   # Test environment configuration
+   open http://localhost:8000/tests/test-environment-config.html
+   
+   # Quick test
+   open http://localhost:8000/tests/simple-test.html
+   ```
 
 ## Use Cases
 
