@@ -21,7 +21,7 @@ python3 -m http.server 8000
 open http://localhost:8000
 ```
 
-### Production Setup
+### Production Setup (VK)
 ```bash
 # 1. Set production environment
 ./scripts/set-production.sh
@@ -30,6 +30,17 @@ open http://localhost:8000
 ./server-scripts/start-multiplayer.sh
 
 # 3. Deploy to VKontakte platform
+```
+
+### Production Setup (Telegram)
+```bash
+# 1. Set Telegram environment
+./scripts/set-telegram.sh
+
+# 2. Start multiplayer server (optional)
+./server-scripts/start-multiplayer.sh
+
+# 3. Deploy to Telegram Mini App
 ```
 
 ## 📁 **Project Structure**
@@ -76,8 +87,11 @@ pokerv2/
 # Set development mode
 ./scripts/set-development.sh
 
-# Set production mode
+# Set production mode (VK)
 ./scripts/set-production.sh
+
+# Set production mode (Telegram)
+./scripts/set-telegram.sh
 
 # Toggle between modes
 ./scripts/toggle-environment.sh
@@ -109,8 +123,10 @@ pokerv2/
 
 ### Platform Integration
 - **VKontakte**: Native VK platform integration
+- **Telegram**: Telegram Mini App integration
 - **VK Bridge**: Seamless VK app functionality
-- **User Authentication**: VK user data integration
+- **Telegram Web App**: Native Telegram integration
+- **User Authentication**: VK and Telegram user data integration
 - **Social Features**: Friend invites and sharing
 
 ### Development Features
@@ -126,8 +142,8 @@ The game supports multiple environments with feature flags:
 | Environment | Debug Features | Production Features | Use Case |
 |-------------|----------------|-------------------|----------|
 | **Development** | ✅ All enabled | ❌ Disabled | Local development |
-| **Staging** | ⚠️ Limited | ⚠️ Limited | Testing |
 | **ProductionVK** | ❌ Disabled | ✅ All enabled | VK platform |
+| **ProductionTelegram** | ❌ Disabled | ✅ All enabled | Telegram Mini App |
 
 ### Feature Flags
 - `playerSelection`: Debug player selection UI

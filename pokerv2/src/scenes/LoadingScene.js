@@ -6,19 +6,22 @@ export class LoadingScene extends Phaser.Scene {
                 id: 1,
                 name: 'Никита',
                 photo: 'https://gravatar.com/avatar/2ee1f504b415b376c586641aee2c3194?s=400&d=robohash&r=x',
-                vk_user_id: 123
+                vk_user_id: 123,
+                telegram_user_id: 123456789
             },
             {
                 id: 2,
                 name: 'Анна',
                 photo: 'https://gravatar.com/avatar/3ee1f504b415b376c586641aee2c3194?s=400&d=robohash&r=x',
-                vk_user_id: 456
+                vk_user_id: 456,
+                telegram_user_id: 987654321
             },
             {
                 id: 3,
                 name: 'Михаил',
                 photo: 'https://gravatar.com/avatar/4ee1f504b415b376c586641aee2c3194?s=400&d=robohash&r=x',
-                vk_user_id: 789
+                vk_user_id: 789,
+                telegram_user_id: 555666777
             }
         ];
         this.selectedPlayer = null;
@@ -58,10 +61,9 @@ export class LoadingScene extends Phaser.Scene {
         this.load.image('player_select_bg', 'assets/player_name_placeholder.png');
 
         if (window.gameConfig && window.gameConfig.isProductionVK()) {
-            initVkBridgeApp();
-            setupApp((appData) => {
-                window.appData = appData;
-            });
+            this.intiializeVK();
+        } else if (window.gameConfig && window.gameConfig.isProductionTelegram()) {
+            this.initializeTelegram();
         }
     }
 
@@ -81,7 +83,7 @@ export class LoadingScene extends Phaser.Scene {
             .setOrigin(0.5);
 
         // Check if player selection feature is enabled
-        if (window.gameConfig && window.gameConfig.isProductionVK()) {
+        if (window.gameConfig && (window.gameConfig.isProductionVK() || window.gameConfig.isProductionTelegram())) {
             // If assets are already loaded (e.g., on restart), start timer immediately
             if (this.load.isReady()) {
                 this.startTimer();
@@ -164,9 +166,9 @@ export class LoadingScene extends Phaser.Scene {
             
             // Create player ID text
             const idText = this.add
-                .text(buttonX, buttonY + 40, `ID: ${player.vk_user_id}`, {
+                .text(buttonX, buttonY + 40, `VK: ${player.vk_user_id} | TG: ${player.telegram_user_id}`, {
                     fontFamily: 'Arial',
-                    fontSize: '12px',
+                    fontSize: '10px',
                     fill: '#CCCCCC',
                     stroke: '#000000',
                     strokeThickness: 1,
@@ -220,6 +222,7 @@ export class LoadingScene extends Phaser.Scene {
         // Set the selected player as appData
         window.appData = {
             vk_user_id: this.selectedPlayer.vk_user_id,
+            telegram_user_id: this.selectedPlayer.telegram_user_id,
             photo_200: this.selectedPlayer.photo,
             first_name: this.selectedPlayer.name,
         };
@@ -228,6 +231,47 @@ export class LoadingScene extends Phaser.Scene {
 
         // Transition to lobby
         this.scene.start('LobbyScene');
+    }
+
+    intiializeVK() {
+        initVkBridgeApp();
+        setupApp((appData) => {
+            window.appData = appData;
+        });
+    }
+
+    initializeTelegram() {
+        // Import Telegram functions dynamically
+        import('./scripts/telegramlogic.js').then(({ initTelegramWebApp, setupTelegramApp }) => {
+            // Initialize Telegram Web App
+            if (initTelegramWebApp()) {
+                // Setup Telegram app with user data
+                setupTelegramApp((appData) => {
+                    window.appData = appData;
+                    console.log('📱 Telegram app data set:', appData);
+                    
+                    // Show Telegram-specific loading message
+                    this.instructionText = this.add
+                        .text(640, 500, 'Welcome to Poker Game!', {
+                            fontFamily: 'Arial',
+                            fontSize: '24px',
+                            fill: '#ffffff',
+                        })
+                        .setOrigin(0.5);
+
+                    // Transition to lobby after short delay
+                    this.time.delayedCall(1500, () => {
+                        this.scene.start('LobbyScene');
+                    });
+                });
+            } else {
+                console.error('❌ Failed to initialize Telegram Web App');
+                this.createDebugPlayerSelection();
+            }
+        }).catch((error) => {
+            console.error('❌ Error loading Telegram logic:', error);
+            this.createDebugPlayerSelection();
+        });
     }
 
     startTimer() {

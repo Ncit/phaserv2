@@ -1,3 +1,19 @@
+#!/bin/bash
+
+# Set Environment to Telegram Production Mode
+# This script configures the game for Telegram Mini App deployment
+
+echo "📱 Setting Environment to Telegram Production Mode"
+echo "=================================================="
+
+# Check if we're in the correct directory
+if [ ! -f "src/config/EnvironmentConfig.js" ]; then
+    echo "❌ Error: Please run this script from the pokerv2 directory"
+    exit 1
+fi
+
+# Create environment configuration
+cat > src/config/EnvironmentConfig.js << 'EOF'
 /**
  * Environment Configuration System
  * Provides scalable environment management for different deployment scenarios
@@ -191,3 +207,22 @@ export const getEnvironment = () => environmentConfig.getEnvironment();
 export const isDevelopment = () => environmentConfig.isDevelopment();
 export const isProductionVK = () => environmentConfig.isProductionVK();
 export const isProductionTelegram = () => environmentConfig.isProductionTelegram();
+EOF
+
+echo "✅ Environment set to Telegram Production Mode"
+echo ""
+echo "📱 Telegram Mini App Configuration:"
+echo "   • Debug Mode: Disabled"
+echo "   • Player Selection: Disabled"
+echo "   • Mock Data: Disabled"
+echo "   • Telegram Bridge: Enabled"
+echo "   • Direct Game Entry: Enabled"
+echo ""
+echo "🚀 Ready for Telegram Mini App deployment!"
+echo ""
+echo "💡 Next steps:"
+echo "   1. Deploy to your Telegram Bot"
+echo "   2. Test in Telegram environment"
+echo "   3. Configure bot settings in @BotFather"
+echo ""
+echo "📚 For more information, see docs/TELEGRAM_README.md" 

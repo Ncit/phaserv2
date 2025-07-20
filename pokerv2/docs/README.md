@@ -100,6 +100,7 @@ pokerv2/
 
 ### Platform Integration
 - **VKontakte**: Native VK platform integration
+- **Telegram**: Telegram Mini App integration
 - **VK Bridge**: Seamless VK app functionality
 - **User Authentication**: VK user data integration
 - **Social Features**: Friend invites and sharing

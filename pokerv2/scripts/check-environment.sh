@@ -37,10 +37,23 @@ elif grep -q "return 'productionVK';" "$TARGET_FILE"; then
     echo "   🌐 Ngrok Headers: Enabled"
     echo "   ⚠️  Verbose Errors: Disabled"
     echo ""
+    echo "💡 Use: ./toggle-environment.sh to switch to PRODUCTION TELEGRAM"
+elif grep -q "return 'productionTelegram';" "$TARGET_FILE"; then
+    CURRENT_ENV="productionTelegram"
+    echo "🎯 Current Environment: PRODUCTION TELEGRAM"
+    echo ""
+    echo "📋 Features:"
+    echo "   🔧 Debug: Disabled"
+    echo "   👥 Player Selection: Disabled"
+    echo "   📝 Mock Data: Disabled"
+    echo "   🌐 Ngrok Headers: Enabled"
+    echo "   ⚠️  Verbose Errors: Disabled"
+    echo "   📱 Telegram Web App: Enabled"
+    echo ""
     echo "💡 Use: ./toggle-environment.sh to switch to DEVELOPMENT"
 else
     echo "❌ Error: Could not determine current environment"
-    echo "💡 Expected to find either 'return \"development\";' or 'return \"productionVK\";'"
+    echo "💡 Expected to find 'return \"development\";', 'return \"productionVK\";', or 'return \"productionTelegram\";'"
     exit 1
 fi
 
