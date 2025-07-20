@@ -88,8 +88,9 @@ export class LoadingScene extends Phaser.Scene {
             if (this.load.isReady()) {
                 this.startTimer();
             }
+            
         } else {
-            this.createDebugPlayerSelection();
+             this.createDebugPlayerSelection();
         }
     }
 
@@ -266,11 +267,9 @@ export class LoadingScene extends Phaser.Scene {
                 });
             } else {
                 console.error('❌ Failed to initialize Telegram Web App');
-                this.createDebugPlayerSelection();
             }
         }).catch((error) => {
             console.error('❌ Error loading Telegram logic:', error);
-            this.createDebugPlayerSelection();
         });
     }
 
