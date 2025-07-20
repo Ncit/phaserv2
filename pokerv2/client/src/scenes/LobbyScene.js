@@ -89,7 +89,7 @@ export class LobbyScene extends Phaser.Scene {
         const isFallbackAvatar = window.appData?.userAvatar === 'assets/avatar.png' || 
                                 !window.appData?.userAvatar || 
                                 window.appData?.userAvatar.trim() === '';
-        this.userAvatar.scale = isFallbackAvatar ? 0.2 : 0.3;
+        this.userAvatar.scale = isFallbackAvatar ? 0.15 : 0.3;
         this.crown = this.add.image(138, 60, 'crown');
         // Get user name from appData or use default
         const userName = window.appData && window.appData.first_name ? window.appData.first_name : 'Player';
