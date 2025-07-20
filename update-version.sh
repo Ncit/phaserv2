@@ -95,10 +95,7 @@ update_version_file() {
     local date=${INFO[2]}
     local time=${INFO[3]}
     
-    # Create backup
-    cp "$VERSION_FILE" "${VERSION_FILE}.backup"
-    
-    # Update version file
+    # Update version file directly (no backup)
     sed -i.tmp \
         -e "s/version: '[^']*'/version: '$new_version'/" \
         -e "s/gitCommit: '[^']*'/gitCommit: '$commit_hash'/" \
