@@ -41,6 +41,23 @@
                 text-decoration: none;
                 color: inherit;
             }
+
+            /* Desktop screens (macOS, Windows, etc.) */
+            @media screen and (min-width: 1280px) {
+                body {
+                    transform: rotate(0deg) !important; /* No rotation needed for desktop */
+                    width: 100vw !important;
+                    height: 100vh !important;
+                    min-height: 720px !important; /* Minimum height for proper game display */
+                    overflow: hidden !important;
+                }
+                
+                #game-container {
+                    width: 100vw !important;
+                    height: 100vh !important;
+                    min-height: 720px !important; /* Minimum height for proper game display */
+                }
+            }
         </style>
     </head>
     <body>
