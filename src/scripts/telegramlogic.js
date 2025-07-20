@@ -79,6 +79,11 @@ function initTelegramWebApp() {
             TelegramWebApp = window.Telegram.WebApp;
             TelegramWebApp.expand(); // Request fullscreen
             TelegramWebApp.enableClosingConfirmation(); // Optional: Prevent accidental exit
+            
+            // Add Telegram WebApp class to body for CSS targeting
+            document.body.classList.add('telegram-webapp');
+            console.log('✅ Added telegram-webapp class to body');
+            
             console.log('📱 Telegram WebApp object found:', TelegramWebApp);
             
             // Initialize the Web App with error handling
