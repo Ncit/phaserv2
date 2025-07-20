@@ -395,6 +395,34 @@ export class LoadingScene extends Phaser.Scene {
     }
 }
 
+/**
+ * Get safe avatar URL with fallback to avatar.png
+ * @param {string} avatarUrl - The original avatar URL from Telegram/VK
+ * @returns {string} - Safe avatar URL with fallback
+ */
+function getSafeAvatarUrl(avatarUrl) {
+    // Check if avatar URL is empty, null, undefined, or just whitespace
+    if (!avatarUrl || avatarUrl.trim() === '' || avatarUrl === 'null' || avatarUrl === 'undefined') {
+        console.log('📱 Avatar URL is empty/null, using fallback avatar.png');
+        return 'assets/avatar.png';
+    }
+    
+    // Check if the URL is valid (basic validation)
+    try {
+        const url = new URL(avatarUrl);
+        if (!url.protocol || !url.hostname) {
+            console.log('📱 Invalid avatar URL format, using fallback avatar.png');
+            return 'assets/avatar.png';
+        }
+    } catch (error) {
+        console.log('📱 Avatar URL parsing failed, using fallback avatar.png');
+        return 'assets/avatar.png';
+    }
+    
+    console.log('📱 Using provided avatar URL:', avatarUrl);
+    return avatarUrl;
+}
+
 function setupApp(appDataCallback) {
         vkBridge
         .send('VKWebAppGetLaunchParams')
@@ -404,7 +432,7 @@ function setupApp(appDataCallback) {
                     appDataCallback({
                         id: authData.id,
                         first_name: authData.first_name,
-                        userAvatar: authData.photo_200,
+                        userAvatar: getSafeAvatarUrl(authData.photo_200),
                         vk_user_id: authData.id
                     });
                 });
