@@ -118,6 +118,8 @@ All notable changes to the Poker Game v2 project will be documented in this file
 #### **Git Hooks**
 - **Updated**: Pre-push hook to set VK environment for gh-pages deployment
 - **Enhanced**: Environment management automation for production deployment
+- **Improved**: Pre-push hook now gracefully handles documentation-only branches
+- **Added**: Automatic detection of source code vs documentation branches
 
 ### 📊 **Statistics**
 

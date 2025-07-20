@@ -246,6 +246,8 @@ open http://localhost:8000
 - **Action**: Sets environment to VK production automatically
 - **Safety**: Creates backups and provides restoration on failure
 - **Benefits**: Ensures production-ready deployment without manual intervention
+- **Smart Detection**: Automatically detects documentation-only branches and skips isDebug modification
+- **Graceful Handling**: Works seamlessly with both source code and documentation branches
 
 ## 🔮 **Future Roadmap**
 
