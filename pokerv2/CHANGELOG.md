@@ -2,9 +2,21 @@
 
 All notable changes to the Poker Game v2 project will be documented in this file.
 
-## [2.1.0] - 2025-07-20
+## [2.2.0] - 2025-07-20
 
 ### 🎯 **Major Changes**
+
+#### **Project Architecture Reorganization**
+- **BREAKING CHANGE**: Complete client/server decoupling
+- **New Structure**: Clean separation between client and server components
+- **Improved Organization**: Logical grouping of related files
+- **Enhanced Maintainability**: Easier development and testing
+
+#### **Client/Server Decoupling**
+- **Client Directory**: All client-side code moved to `client/`
+- **Server Directory**: All server-side code organized in `server/`
+- **Scripts Directory**: Project-wide scripts in `scripts/`
+- **Documentation**: Comprehensive documentation for each component
 
 #### **Avatar Management Refactoring**
 - **BREAKING CHANGE**: Refactored from `photo_200` to `userAvatar` field
@@ -14,7 +26,7 @@ All notable changes to the Poker Game v2 project will be documented in this file
 
 #### **Script Organization**
 - **Renamed**: `set-production.sh` → `set-vk.sh` for clarity
-- **Moved**: Server scripts to dedicated `server-scripts/` directory
+- **Moved**: Server scripts to dedicated `server/scripts/` directory
 - **Updated**: All documentation and references to reflect new organization
 
 #### **Telegram Mini App Integration**
@@ -37,15 +49,30 @@ All notable changes to the Poker Game v2 project will be documented in this file
 
 ### 📁 **Project Structure**
 
-#### **New Directories**
-- **`server-scripts/`**: Dedicated server automation scripts
-- **`src/scripts/`**: Platform integration scripts (VK, Telegram)
+#### **New Architecture**
+- **`client/`**: Complete client application with source, assets, and tests
+- **`server/`**: Server application with game logic and automation scripts
+- **`scripts/`**: Project-wide environment and utility scripts
+- **`docs/`**: Comprehensive documentation
+
+#### **Client Organization**
+- **`client/src/`**: All source code (config, managers, scenes, scripts, utils)
+- **`client/assets/`**: Game assets (cards, UI, fonts)
+- **`client/dependencies/`**: External libraries (Phaser.js, RexUI, VK Bridge)
+- **`client/tests/`**: All client test files
+- **`client/docs/`**: Client-specific documentation
+
+#### **Server Organization**
+- **`server/game/`**: Game logic modules
+- **`server/scripts/`**: Server automation scripts
+- **`server/src/`**: Server source code
+- **`server/package.json`**: Node.js dependencies
 
 #### **Reorganized Files**
-- **Moved**: `start-multiplayer.sh` to `server-scripts/`
-- **Moved**: `test-server.js` to `server-scripts/`
-- **Moved**: `test-websocket.js` to `server-scripts/`
-- **Moved**: `test-allin-setup.js` to `server-scripts/`
+- **Moved**: All client files to `client/` directory
+- **Moved**: All server files to `server/` directory
+- **Moved**: Environment scripts to `scripts/` directory
+- **Updated**: All script paths to reflect new structure
 
 ### 🧪 **Testing Improvements**
 
@@ -120,6 +147,7 @@ All notable changes to the Poker Game v2 project will be documented in this file
 - **Enhanced**: Environment management automation for production deployment
 - **Improved**: Pre-push hook now gracefully handles documentation-only branches
 - **Added**: Automatic detection of source code vs documentation branches
+- **Updated**: Hook paths to work with new client/server structure
 
 ### 📊 **Statistics**
 
@@ -128,6 +156,8 @@ All notable changes to the Poker Game v2 project will be documented in this file
 - **Scripts**: 8 environment and server scripts
 - **Tests**: 71+ test files updated
 - **Documentation**: 5+ documentation files
+- **Architecture**: Complete project reorganization
+- **Directories**: 3 new organized directories (client, server, scripts)
 
 #### **New Features**
 - **Platforms**: 2 production platforms (VK, Telegram)

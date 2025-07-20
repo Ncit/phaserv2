@@ -3,7 +3,7 @@
 # Set Environment to VK Production Script
 # Explicitly sets the environment to VK production mode
 
-TARGET_FILE="src/config/EnvironmentConfig.js"
+TARGET_FILE="client/src/config/EnvironmentConfig.js"
 
 echo "🚀 Setting Environment to VK PRODUCTION"
 echo "======================================"

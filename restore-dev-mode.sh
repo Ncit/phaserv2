@@ -28,17 +28,17 @@ else
     echo "🔄 Attempting to restore legacy development mode..."
     
     # Switch back to development mode (legacy)
-    if sed -i '' 's/window\.isDebug = false/window.isDebug = true/g' "$TARGET_FILE"; then
-        # Verify the change
-        if grep -q "window\.isDebug = true" "$TARGET_FILE"; then
+if sed -i '' 's/window\.isDebug = false/window.isDebug = true/g' "$TARGET_FILE"; then
+    # Verify the change
+    if grep -q "window\.isDebug = true" "$TARGET_FILE"; then
             echo "✅ Successfully restored legacy isDebug = true for development"
-            echo "📝 Current state: Development mode active"
-        else
-            echo "⚠️  Warning: Could not verify change"
-        fi
+        echo "📝 Current state: Development mode active"
     else
-        echo "❌ Error: Failed to modify $TARGET_FILE"
-        exit 1
+        echo "⚠️  Warning: Could not verify change"
+    fi
+else
+    echo "❌ Error: Failed to modify $TARGET_FILE"
+    exit 1
     fi
 fi
 

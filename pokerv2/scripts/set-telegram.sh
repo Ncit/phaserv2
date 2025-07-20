@@ -7,13 +7,13 @@ echo "📱 Setting Environment to Telegram Production Mode"
 echo "=================================================="
 
 # Check if we're in the correct directory
-if [ ! -f "src/config/EnvironmentConfig.js" ]; then
+if [ ! -f "client/src/config/EnvironmentConfig.js" ]; then
     echo "❌ Error: Please run this script from the pokerv2 directory"
     exit 1
 fi
 
 # Create environment configuration
-cat > src/config/EnvironmentConfig.js << 'EOF'
+cat > client/src/config/EnvironmentConfig.js << 'EOF'
 /**
  * Environment Configuration System
  * Provides scalable environment management for different deployment scenarios

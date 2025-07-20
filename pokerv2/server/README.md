@@ -1,126 +1,223 @@
-# Poker Server
+# Poker Game v2 - Server
 
-A Node.js multiplayer poker server for the Phaser poker game.
+The server-side application for the Poker Game v2 project, providing real-time multiplayer functionality.
 
-## Features
+## 🎯 **Overview**
 
-- Real-time multiplayer Texas Hold'em poker
-- WebSocket communication using Socket.IO
-- Single room system - all players join the main room
-- Hand evaluation and winner determination
-- Action timers and auto-fold functionality
-- Support for up to 6 players in the main room
-- Automatic room management
+The server handles:
+- **Real-time Multiplayer**: WebSocket-based game sessions
+- **Game Logic**: Server-side game state management
+- **Player Management**: Connection handling and player states
+- **Room Management**: Game room creation and management
+- **Hand Evaluation**: Server-side poker hand calculations
 
-## Setup
-
-1. Install dependencies:
-```bash
-cd server
-npm install
-```
-
-2. Start the server:
-```bash
-# Development mode with auto-restart
-npm run dev
-
-# Production mode
-npm start
-```
-
-The server will start on port 3000 by default. You can change this by setting the `PORT` environment variable.
-
-## API Endpoints
-
-### REST API
-
-- `GET /api/games` - Get list of all games
-- `GET /api/games/:gameId` - Get specific game details
-
-### WebSocket Events
-
-#### Client to Server
-
-- `joinGame` - Join a game with player data
-- `pokerAction` - Send a poker action (fold, call, raise, etc.)
-- `startNewHand` - Request to start a new hand
-
-#### Server to Client
-
-- `gameJoined` - Confirmation that player joined a game
-- `gameStateUpdate` - Updated game state
-- `playerJoined` - New player joined the game
-- `playerLeft` - Player left the game
-- `error` - Error message
-
-## Game Flow
-
-1. **Connection**: Player connects to server via WebSocket
-2. **Join Main Room**: Player automatically joins the main poker room
-3. **Game Start**: Game starts when minimum players (2) join
-4. **Betting Rounds**: Players take turns making poker actions
-5. **Showdown**: Remaining players reveal cards and determine winner
-6. **New Hand**: Game continues with new hands until players leave
-
-## Poker Actions
-
-- `fold` - Fold the current hand
-- `check` - Check (no bet to call)
-- `call` - Call the current bet
-- `raise` - Raise the current bet
-- `allIn` - Bet all remaining chips
-
-## Configuration
-
-The server supports the following configuration:
-
-- `maxPlayers`: Maximum players per game (default: 6)
-- `minPlayers`: Minimum players to start game (default: 2)
-- `smallBlind`: Small blind amount (default: 10)
-- `bigBlind`: Big blind amount (default: 20)
-- `actionTimeout`: Time limit for player actions in milliseconds (default: 30000)
-
-## Development
-
-### Project Structure
+## 📁 **Project Structure**
 
 ```
 server/
-├── server.js              # Main server file
-├── package.json           # Dependencies and scripts
-├── game/
-│   ├── GameManager.js     # Manages the single main room
-│   ├── PlayerManager.js   # Manages player connections
-│   ├── PokerGame.js       # Individual game logic
-│   └── HandEvaluator.js   # Poker hand evaluation
-└── README.md             # This file
+├── src/                    # Server source code
+├── game/                   # Game logic modules
+│   ├── GameManager.js      # Main game management
+│   ├── HandEvaluator.js    # Poker hand evaluation
+│   ├── PlayerManager.js    # Player state management
+│   ├── PokerGame.js        # Core poker game logic
+│   └── SingleRoomGame.js   # Single room game handling
+├── scripts/                # Server automation scripts
+│   ├── start-multiplayer.sh
+│   ├── test-server.js
+│   ├── test-websocket.js
+│   └── test-allin-setup.js
+├── node_modules/           # Node.js dependencies
+├── package.json            # Node.js package configuration
+├── package-lock.json       # Dependency lock file
+└── server.js               # Main server entry point
 ```
 
-### Adding Features
+## 🚀 **Quick Start**
 
-1. **New Poker Variants**: Extend `PokerGame.js` with new game rules
-2. **Tournament Mode**: Add tournament logic to `GameManager.js`
-3. **Chat System**: Implement chat events in `server.js`
-4. **Spectator Mode**: Allow non-playing observers
+### **Installation**
+```bash
+# Navigate to server directory
+cd server
 
-## Troubleshooting
+# Install dependencies
+npm install
+```
 
-### Common Issues
+### **Development Server**
+```bash
+# Start development server
+npm start
 
-1. **Connection Refused**: Make sure the server is running on the correct port
-2. **Players Not Joining**: Check if the client is connecting to the right server URL
-3. **Game Not Starting**: Ensure minimum player count is met
-4. **Actions Not Working**: Verify the player's turn and game state
+# Or run directly
+node server.js
+```
 
-### Logs
+### **Production Server**
+```bash
+# Start production server
+npm run start:prod
 
-The server provides detailed console logs for debugging:
-- Player connections/disconnections
-- Game state changes
-- Player actions
-- Error messages
+# With environment variables
+NODE_ENV=production node server.js
+```
 
-## License
+## 🎮 **Server Features**
 
-MIT License - see LICENSE file for details. 
+### **Real-time Multiplayer**
+- **WebSocket Connections**: Real-time bidirectional communication
+- **Room Management**: Create and join game rooms
+- **Player Synchronization**: Keep all players in sync
+- **Connection Handling**: Graceful connection management
+
+### **Game Logic**
+- **Server-side Validation**: Prevent cheating and ensure fair play
+- **Hand Evaluation**: Accurate poker hand calculations
+- **Turn Management**: Enforce proper turn order
+- **Betting Logic**: Handle all betting scenarios
+
+### **Player Management**
+- **Connection Tracking**: Monitor player connections
+- **State Management**: Track player game states
+- **Reconnection Support**: Handle player disconnections
+- **Spectator Mode**: Support for non-playing observers
+
+## 🔧 **Configuration**
+
+### **Environment Variables**
+```bash
+# Server configuration
+PORT=3000                    # Server port
+NODE_ENV=development         # Environment mode
+MAX_PLAYERS=6               # Maximum players per room
+GAME_TIMEOUT=30000          # Game timeout in milliseconds
+```
+
+### **WebSocket Events**
+- **join**: Player joins a room
+- **leave**: Player leaves a room
+- **action**: Player game action (bet, fold, etc.)
+- **chat**: Chat message
+- **ready**: Player ready state
+
+## 🧪 **Testing**
+
+### **Server Tests**
+```bash
+# Run server tests
+cd scripts
+node test-server.js
+
+# Test WebSocket connections
+node test-websocket.js
+
+# Test all-in scenarios
+node test-allin-setup.js
+```
+
+### **Integration Tests**
+```bash
+# Start server for testing
+./scripts/start-multiplayer.sh
+
+# Run client tests against server
+cd ../client/tests
+python3 -m http.server 8001
+```
+
+## 📊 **API Reference**
+
+### **WebSocket Events**
+
+#### **Client to Server**
+```javascript
+// Join a room
+{
+  type: 'join',
+  roomId: 'room123',
+  player: {
+    id: 'player1',
+    name: 'Player 1',
+    avatar: 'avatar_url'
+  }
+}
+
+// Player action
+{
+  type: 'action',
+  action: 'call',
+  amount: 100
+}
+```
+
+#### **Server to Client**
+```javascript
+// Game state update
+{
+  type: 'gameState',
+  players: [...],
+  currentPlayer: 'player1',
+  pot: 500,
+  communityCards: [...]
+}
+```
+
+## 🛠️ **Development**
+
+### **Code Organization**
+- **Modular Architecture**: Clean separation of concerns
+- **Event-driven**: WebSocket event handling
+- **State Management**: Centralized game state
+- **Error Handling**: Comprehensive error management
+
+### **Dependencies**
+- **Node.js**: Server runtime
+- **WebSocket**: Real-time communication
+- **Custom Game Logic**: Poker-specific implementations
+
+### **Performance**
+- **Connection Pooling**: Efficient WebSocket management
+- **Memory Management**: Optimized for multiple concurrent games
+- **Error Recovery**: Graceful handling of failures
+
+## 📚 **Documentation**
+
+- **[Main README](../README.md)**: Complete project overview
+- **[Client Documentation](../client/README.md)**: Client-side application
+- **[Game Documentation](../docs/README.md)**: Detailed game features
+- **[Changelog](../CHANGELOG.md)**: Complete change history
+
+## 🔮 **Future Enhancements**
+
+- **Database Integration**: Persistent game state
+- **Authentication**: User authentication and authorization
+- **Analytics**: Game statistics and analytics
+- **Scaling**: Load balancing and horizontal scaling
+- **Security**: Enhanced security measures
+
+## 🚨 **Troubleshooting**
+
+### **Common Issues**
+
+#### **Port Already in Use**
+```bash
+# Check what's using the port
+lsof -i :3000
+
+# Kill the process
+kill -9 <PID>
+```
+
+#### **WebSocket Connection Issues**
+- Check firewall settings
+- Verify client WebSocket URL
+- Check server logs for errors
+
+#### **Memory Issues**
+- Monitor server memory usage
+- Restart server if needed
+- Check for memory leaks in game logic
+
+---
+
+*This server provides robust, real-time multiplayer functionality for the Poker Game v2 project.* 
