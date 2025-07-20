@@ -206,6 +206,12 @@ python3 -m http.server 8000
 
 # Deploy with custom message
 ./scripts/deploy-to-gh-pages-simple.sh -m "Update game features"
+
+# Set up auto-push hook (automatic deployment after commits)
+./scripts/setup-auto-push-hook.sh --install
+
+# Check auto-push hook status
+./scripts/setup-auto-push-hook.sh --status
 ```
 
 ## 🧪 **Testing**
