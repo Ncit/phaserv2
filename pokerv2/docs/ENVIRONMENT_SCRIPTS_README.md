@@ -8,9 +8,9 @@ This directory contains scripts to easily switch between development and product
 **Purpose**: Explicitly sets environment to development mode
 **Usage**: `./scripts/set-development.sh`
 
-### 🚀 `set-production.sh`
+### 🚀 `set-vk.sh`
 **Purpose**: Explicitly sets environment to production VK mode
-**Usage**: `./scripts/set-production.sh`
+**Usage**: `./scripts/set-vk.sh`
 
 ### 🔄 `toggle-environment.sh`
 **Purpose**: Toggles between development and productionVK environments
@@ -35,7 +35,7 @@ This directory contains scripts to easily switch between development and product
 
 3. **Set to production VK mode:**
    ```bash
-   ./scripts/set-production.sh
+   ./scripts/set-vk.sh
    ```
 
 ### Option 2: Toggle Between Environments
@@ -137,7 +137,7 @@ After running the toggle script:
 # ... development work ...
 
 # Switch to production mode for testing
-./scripts/set-production.sh
+./scripts/set-vk.sh
 
 # Test production behavior
 # ... testing ...
@@ -149,7 +149,7 @@ After running the toggle script:
 ### Production Deployment
 ```bash
 # Ensure production mode before deployment
-./scripts/set-production.sh
+./scripts/set-vk.sh
 
 # Verify production settings
 ./scripts/check-environment.sh
@@ -205,7 +205,7 @@ Add these to your `.gitconfig`:
 ```ini
 [alias]
     env-dev = "!cd pokerv2 && ./set-development.sh && git add src/config/EnvironmentConfig.js"
-    env-prod = "!cd pokerv2 && ./set-production.sh && git add src/config/EnvironmentConfig.js"
+    env-prod = "!cd pokerv2 && ./set-vk.sh && git add src/config/EnvironmentConfig.js"
     env-status = "!cd pokerv2 && ./check-environment.sh"
 ```
 

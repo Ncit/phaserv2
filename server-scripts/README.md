@@ -335,7 +335,7 @@ node server-scripts/test-server.js
 ./server-scripts/start-multiplayer.sh
 
 # Set production and start server
-./scripts/set-production.sh
+./scripts/set-vk.sh
 ./server-scripts/start-multiplayer.sh
 ```
 

@@ -34,9 +34,9 @@ Scripts for managing environment configuration and feature flags.
 - Disables production-specific features
 - Provides confirmation of changes
 
-#### `set-production.sh`
+#### `set-vk.sh`
 **Purpose**: Set environment to productionVK mode
-**Usage**: `./scripts/set-production.sh`
+**Usage**: `./scripts/set-vk.sh`
 **Features**:
 - Modifies `detectEnvironment()` function to return 'productionVK'
 - Disables debug features
@@ -97,7 +97,7 @@ Scripts for project documentation and help.
 ./scripts/set-development.sh
 
 # Set to production mode
-./scripts/set-production.sh
+./scripts/set-vk.sh
 
 # Toggle between modes
 ./scripts/toggle-environment.sh
@@ -137,7 +137,7 @@ scripts/
 ├── README.md                    # This documentation
 ├── check-environment.sh         # Environment status checker
 ├── set-development.sh           # Set development environment
-├── set-production.sh            # Set production environment
+├── set-vk.sh            # Set production environment
 ├── toggle-environment.sh        # Toggle between environments
 ├── run-tests.sh                 # Interactive test runner
 ├── start-multiplayer.sh         # Multiplayer server starter (moved to server-scripts/)
@@ -164,7 +164,7 @@ scripts/
 ### Production Preparation
 ```bash
 # 1. Set production environment
-./scripts/set-production.sh
+./scripts/set-vk.sh
 
 # 2. Verify environment
 ./scripts/check-environment.sh
@@ -293,7 +293,7 @@ echo "✅ Script completed successfully"
 |--------|---------|
 | Check Environment | `./scripts/check-environment.sh` |
 | Set Development | `./scripts/set-development.sh` |
-| Set Production | `./scripts/set-production.sh` |
+| Set Production | `./scripts/set-vk.sh` |
 | Toggle Environment | `./scripts/toggle-environment.sh` |
 | Run Tests | `./scripts/run-tests.sh` |
 | Start Server | `./server-scripts/start-multiplayer.sh` |

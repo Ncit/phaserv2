@@ -24,7 +24,7 @@ open http://localhost:8000
 ### Production Setup (VK)
 ```bash
 # 1. Set production environment
-./scripts/set-production.sh
+./scripts/set-vk.sh
 
 # 2. Start multiplayer server (optional)
 ./server-scripts/start-multiplayer.sh
@@ -88,7 +88,7 @@ pokerv2/
 ./scripts/set-development.sh
 
 # Set production mode (VK)
-./scripts/set-production.sh
+./scripts/set-vk.sh
 
 # Set production mode (Telegram)
 ./scripts/set-telegram.sh
@@ -225,7 +225,7 @@ python3 -m http.server 8000
 ### Production
 ```bash
 # Set production environment
-./scripts/set-production.sh
+./scripts/set-vk.sh
 
 # Start multiplayer server
 ./server-scripts/start-multiplayer.sh
@@ -310,7 +310,7 @@ bash -n scripts/*.sh
 |--------|---------|
 | Check Environment | `./scripts/check-environment.sh` |
 | Set Development | `./scripts/set-development.sh` |
-| Set Production | `./scripts/set-production.sh` |
+| Set Production | `./scripts/set-vk.sh` |
 | Run Tests | `./scripts/run-tests.sh` |
 | Start Server | `./server-scripts/start-multiplayer.sh` |
 | Show Help | `./scripts/list-scripts.sh` |
