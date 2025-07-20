@@ -223,7 +223,7 @@ export class LoadingScene extends Phaser.Scene {
         window.appData = {
             vk_user_id: this.selectedPlayer.vk_user_id,
             telegram_user_id: this.selectedPlayer.telegram_user_id,
-            photo_200: this.selectedPlayer.photo,
+            userAvatar: this.selectedPlayer.photo,
             first_name: this.selectedPlayer.name,
         };
 
@@ -327,7 +327,12 @@ function setupApp(appDataCallback) {
         .then((data) => {
             if (data.vk_user_id) {
                 userInfo(data.vk_user_id, function (authData) {
-                    appDataCallback(authData);
+                    appDataCallback({
+                        id: data.vk_user_id,
+                        name: data.first_name,
+                        photo: data.photo_200,
+                        vk_user_id: data.vk_user_id
+                    });
                 });
             }
         })

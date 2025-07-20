@@ -280,7 +280,7 @@ export class AIBotScene extends Phaser.Scene {
                 name: window.appData?.first_name || 'Player',
                 bank: 1000,
                 position: { x: 670, y: 520 },
-                avatarUrl: window.appData?.photo_200 || 'https://gravatar.com/avatar/3?s=400&d=robohash&r=x',
+                avatarUrl: window.appData?.userAvatar || 'https://gravatar.com/avatar/3?s=400&d=robohash&r=x',
                 isAI: false,
                 vk_user_id: window.appData?.vk_user_id || 0
             },

@@ -106,7 +106,7 @@ export class FriendsGameScene extends Phaser.Scene {
                 name: window.appData.first_name,
                 bank: '1200',
                 position: { x: 590, y: 520 },
-                avatarUrl: window.appData.photo_200,
+                avatarUrl: window.appData.userAvatar,
             },
             {
                 name: 'Козлова',

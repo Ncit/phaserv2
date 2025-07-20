@@ -190,7 +190,7 @@ Telegram user data is automatically formatted to match the game's expected struc
 window.appData = {
     vk_user_id: appData.telegram_user_id, // Mapped for compatibility
     telegram_user_id: appData.telegram_user_id,
-    photo_200: appData.photo_url,
+    userAvatar: appData.photo_url,
     first_name: appData.first_name,
 };
 ```

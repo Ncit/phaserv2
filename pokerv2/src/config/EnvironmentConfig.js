@@ -65,7 +65,7 @@ class EnvironmentConfig {
      */
     detectEnvironment() {
         // Force Telegram environment
-        return 'productionTelegram';
+        return 'development';
     }
 
     /**

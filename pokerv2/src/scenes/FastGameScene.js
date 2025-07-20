@@ -236,7 +236,7 @@ export class FastGameScene extends Phaser.Scene {
             // Join game with player data
             const playerData = {
                 name: window.appData?.first_name || 'Player',
-                avatarUrl: window.appData?.photo_200 || 'https://gravatar.com/avatar/default?s=400&d=robohash&r=x',
+                avatarUrl: window.appData?.userAvatar || 'https://gravatar.com/avatar/default?s=400&d=robohash&r=x',
                 bank: 1000,
                 vk_user_id: window.appData?.vk_user_id || 0
             };

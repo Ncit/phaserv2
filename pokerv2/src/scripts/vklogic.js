@@ -24,7 +24,6 @@ function setupApp(appDataCallback) {
         .then((data) => {
             if (data.vk_user_id) {
                 userInfo(data.vk_user_id, function (authData) {
-                    // Параметры запуска получены
                     appDataCallback(authData);
                 });
             }

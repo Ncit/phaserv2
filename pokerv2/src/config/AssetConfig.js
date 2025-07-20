@@ -94,7 +94,7 @@ export const AssetConfig = {
 
     // Dynamic assets (loaded at runtime)
     dynamic: {
-        userPhoto: { key: 'avatarQ', source: 'window.appData.photo_200' },
+        userPhoto: { key: 'avatarQ', source: 'window.appData.userAvatar' },
     },
 
     // Asset loading groups for efficient batch loading

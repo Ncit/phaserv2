@@ -82,7 +82,7 @@
         // Mock window.appData for testing
         window.appData = {
             first_name: 'Test Player',
-            photo_200: 'https://gravatar.com/avatar/test?s=400&d=robohash&r=x',
+            userAvatar: 'https://gravatar.com/avatar/test?s=400&d=robohash&r=x',
             vk_user_id: 12345
         };
         
@@ -189,7 +189,7 @@
             try {
                 const playerData = {
                     name: window.appData.first_name,
-                    avatarUrl: window.appData.photo_200,
+                    avatarUrl: window.appData.userAvatar ,
                     bank: 1000,
                     vk_user_id: window.appData.vk_user_id
                 };

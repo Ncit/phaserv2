@@ -49,7 +49,7 @@ function setupTelegramApp(appDataCallback) {
                 last_name: user.last_name || '',
                 username: user.username || '',
                 language_code: user.language_code || 'en',
-                photo_url: user.photo_url || '',
+                userAvatar: user.photo_url || '',
                 // Add Telegram-specific fields
                 is_premium: user.is_premium || false,
                 added_to_attachment_menu: user.added_to_attachment_menu || false,
@@ -67,7 +67,7 @@ function setupTelegramApp(appDataCallback) {
                 last_name: '',
                 username: 'telegram_user',
                 language_code: 'en',
-                photo_url: '',
+                userAvatar: '',
                 is_premium: false,
                 added_to_attachment_menu: false,
                 allows_write_to_pm: false
@@ -83,7 +83,7 @@ function setupTelegramApp(appDataCallback) {
             last_name: '',
             username: 'telegram_user',
             language_code: 'en',
-            photo_url: '',
+            userAvatar: '',
             is_premium: false,
             added_to_attachment_menu: false,
             allows_write_to_pm: false
