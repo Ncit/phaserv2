@@ -196,6 +196,18 @@ cd client
 python3 -m http.server 8000
 ```
 
+### **GitHub Pages Deployment**
+```bash
+# Test deployment setup
+./scripts/test-deployment-setup.sh
+
+# Deploy to GitHub Pages
+./scripts/deploy-to-gh-pages-simple.sh
+
+# Deploy with custom message
+./scripts/deploy-to-gh-pages-simple.sh -m "Update game features"
+```
+
 ## 🧪 **Testing**
 
 ### **Test Categories**
