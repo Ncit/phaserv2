@@ -1639,7 +1639,14 @@ export class AIBotScene extends Phaser.Scene {
         const avatar = this.add.image(x, y, 'avatar');
         // Use different scale based on whether it's fallback avatar or user avatar
         const isFallbackAvatar = playerData.avatarUrl === 'assets/avatar.png';
-        avatar.setScale(isFallbackAvatar ? 0.3 : 0.3);
+        
+        // Import and use the avatar scale function
+        import('../scripts/telegramlogic.js').then(({ getAvatarScale }) => {
+            avatar.setScale(getAvatarScale(isFallbackAvatar));
+        }).catch(() => {
+            // Fallback to original logic if import fails
+            avatar.setScale(isFallbackAvatar ? 0.15 : 0.3);
+        });
         
         // Load and create avatar from URL
         const avatarKey = `avatar${playerNumber}`;
