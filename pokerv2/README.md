@@ -247,15 +247,20 @@ cd server
 
 ## 📚 **Documentation**
 
+### **📋 Complete Documentation Index**
+- **[📚 Documentation Hub](docs/README.md)**: Comprehensive documentation organized by category
+
 ### **Core Documentation**
 - **[Client README](client/README.md)**: Detailed client application guide
 - **[Server README](server/README.md)**: Server application documentation
-- **[Main Documentation](docs/README.md)**: Complete project overview
 - **[Changelog](CHANGELOG.md)**: Complete change history
 
-### **Platform Documentation**
-- **[Telegram Integration](docs/TELEGRAM_README.md)**: Telegram Mini App guide
-- **[Environment Scripts](docs/ENVIRONMENT_SCRIPTS_README.md)**: Environment management guide
+### **📁 Documentation Categories**
+- **[🚀 Project Overview](docs/project/)** - Project summaries and organization
+- **[🎮 Game Features](docs/features/)** - AI, multiplayer, UI, and other features
+- **[🐛 Bug Fixes](docs/fixes/)** - Complete list of fixes and patches
+- **[💻 Client Docs](docs/client/)** - Client-specific documentation
+- **[🖥️ Server Docs](docs/server/)** - Server-specific documentation
 
 ### **API Documentation**
 - **Client API**: See [Client README](client/README.md#api-reference)

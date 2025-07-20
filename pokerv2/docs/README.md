@@ -1,325 +1,183 @@
-# Poker Game v2
+# 📚 Project Documentation
 
-A modern multiplayer poker game built with Phaser.js, featuring AI bots, real-time multiplayer, and multi-platform integration (VKontakte & Telegram Mini Apps).
+Welcome to the comprehensive documentation for the Poker Game project. This directory contains all project documentation organized by category for easy navigation.
 
-## 🚀 **Quick Start**
-
-### Prerequisites
-- Node.js (for multiplayer server)
-- Python 3 (for development server)
-- Modern web browser
-
-### Development Setup
-```bash
-# 1. Set development environment
-./scripts/set-development.sh
-
-# 2. Start development server
-python3 -m http.server 8000
-
-# 3. Open game in browser
-open http://localhost:8000
-```
-
-### Production Setup
-
-#### VKontakte Platform
-```bash
-# 1. Set VK production environment
-./scripts/set-vk.sh
-
-# 2. Start multiplayer server (optional)
-./scripts/start-multiplayer.sh
-
-# 3. Deploy to VKontakte platform
-```
-
-#### Telegram Mini App
-```bash
-# 1. Set Telegram production environment
-./scripts/set-telegram.sh
-
-# 2. Start multiplayer server (optional)
-./scripts/start-multiplayer.sh
-
-# 3. Deploy to Telegram Mini App platform
-```
-
-## 📁 **Project Structure**
+## 📁 **Documentation Structure**
 
 ```
-pokerv2/
-├── 📁 client/src/                    # Source code
-│   ├── 📁 config/            # Configuration files
-│   ├── 📁 managers/          # Game managers
-│   ├── 📁 scenes/            # Phaser game scenes
-│   ├── 📁 scripts/           # Platform integration scripts
-│   ├── 📁 utils/             # Utility functions
-│   └── main.js               # Main entry point
-├── 📁 scripts/               # Automation scripts
-│   ├── 🔧 Environment management
-│   ├── 🧪 Testing tools
-│   ├── 🚀 Server scripts
-│   └── 📚 Documentation
-├── 📁 server-scripts/        # Server automation scripts
-│   ├── start-multiplayer.sh  # Multiplayer server startup
-│   ├── test-server.js        # Server testing
-│   └── README.md             # Server documentation
-├── 📁 tests/                 # Test files
-│   ├── 🧪 Environment tests
-│   ├── 🎮 Game functionality tests
-│   ├── 📱 Platform integration tests
-│   └── 📋 Comprehensive documentation
-├── 📁 assets/                # Game assets
-├── 📁 dependencies/          # External libraries
-├── 📁 server/                # Multiplayer server
-└── 📄 Documentation files
+docs/
+├── README.md                    # This file - Documentation index
+├── project/                     # Project-level documentation
+│   ├── ASSET_FIX_SUMMARY.md    # Asset loading fix documentation
+│   ├── PATH_UPDATE_SUMMARY.md  # Path updates after reorganization
+│   ├── PROJECT_SUMMARY.md      # Overall project summary
+│   └── REORGANIZATION_SUMMARY.md # Project structure reorganization
+├── client/                      # Client-specific documentation
+│   └── CLIENT_SCRIPTS_UPDATE.md # Client script updates
+├── server/                      # Server-specific documentation
+│   └── DEPENDENCY_UPDATE_GUIDE.md # Server dependency management
+├── features/                    # Feature documentation
+│   ├── ai/                      # AI and bot features
+│   │   ├── AI_BOT_README.md
+│   │   ├── ENHANCED_AI_README.md
+│   │   ├── NEW_AI_BOT_SCENE_APPROACH.md
+│   │   └── AIBOT_BLACK_SCREEN_FIX.md
+│   ├── multiplayer/             # Multiplayer features
+│   │   ├── MULTIPLAYER_README.md
+│   │   ├── SINGLE_ROOM_README.md
+│   │   ├── SPECTATOR_FUNCTIONALITY.md
+│   │   └── ROOM_RESET_FEATURE.md
+│   ├── ui/                      # UI and environment features
+│   │   ├── ENVIRONMENT_SCRIPTS_README.md
+│   │   ├── DEBUG_PLAYER_SELECTION.md
+│   │   └── ENVIRONMENT_MIGRATION_GUIDE.md
+│   ├── AUTO_ALLIN_FEATURE.md   # Auto all-in feature
+│   ├── THREE_ALLIN_TEST.md     # Three all-in testing
+│   ├── TELEGRAM_README.md      # Telegram integration
+│   └── NGROK_HEADERS_README.md # Ngrok headers setup
+└── fixes/                       # Bug fixes and patches
+    ├── RAISE_FIX.md
+    ├── RAISE_BUTTON_DISABLE_FIX.md
+    ├── RECONNECTION_BUTTON_FIX.md
+    ├── STACK_OVERFLOW_FIX.md
+    ├── ALL_IN_FIX.md
+    └── TURN_MANAGEMENT_FIX.md
 ```
 
-## 🛠️ **Available Scripts**
+## 🎯 **Quick Navigation**
 
-### Environment Management
-```bash
-# Check current environment
-./scripts/check-environment.sh
+### **🚀 Getting Started**
+- **[Project Summary](project/PROJECT_SUMMARY.md)** - Complete project overview
+- **[Asset Fix Summary](project/ASSET_FIX_SUMMARY.md)** - Asset loading solutions
+- **[Reorganization Summary](project/REORGANIZATION_SUMMARY.md)** - Project structure changes
 
-# Set development mode
-./scripts/set-development.sh
+### **🎮 Game Features**
+- **[AI Bot Features](features/ai/)** - AI opponent functionality
+- **[Multiplayer Features](features/multiplayer/)** - Online multiplayer capabilities
+- **[UI Features](features/ui/)** - User interface and environment setup
+- **[Auto All-in](features/AUTO_ALLIN_FEATURE.md)** - Automatic all-in functionality
+- **[Telegram Integration](features/TELEGRAM_README.md)** - Telegram platform support
 
-# Set VK production mode
-./scripts/set-vk.sh
+### **🔧 Development & Setup**
+- **[Client Scripts](client/CLIENT_SCRIPTS_UPDATE.md)** - Client-side script management
+- **[Server Dependencies](server/DEPENDENCY_UPDATE_GUIDE.md)** - Server dependency management
+- **[Environment Setup](features/ui/ENVIRONMENT_SCRIPTS_README.md)** - Environment configuration
+- **[Ngrok Headers](features/NGROK_HEADERS_README.md)** - Development tunneling setup
 
-# Set Telegram production mode
-./scripts/set-telegram.sh
+### **🐛 Bug Fixes**
+- **[All Fixes](fixes/)** - Complete list of bug fixes and patches
+- **[Raise Button Fixes](fixes/RAISE_FIX.md)** - Raise button functionality fixes
+- **[Reconnection Fixes](fixes/RECONNECTION_BUTTON_FIX.md)** - Connection stability improvements
+- **[Turn Management](fixes/TURN_MANAGEMENT_FIX.md)** - Game turn system fixes
 
-# Toggle between all environments
-./scripts/toggle-environment.sh
-```
+## 📋 **Documentation Categories**
 
-### Testing & Development
-```bash
-# Interactive test runner
-./scripts/run-tests.sh
+### **📊 Project Documentation**
+Contains high-level project information, summaries, and organizational changes.
 
-# Start multiplayer server
-./scripts/start-multiplayer.sh
-```
+**Key Documents:**
+- **Project Summary**: Complete overview of the poker game project
+- **Asset Fix Summary**: Solutions for asset loading issues
+- **Path Update Summary**: File path reorganization details
+- **Reorganization Summary**: Project structure improvements
 
-### Help & Documentation
-```bash
-# Show all available scripts
-./scripts/list-scripts.sh
-```
+### **🎮 Feature Documentation**
+Organized by feature category for easy navigation.
 
-## 🎮 **Game Features**
+#### **🤖 AI Features**
+- **AI Bot README**: Basic AI bot functionality
+- **Enhanced AI README**: Advanced AI features
+- **AI Bot Scene Approach**: Scene-based AI implementation
+- **AI Bot Black Screen Fix**: Display issues resolution
 
-### Core Gameplay
-- **Texas Hold'em Poker**: Standard poker rules
-- **Multiplayer Support**: Real-time multiplayer games
-- **AI Bots**: Intelligent computer opponents
-- **Chat System**: In-game communication
-- **Spectator Mode**: Watch games without playing
+#### **🌐 Multiplayer Features**
+- **Multiplayer README**: Core multiplayer functionality
+- **Single Room README**: Single room game mode
+- **Spectator Functionality**: Spectator mode features
+- **Room Reset Feature**: Room management and reset capabilities
 
-### Platform Integration
-- **VKontakte**: Native VK platform integration with VK Bridge
-- **Telegram**: Telegram Mini App integration with Web App API
-- **User Authentication**: Platform-specific user data integration
-- **Avatar Management**: Unified `userAvatar` field across platforms
-- **Social Features**: Friend invites and sharing
+#### **🎨 UI Features**
+- **Environment Scripts**: Environment management tools
+- **Debug Player Selection**: Development player selection
+- **Environment Migration**: Environment setup migration
 
-### Development Features
-- **Environment Configuration**: Flexible environment management
-- **Feature Flags**: Granular feature control
-- **Debug Tools**: Comprehensive debugging support
-- **Test Suite**: Extensive test coverage
+#### **🔧 General Features**
+- **Auto All-in Feature**: Automatic all-in functionality
+- **Three All-in Test**: Testing scenarios
+- **Telegram README**: Telegram platform integration
+- **Ngrok Headers**: Development tunneling setup
 
-## 🔧 **Environment Configuration**
+### **🐛 Bug Fixes**
+Comprehensive collection of bug fixes and patches.
 
-The game supports three environments with feature flags:
+**Key Fixes:**
+- **Raise Button Fixes**: Button functionality improvements
+- **Reconnection Fixes**: Connection stability enhancements
+- **Stack Overflow Fix**: Memory management improvements
+- **Turn Management**: Game flow fixes
+- **All-in Fixes**: All-in functionality corrections
 
-| Environment | Debug Features | Production Features | Platform | Use Case |
-|-------------|----------------|-------------------|----------|----------|
-| **Development** | ✅ All enabled | ❌ Disabled | Web Browser | Local development |
-| **ProductionVK** | ❌ Disabled | ✅ All enabled | VKontakte | VK platform deployment |
-| **ProductionTelegram** | ❌ Disabled | ✅ All enabled | Telegram | Telegram Mini App deployment |
+### **💻 Client Documentation**
+Client-specific setup and management information.
 
-### Feature Flags
-- `playerSelection`: Debug player selection UI
-- `debugLogging`: Console logging and debugging
-- `mockData`: Mock data for testing
-- `ngrokHeaders`: Ngrok tunnel headers
-- `verboseErrors`: Detailed error messages
+### **🖥️ Server Documentation**
+Server-side configuration and dependency management.
 
-## 🧪 **Testing**
+## 🔍 **Search & Navigation Tips**
 
-### Running Tests
-```bash
-# Interactive test runner
-./scripts/run-tests.sh
+### **By Topic**
+- **AI/Bots**: Check `features/ai/` directory
+- **Multiplayer**: Check `features/multiplayer/` directory
+- **UI/Environment**: Check `features/ui/` directory
+- **Bug Fixes**: Check `fixes/` directory
 
-# Direct test access
-open http://localhost:8000/tests/test-environment-config.html
-```
+### **By Component**
+- **Client**: Check `client/` directory
+- **Server**: Check `server/` directory
+- **Project**: Check `project/` directory
 
-### Test Categories
-- **Environment Tests**: Configuration and import verification
-- **AI Bot Tests**: Scene management and game logic
-- **Game Mechanics Tests**: Card handling, betting, turn management
-- **Chat Tests**: Communication system
-- **Connection Tests**: Network and multiplayer
-- **UI Tests**: User interface components
-- **Platform Integration Tests**: VK and Telegram integration
-- **Avatar Management Tests**: `userAvatar` field functionality
+### **By Issue Type**
+- **Setup Issues**: Check project and client documentation
+- **Feature Issues**: Check features directory
+- **Bug Issues**: Check fixes directory
 
-## 🚀 **Deployment**
+## 📝 **Documentation Standards**
 
-### Development
-```bash
-# Set development environment
-./scripts/set-development.sh
+### **File Naming**
+- Use descriptive, clear names
+- Include category prefixes when appropriate
+- Use consistent capitalization
 
-# Start development server
-python3 -m http.server 8000
+### **Content Structure**
+- Clear headings and sections
+- Code examples where relevant
+- Step-by-step instructions
+- Troubleshooting sections
 
-# Run tests
-./scripts/run-tests.sh
-```
+### **Maintenance**
+- Keep documentation up to date
+- Update when features change
+- Include version information
+- Cross-reference related documents
 
-### Production
+## 🚀 **Contributing to Documentation**
 
-#### VKontakte Platform
-```bash
-# Set VK production environment
-./scripts/set-vk.sh
+When adding new documentation:
 
-# Start multiplayer server
-./scripts/start-multiplayer.sh
+1. **Choose the right category** based on content type
+2. **Use consistent naming** conventions
+3. **Update this index** with new entries
+4. **Cross-reference** related documents
+5. **Include examples** and code snippets
 
-# Deploy to VKontakte
-```
+## 📞 **Support**
 
-#### Telegram Mini App
-```bash
-# Set Telegram production environment
-./scripts/set-telegram.sh
+For questions about documentation:
+- Check the relevant category first
+- Look for troubleshooting sections
+- Review related documents
+- Check the main project README
 
-# Start multiplayer server
-./scripts/start-multiplayer.sh
+---
 
-# Deploy to Telegram Mini App
-```
-
-## 📚 **Documentation**
-
-- **[Scripts Documentation](scripts/README.md)**: Complete script reference
-- **[Telegram Integration](TELEGRAM_README.md)**: Telegram Mini App integration guide
-- **[Environment Scripts](ENVIRONMENT_SCRIPTS_README.md)**: Environment management guide
-- **[Server Documentation](server/README.md)**: Multiplayer server guide
-- **[Server Scripts](server-scripts/README.md)**: Server automation scripts
-- **[Changelog](CHANGELOG.md)**: Complete project change history
-
-## 🔍 **Troubleshooting**
-
-### Common Issues
-
-#### Environment Problems
-```bash
-# Check environment status
-./scripts/check-environment.sh
-
-# Reset to development
-./scripts/set-development.sh
-```
-
-#### Test Issues
-```bash
-# Start development server
-python3 -m http.server 8000
-
-# Run test runner
-./scripts/run-tests.sh
-```
-
-#### Server Issues
-```bash
-# Check Node.js
-node --version
-
-# Install dependencies
-cd server && npm install
-
-# Start server
-./server-scripts/start-multiplayer.sh
-```
-
-### Debug Commands
-```bash
-# Check all script permissions
-chmod +x scripts/*.sh
-
-# Verify script syntax
-bash -n scripts/*.sh
-
-# Test environment configuration
-./scripts/check-environment.sh
-```
-
-## 🤝 **Contributing**
-
-### Development Workflow
-1. **Set development environment**: `./scripts/set-development.sh`
-2. **Make changes**: Edit source files
-3. **Run tests**: `./scripts/run-tests.sh`
-4. **Test functionality**: Use development server
-5. **Test platform integration**: Use platform-specific tests
-6. **Commit changes**: Follow project conventions
-
-### Recent Major Changes
-- **Avatar Management**: Refactored from `photo_200` to `userAvatar` for consistency
-- **Script Organization**: Renamed `set-production.sh` to `set-vk.sh` for clarity
-- **Server Scripts**: Moved to dedicated `server-scripts/` directory
-- **Telegram Integration**: Added full Telegram Mini App support
-- **Environment Management**: Enhanced with three-environment system
-
-### Code Organization
-- **Source Code**: `client/src/` directory with platform integration scripts
-- **Scripts**: `scripts/` directory for environment management
-- **Server Scripts**: `server-scripts/` directory for server automation
-- **Tests**: `tests/` directory with platform integration tests
-- **Assets**: `assets/` directory with game resources
-- **Documentation**: README files in each directory
-
-## 📊 **Project Statistics**
-
-- **Total Scripts**: 8 organized scripts (including server scripts)
-- **Test Files**: 71+ comprehensive tests including platform integration
-- **Source Files**: 20+ organized modules with platform integration
-- **Environments**: 3 supported environments (Development, VK, Telegram)
-- **Feature Flags**: 5 configurable flags
-- **Platforms**: 2 production platforms (VKontakte, Telegram)
-- **Avatar Management**: Unified `userAvatar` field across platforms
-
-## 🎯 **Quick Reference**
-
-| Action | Command |
-|--------|---------|
-| Check Environment | `./scripts/check-environment.sh` |
-| Set Development | `./scripts/set-development.sh` |
-| Set VK Production | `./scripts/set-vk.sh` |
-| Set Telegram Production | `./scripts/set-telegram.sh` |
-| Toggle Environments | `./scripts/toggle-environment.sh` |
-| Run Tests | `./scripts/run-tests.sh` |
-| Start Server | `./server-scripts/start-multiplayer.sh` |
-| Show Help | `./scripts/list-scripts.sh` |
-
-## 📄 **License**
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🙏 **Acknowledgments**
-
-- **Phaser.js**: Game framework
-- **VK Bridge**: VKontakte integration
-- **Telegram Web App API**: Telegram Mini App integration
-- **Socket.io**: Real-time multiplayer
-- **Node.js**: Server runtime 
+**📚 This documentation is organized to help you quickly find the information you need. Use the navigation above to explore specific topics or features.** 
