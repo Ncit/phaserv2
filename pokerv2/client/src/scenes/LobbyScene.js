@@ -10,7 +10,13 @@ export class LobbyScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('avatarQ', window.appData.userAvatar);
+        // Check if appData exists, otherwise use default avatar
+        if (window.appData && window.appData.userAvatar) {
+            this.load.image('avatarQ', window.appData.userAvatar);
+        } else {
+            // Use a default avatar or placeholder
+            this.load.image('avatarQ', 'assets/avatar.png');
+        }
     }
 
     create() {
@@ -57,7 +63,9 @@ export class LobbyScene extends Phaser.Scene {
         this.userAvatar = this.add.image(120, 46, 'avatarQ');
         this.userAvatar.scale = 0.3;
         this.crown = this.add.image(138, 60, 'crown');
-        this.userName = this.add.text(166, 22, window.appData.first_name, {
+        // Get user name from appData or use default
+        const userName = window.appData && window.appData.first_name ? window.appData.first_name : 'Player';
+        this.userName = this.add.text(166, 22, userName, {
             fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif',
             fontSize: 24,
         });

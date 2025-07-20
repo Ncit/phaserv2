@@ -68,6 +68,17 @@ export class LoadingScene extends Phaser.Scene {
     }
 
     create() {
+        // Initialize default appData to prevent undefined errors
+        if (!window.appData) {
+            window.appData = {
+                vk_user_id: 0,
+                telegram_user_id: 0,
+                userAvatar: 'assets/avatar.png',
+                first_name: 'Player',
+                id: 0
+            };
+        }
+
         // Create splash screen background
         this.background = this.add.image(640, 360, 'splash_background');
 
@@ -238,12 +249,27 @@ export class LoadingScene extends Phaser.Scene {
         initVkBridgeApp();
         setupApp((appData) => {
             window.appData = appData;
+            console.log('📱 VK app data set:', appData);
+            
+            // Show VK-specific loading message
+            this.instructionText = this.add
+                .text(640, 500, 'Welcome to Poker Game!', {
+                    fontFamily: 'Arial',
+                    fontSize: '24px',
+                    fill: '#ffffff',
+                })
+                .setOrigin(0.5);
+
+            // Transition to lobby after short delay
+            this.time.delayedCall(1500, () => {
+                this.scene.start('LobbyScene');
+            });
         });
     }
 
     initializeTelegram() {
         // Import Telegram functions dynamically
-        import('./scripts/telegramlogic.js').then(({ initTelegramWebApp, setupTelegramApp }) => {
+        import('../scripts/telegramlogic.js').then(({ initTelegramWebApp, setupTelegramApp }) => {
             // Initialize Telegram Web App
             if (initTelegramWebApp()) {
                 // Setup Telegram app with user data
@@ -267,9 +293,11 @@ export class LoadingScene extends Phaser.Scene {
                 });
             } else {
                 console.error('❌ Failed to initialize Telegram Web App');
+                this.createDebugPlayerSelection();
             }
         }).catch((error) => {
             console.error('❌ Error loading Telegram logic:', error);
+            this.createDebugPlayerSelection();
         });
     }
 
