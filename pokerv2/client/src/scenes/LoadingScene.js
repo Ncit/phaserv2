@@ -327,10 +327,11 @@ function setupApp(appDataCallback) {
         .then((data) => {
             if (data.vk_user_id) {
                 userInfo(data.vk_user_id, function (authData) {
+            console.log('QWE VK init', appData);
                     appDataCallback({
                         id: authData.id,
-                        name: authData.first_name,
-                        photo: authData.photo_200,
+                        first_name: authData.first_name,
+                        userAvatar: authData.photo_200,
                         vk_user_id: authData.id
                     });
                 });
