@@ -2,7 +2,7 @@
     <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>pokerv2</title>
         <!-- PF Din Text Comp Pro Font -->
         <link rel="stylesheet" href="./assets/fonts/fonts.css">
@@ -40,68 +40,6 @@
             a {
                 text-decoration: none;
                 color: inherit;
-            }
-
-            /* Desktop screens (macOS, Windows, etc.) */
-            @media screen and (min-width: 1280px) {
-                body {
-                    transform: rotate(0deg) !important; /* No rotation needed for desktop */
-                    width: 100vw !important;
-                    height: 100vh !important;
-                    min-height: 720px !important; /* Minimum height for proper game display */
-                    overflow: hidden !important;
-                }
-                
-                #game-container {
-                    width: 100vw !important;
-                    height: 100vh !important;
-                    min-height: 720px !important; /* Minimum height for proper game display */
-                }
-            }
-
-            /* Telegram Mini App in macOS native client - force landscape */
-            @media screen and (min-width: 1280px) and (max-height: 800px) {
-                body {
-                    transform: rotate(90deg) !important; /* Force landscape for Telegram Mini App */
-                    transform-origin: center center !important;
-                    width: 100vh !important;
-                    height: 100vw !important;
-                    min-height: 720px !important;
-                    overflow: hidden !important;
-                }
-                
-                #game-container {
-                    width: 100vh !important;
-                    height: 100vw !important;
-                    min-height: 720px !important;
-                    transform: rotate(-90deg) !important; /* Counter-rotate content */
-                    transform-origin: center center !important;
-                }
-            }
-
-            /* Telegram Mini App detection and landscape forcing */
-            @supports (-webkit-app-region: drag) {
-                /* macOS native app detection */
-                body {
-                    -webkit-app-region: no-drag !important;
-                }
-            }
-
-            /* Force landscape for Telegram WebApp on desktop */
-            @media screen and (min-width: 1280px) {
-                body.telegram-webapp {
-                    transform: rotate(90deg) !important;
-                    transform-origin: center center !important;
-                    width: 100vh !important;
-                    height: 100vw !important;
-                }
-                
-                body.telegram-webapp #game-container {
-                    transform: rotate(-90deg) !important;
-                    transform-origin: center center !important;
-                    width: 100vh !important;
-                    height: 100vw !important;
-                }
             }
         </style>
     </head>
