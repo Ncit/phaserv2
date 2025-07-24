@@ -9,19 +9,44 @@ const NGROK_HEADERS = {
 };
 
 /**
- * Add ngrok headers to fetch requests
+ * Check if a URL is a localhost or ngrok domain
+ * @param {string} url - The URL to check
+ * @returns {boolean} - True if localhost or ngrok domain
+ */
+function isLocalOrNgrokDomain(url) {
+    try {
+        const urlObj = new URL(url);
+        const hostname = urlObj.hostname.toLowerCase();
+        
+        return hostname === 'localhost' || 
+               hostname === '127.0.0.1' || 
+               hostname.includes('ngrok') ||
+               hostname.includes('ngrok.io') ||
+               hostname.includes('ngrok-free.app');
+    } catch (error) {
+        // If URL parsing fails, assume it's not a local domain
+        return false;
+    }
+}
+
+/**
+ * Add ngrok headers to fetch requests (only for local/ngrok domains)
  * @param {string} url - The URL to fetch
  * @param {Object} options - Fetch options
- * @returns {Promise} - Fetch promise with ngrok headers
+ * @returns {Promise} - Fetch promise with ngrok headers (if applicable)
  */
 export async function fetchWithNgrokHeaders(url, options = {}) {
-    const fetchOptions = {
-        ...options,
-        headers: {
+    const fetchOptions = { ...options };
+    
+    // Only add ngrok headers for local/ngrok domains
+    if (isLocalOrNgrokDomain(url)) {
+        fetchOptions.headers = {
             ...NGROK_HEADERS,
             ...options.headers
-        }
-    };
+        };
+    } else {
+        fetchOptions.headers = { ...options.headers };
+    }
     
     return fetch(url, fetchOptions);
 }
@@ -62,25 +87,29 @@ export function createSocketOptionsWithNgrokHeaders(options = {}) {
 }
 
 /**
- * Override global fetch to automatically include ngrok headers
- * Call this function once to enable automatic ngrok headers for all fetch requests
+ * Override global fetch to automatically include ngrok headers (only for local/ngrok domains)
+ * Call this function once to enable automatic ngrok headers for local fetch requests
  */
 export function enableGlobalNgrokHeaders() {
     const originalFetch = window.fetch;
     
     window.fetch = function(url, options = {}) {
-        const fetchOptions = {
-            ...options,
-            headers: {
+        const fetchOptions = { ...options };
+        
+        // Only add ngrok headers for local/ngrok domains
+        if (isLocalOrNgrokDomain(url)) {
+            fetchOptions.headers = {
                 ...NGROK_HEADERS,
                 ...options.headers
-            }
-        };
+            };
+        } else {
+            fetchOptions.headers = { ...options.headers };
+        }
         
         return originalFetch(url, fetchOptions);
     };
     
-    console.log('🌐 Global ngrok headers enabled for all fetch requests');
+    console.log('🌐 Global ngrok headers enabled for local/ngrok domains only');
 }
 
 /**
