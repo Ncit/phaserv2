@@ -148,10 +148,7 @@ export class LobbyScene extends Phaser.Scene {
             this.settingsManager.showSettings();
         });
 
-        // Add shop button event listener
-        this.bonusButton.on('pointerdown', () => {
-            // this.shopManager.toggleShop();
-        });
+        // Note: Shop button action is handled by UIManager, no need for duplicate listener
 
         // Listen for purchase completion events
         this.events.on('purchaseCompleted', (purchaseResult) => {
@@ -217,10 +214,19 @@ export class LobbyScene extends Phaser.Scene {
                 button.setTint(0x888888);
                 console.log(`${data.label} button clicked!`);
 
+                // Track button click for analytics
+                if (window.analyticsManager) {
+                    window.analyticsManager.trackButtonClick(data.key, 'lobby_scene');
+                }
+
                 if (data.key === 'friends_game_btn') {
                     this.time.delayedCall(150, () => {
                         button.clearTint();
-                        this.scene.start('FriendsGameScene');
+                        // Track scene change for analytics
+                        if (window.analyticsManager) {
+                            window.analyticsManager.trackSceneChange('lobby_scene', 'friends_game_scene');
+                        }
+                        // this.scene.start('FriendsGameScene');
                     });
                 } else if (data.key === 'ai_bot_btn') {
                     this.time.delayedCall(150, () => {
@@ -230,6 +236,11 @@ export class LobbyScene extends Phaser.Scene {
                         const sceneKey = `AIBotScene_${sessionId}`;
                         
                         console.log(`LobbyScene: Creating new AI Bot scene with key: ${sceneKey}`);
+                        
+                        // Track scene change for analytics
+                        if (window.analyticsManager) {
+                            window.analyticsManager.trackSceneChange('lobby_scene', 'ai_bot_scene');
+                        }
                         
                         // Import and create a new AIBotScene instance with unique key
                         import('./AIBotScene.js').then(({ AIBotScene }) => {

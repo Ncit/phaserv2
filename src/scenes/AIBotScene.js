@@ -34,6 +34,8 @@ export class AIBotScene extends Phaser.Scene {
         this.aiPlayers = [];
         this.humanPlayer = null;
         this.aiManager = new AIManager();
+        
+        console.log('AIBotScene: Constructor completed, AIManager initialized:', !!this.aiManager);
     }
 
     preload() {
@@ -447,10 +449,7 @@ export class AIBotScene extends Phaser.Scene {
             this.createCustomPlayer(index + 1, player);
         });
 
-        // Initialize deck
-        this.initializeDeck();
-        
-        // Start new hand
+        // Start the first hand
         this.startNewHand();
     }
 
@@ -634,11 +633,37 @@ export class AIBotScene extends Phaser.Scene {
     }
 
     makeAIDecision(player) {
+        // Safety check for AIManager
+        if (!this.aiManager) {
+            console.error('AIBotScene: AIManager is null, cannot make AI decision');
+            return;
+        }
+        
+        // Safety check for player
+        if (!player) {
+            console.error('AIBotScene: Player is null, cannot make AI decision');
+            return;
+        }
+        
+        // Safety check for gameState
+        if (!this.gameState) {
+            console.error('AIBotScene: GameState is null, cannot make AI decision');
+            return;
+        }
+        
+        console.log(`AIBotScene: Making AI decision for player ${player.name}`);
+        
         // Enhanced AI decision making with personality-based timing
         const thinkingTime = this.aiManager.calculateThinkingTime(player);
         setTimeout(() => {
-            const decision = this.aiManager.calculateAIDecision(player, this.gameState);
-            this.executeAIAction(player, decision);
+            try {
+                const decision = this.aiManager.calculateAIDecision(player, this.gameState);
+                this.executeAIAction(player, decision);
+            } catch (error) {
+                console.error('AIBotScene: Error making AI decision:', error);
+                // Fallback to a simple fold decision
+                this.executeAIAction(player, { action: 'fold', amount: 0 });
+            }
         }, thinkingTime);
     }
 
@@ -649,6 +674,26 @@ export class AIBotScene extends Phaser.Scene {
 
 
     executeAIAction(player, decision) {
+        // Safety check for AIManager
+        if (!this.aiManager) {
+            console.error('AIBotScene: AIManager is null, cannot execute AI action');
+            return;
+        }
+        
+        // Safety check for player
+        if (!player) {
+            console.error('AIBotScene: Player is null, cannot execute AI action');
+            return;
+        }
+        
+        // Safety check for decision
+        if (!decision) {
+            console.error('AIBotScene: Decision is null, cannot execute AI action');
+            return;
+        }
+        
+        console.log(`AIBotScene: Executing AI action for ${player.name}:`, decision);
+        
         // Use AIManager to execute the action
         this.aiManager.executeAIAction(player, decision);
         
@@ -661,6 +706,10 @@ export class AIBotScene extends Phaser.Scene {
                 break;
             case 'raise':
                 this.raisePlayer(player.id, decision.amount);
+                break;
+            default:
+                console.warn(`AIBotScene: Unknown AI action: ${decision.action}, defaulting to fold`);
+                this.foldPlayer(player.id);
                 break;
         }
     }

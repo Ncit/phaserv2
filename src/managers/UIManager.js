@@ -303,31 +303,65 @@ export class UIManager {
 
     // Handle UI actions
     handleUIAction(action) {
+        if (this.isDebug) {
+            console.log(`UIManager: Handling UI action '${action}'`);
+        }
+
+        // Track button click for analytics
+        if (window.analyticsManager) {
+            window.analyticsManager.trackButtonClick(action, this.scene.scene.key);
+        }
+
         switch (action) {
-            case 'settings':
-                // Open settings
+            case 'fold':
+                this.handlePokerAction('fold');
                 break;
-                
+            case 'call':
+                this.handlePokerAction('call');
+                break;
+            case 'raise':
+                this.handlePokerAction('raise');
+                break;
+            case 'allIn':
+                this.handlePokerAction('allIn');
+                break;
+            case 'menu':
+                // Handle menu action
+                if (this.scene.settingsManager) {
+                    this.scene.settingsManager.showSettings();
+                }
+                break;
+            case 'settings':
+                // Handle settings action
+                if (this.scene.settingsManager) {
+                    this.scene.settingsManager.showSettings();
+                }
+                break;
+            case 'chat':
+                // Handle chat action
+                if (this.scene.chatManager) {
+                    this.scene.chatManager.toggleChat();
+                }
+                break;
+            case 'shop':
+                // Open shop
+                if (this.scene.shopManager) {
+                    this.scene.shopManager.toggleShop();
+                }
+                break;
+            case 'bonus':
+                // Handle bonus action
+                if (this.isDebug) {
+                    console.log('UIManager: Bonus button clicked');
+                }
+                break;
+            case 'stats':
+                // Navigate to statistics scene
+                this.scene.scene.start('StatisticsScene');
+                break;
             case 'friends':
                 // Open VK friends dialog
                 this.openVKFriendsDialog();
-                break;
-                
-            case 'stats':
-                // Show statistics
-                break;
-                
-            case 'chat':
-                // Toggle chat
-                break;
-                
-            case 'menu':
-                        // Return to LobbyScene
-        this.scene.scene.start('LobbyScene');
-                break;
-                
-            case 'bonus':
-                // Handle bonus action
                 break;
         }
 

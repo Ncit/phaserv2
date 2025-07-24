@@ -4,6 +4,7 @@ import { PlayerManager } from '../managers/PlayerManager.js';
 import { CardManager } from '../managers/CardManager.js';
 import { NetworkManager } from '../managers/NetworkManager.js';
 import { ChatManager } from '../managers/ChatManager.js';
+import { StatisticsManager } from '../managers/StatisticsManager.js';
 import { GameConfig } from '../config/GameConfig.js';
 import { ButtonConfig } from '../config/ButtonConfig.js';
 import { PlayerConfig } from '../config/PlayerConfig.js';
@@ -69,6 +70,7 @@ export class FastGameScene extends Phaser.Scene {
         this.cardManager = new CardManager(this);
         this.uiManager = new UIManager(this);
         this.chatManager = new ChatManager(this, this.networkManager);
+        this.statisticsManager = new StatisticsManager();
         
         // Wait for assets to load
         this.time.delayedCall(100, () => {
@@ -610,7 +612,7 @@ export class FastGameScene extends Phaser.Scene {
         const playerElements = this.playerElements.get(playerId);
         if (playerElements && playerElements.playerNumber) {
             // Clear all cards for this player
-            this.cardManager.safeClearPlayerCards(playerElements.playerNumber);
+            this.cardManager.safeClearPlayerCards(elements.playerNumber);
             console.log(`FastGameScene: Cleared cards for player ${playerId} (player number: ${playerElements.playerNumber})`);
         } else {
             console.warn('FastGameScene: Could not find player elements for card removal:', playerId);
@@ -626,17 +628,23 @@ export class FastGameScene extends Phaser.Scene {
     }
 
     handleGameStarted() {
-        console.log('FastGameScene: Handling game started');
-        // Clear any lobby-specific UI
-        this.handRank.setText('');
+        console.log('FastGameScene: Game started');
+        this.gameState.status = 'playing';
+        this.gameState.phase = 'preflop';
         
-        // Clear any existing cards from lobby state
-        this.playerElements.forEach((elements, playerId) => {
-            this.cardManager.safeClearPlayerCards(elements.playerNumber);
-        });
+        // Track game start for analytics
+        if (window.analyticsManager) {
+            window.analyticsManager.trackGameStart('fast_game');
+        }
         
-        // The game will automatically deal cards and start the first hand
-        // Cards will be dealt when the first hand starts
+        // Initialize statistics tracking
+        this.statisticsManager.recordGameStart();
+        
+        // Deal cards to all active players
+        this.dealCardsToPlayers();
+        
+        // Start the first betting round
+        this.startBettingRound();
     }
 
     handleNewHand() {
@@ -852,6 +860,33 @@ export class FastGameScene extends Phaser.Scene {
         // Highlight winning players' cards
         this.highlightWinningCards(showdownResults.winners);
         
+        // Record statistics for showdown
+        if (this.statisticsManager) {
+            const myPlayer = this.networkManager.getMyPlayer();
+            if (myPlayer) {
+                const isWinner = showdownResults.winners.includes(myPlayer.id);
+                
+                if (isWinner) {
+                    // Record hand win
+                    this.statisticsManager.recordHandWin({
+                        chipsWon: myPlayer.chipsWon || 0,
+                        handRank: showdownResults.playerHands.find(h => h.playerId === myPlayer.id)?.handRank
+                    });
+                } else {
+                    // Record hand loss
+                    this.statisticsManager.recordHandLoss({
+                        chipsLost: myPlayer.chipsLost || 0
+                    });
+                }
+                
+                // Record showdown
+                this.statisticsManager.recordShowdown({
+                    won: isWinner,
+                    wasBluff: false // TODO: Implement bluff detection
+                });
+            }
+        }
+        
         // Show Next Round button
         // this.nextRoundButton.setVisible(true);
         // this.nextRoundButtonText.setVisible(true);
@@ -985,18 +1020,62 @@ export class FastGameScene extends Phaser.Scene {
     }
 
     handlePlayerFold(action) {
-        // Player folded - no special UI needed, just update display
-        this.updatePlayerDisplay(action.playerId);
+        console.log('FastGameScene: Player folded');
+        
+        // Track player action for analytics
+        if (window.analyticsManager) {
+            window.analyticsManager.trackPlayerAction('fold', 'fast_game');
+        }
+        
+        // Record statistics
+        this.statisticsManager.recordAction('fold');
+        
+        // Send fold action to server
+        this.networkManager.sendAction('fold');
+        
+        // Disable player actions
+        this.disablePlayerActions();
     }
 
-    handlePlayerCall(action) {
-        // Player called/checked - update display
-        this.updatePlayerDisplay(action.playerId);
+    handlePlayerCall() {
+        console.log('FastGameScene: Player called');
+        
+        const myPlayer = this.networkManager.getMyPlayer();
+        const callAmount = this.gameState.currentBet - (myPlayer ? myPlayer.currentBet : 0);
+        
+        // Track player action for analytics
+        if (window.analyticsManager) {
+            window.analyticsManager.trackPlayerAction('call', 'fast_game', callAmount);
+        }
+        
+        // Record statistics
+        this.statisticsManager.recordAction('call');
+        
+        // Send call action to server
+        this.networkManager.sendAction('call');
+        
+        // Disable player actions
+        this.disablePlayerActions();
     }
 
-    handlePlayerRaise(action) {
-        // Player raised - update display
-        this.updatePlayerDisplay(action.playerId);
+    handlePlayerRaise() {
+        console.log('FastGameScene: Player raised');
+        
+        const raiseAmount = this.gameState.minBet;
+        
+        // Track player action for analytics
+        if (window.analyticsManager) {
+            window.analyticsManager.trackPlayerAction('raise', 'fast_game', raiseAmount);
+        }
+        
+        // Record statistics
+        this.statisticsManager.recordAction('raise');
+        
+        // Send raise action to server
+        this.networkManager.sendAction('raise', raiseAmount);
+        
+        // Disable player actions
+        this.disablePlayerActions();
     }
 
     updateUI() {
@@ -1438,7 +1517,12 @@ export class FastGameScene extends Phaser.Scene {
                     playerFolded: myPlayer ? myPlayer.folded : 'no player',
                     playerAllIn: myPlayer ? myPlayer.allIn : 'no player'
                 });
-                // this.disablePlayerActions();
+                this.disablePlayerActions();
+            }
+            
+            // Call debug method if in debug mode
+            if (window.isDebug) {
+                this.debugButtonStatus();
             }
         } finally {
             this._updatingActionButtons = false;
@@ -1603,139 +1687,30 @@ export class FastGameScene extends Phaser.Scene {
         });
     }
 
-    handleFold() {
-        console.log('FastGameScene: handleFold called');
+    // Debug method to check current game state and button status
+    debugButtonStatus() {
+        console.log('FastGameScene: DEBUG BUTTON STATUS');
+        console.log('Game State:', {
+            status: this.gameState?.status,
+            phase: this.gameState?.phase,
+            currentPlayer: this.gameState?.currentPlayer
+        });
+        console.log('Network Manager:', {
+            isMyTurn: this.networkManager?.isMyTurn(),
+            myPlayer: this.networkManager?.getMyPlayer()
+        });
+        console.log('Button Status:', {
+            foldButton: this.foldButton?.input?.enabled,
+            callButton: this.callButton?.input?.enabled,
+            raiseButton: this.raiseButton?.input?.enabled,
+            allInButton: this.allInButton?.input?.enabled
+        });
         
-        if (!this.networkManager.isMyTurn()) {
-            console.log('FastGameScene: handleFold - not my turn');
-            return;
-        }
-        if (this.gameState.phase === 'showdown') {
-            console.log('FastGameScene: handleFold - game in showdown');
-            return;
-        }
-        
-        const myPlayer = this.networkManager.getMyPlayer();
-        if (myPlayer && myPlayer.isSpectator) {
-            console.log('FastGameScene: Spectators cannot make actions');
-            return;
-        }
-        
-        if (myPlayer && (myPlayer.folded || myPlayer.allIn)) {
-            console.log('FastGameScene: Player cannot act - folded or all-in');
-            return;
-        }
-        
-        console.log('FastGameScene: handleFold - sending action');
-        try {
-            this.networkManager.sendPokerAction('fold');
-            this.disablePlayerActions();
-        } catch (error) {
-            console.error('FastGameScene: Error sending fold action:', error);
-        }
-    }
-
-    handleCall() {
-        if (!this.networkManager.isMyTurn()) return;
-        if (this.gameState.phase === 'showdown') return;
-        
-        const myPlayer = this.networkManager.getMyPlayer();
-        if (myPlayer && myPlayer.isSpectator) {
-            console.log('FastGameScene: Spectators cannot make actions');
-            return;
-        }
-        
-        if (myPlayer && (myPlayer.folded || myPlayer.allIn)) {
-            console.log('FastGameScene: Player cannot act - folded or all-in');
-            return;
-        }
-        
-        try {
-            const currentBet = this.gameState.currentBet;
-            const callAmount = currentBet - myPlayer.currentBet;
-            
-            if (callAmount <= 0) {
-                this.networkManager.sendPokerAction('check');
-            } else {
-                this.networkManager.sendPokerAction('call', callAmount);
-            }
-            
-            this.disablePlayerActions();
-        } catch (error) {
-            console.error('FastGameScene: Error sending call action:', error);
-        }
-    }
-
-    handleRaise() {
-        if (!this.networkManager.isMyTurn()) return;
-        if (this.gameState.phase === 'showdown') return;
-        
-        const myPlayer = this.networkManager.getMyPlayer();
-        if (myPlayer && myPlayer.isSpectator) {
-            console.log('FastGameScene: Spectators cannot make actions');
-            return;
-        }
-        
-        if (myPlayer && (myPlayer.folded || myPlayer.allIn)) {
-            console.log('FastGameScene: Player cannot act - folded or all-in');
-            return;
-        }
-        
-        // Check if we can still raise - but don't prevent the button from being enabled
-        if (!this.networkManager.canRaise()) {
-            console.log('FastGameScene: Cannot raise - limit reached, but button remains enabled');
-            // Don't return here - let the server handle the validation
-        }
-        
-        try {
-            let totalBetAmount;
-            
-            // Default big blind if not defined
-            const bigBlind = this.gameState.bigBlind || 20;
-            
-            if (this.gameState.currentBet === 0) {
-                // No current bet, so minimum raise is big blind
-                totalBetAmount = bigBlind;
-            } else {
-                // Current bet exists, so raise must be at least current bet + 10
-                totalBetAmount = this.gameState.currentBet + 10;
-            }
-            
-            // Ensure totalBetAmount is a valid number
-            if (isNaN(totalBetAmount) || totalBetAmount <= 0) {
-                console.error('FastGameScene: Invalid raise amount calculated:', totalBetAmount);
-                return;
-            }
-            
-            // Check if player has enough money for the minimum raise
-            const additionalAmountNeeded = totalBetAmount - myPlayer.currentBet;
-            if (myPlayer.bank < additionalAmountNeeded) {
-                // Player doesn't have enough for minimum raise, make it all-in
-                console.log('FastGameScene: Insufficient funds for minimum raise, making all-in');
-                this.networkManager.sendPokerAction('allIn', myPlayer.bank);
-            } else {
-                // Player has enough money, proceed with normal raise
-                // Ensure we don't exceed player's bank
-                totalBetAmount = Math.min(totalBetAmount, myPlayer.bank);
-                
-                // Calculate the additional amount needed
-                const additionalAmount = totalBetAmount - myPlayer.currentBet;
-                
-                console.log('FastGameScene: Raise calculation:', {
-                    currentBet: this.gameState.currentBet,
-                    myCurrentBet: myPlayer.currentBet,
-                    totalBetAmount,
-                    additionalAmount,
-                    myBank: myPlayer.bank,
-                    bigBlind
-                });
-                
-                this.networkManager.sendPokerAction('raise', totalBetAmount);
-            }
-            
-            this.disablePlayerActions();
-        } catch (error) {
-            console.error('FastGameScene: Error sending raise action:', error);
+        // Make forceEnableButtons available globally for debugging
+        if (window.isDebug) {
+            window.forceEnableButtons = () => this.forceEnableButtons();
+            window.debugButtonStatus = () => this.debugButtonStatus();
+            console.log('FastGameScene: Debug methods available: window.forceEnableButtons() and window.debugButtonStatus()');
         }
     }
 
@@ -1755,8 +1730,13 @@ export class FastGameScene extends Phaser.Scene {
         }
         
         try {
-            this.networkManager.sendPokerAction('allIn', myPlayer.bank);
+            this.networkManager.sendPokerAction('allIn', myPlayer.chips);
             this.disablePlayerActions();
+            
+            // Record all-in action
+            if (this.statisticsManager) {
+                this.statisticsManager.recordAction('allIn');
+            }
         } catch (error) {
             console.error('FastGameScene: Error sending all-in action:', error);
         }
@@ -1997,20 +1977,30 @@ export class FastGameScene extends Phaser.Scene {
     }
 
     shutdown() {
-        console.log('FastGameScene: Shutting down and cleaning up resources');
+        console.log('FastGameScene: Starting shutdown process');
         
-        // Clean up network manager
-        if (this.networkManager) {
-            this.networkManager.cleanup();
+        // Record game end statistics
+        if (this.statisticsManager) {
+            this.statisticsManager.recordGameEnd({
+                gameType: 'multiplayer',
+                finalPlayerCount: this.gameState?.players?.length || 0
+            });
         }
         
-        // Clean up managers
+        // Disconnect from server
+        if (this.networkManager) {
+            this.networkManager.disconnect();
+        }
+
+        // Clean up managers that have cleanup methods
         if (this.cardManager) {
             this.cardManager.cleanup();
         }
+        
         if (this.uiManager) {
             this.uiManager.cleanup();
         }
+        
         if (this.chatManager) {
             this.chatManager.cleanup();
         }

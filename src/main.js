@@ -3,6 +3,9 @@ import { LobbyScene } from './scenes/LobbyScene.js';
 import { FriendsGameScene } from './scenes/FriendsGameScene.js';
 import { AIBotScene } from './scenes/AIBotScene.js';
 import { FastGameScene } from './scenes/FastGameScene.js';
+import { StatisticsScene } from './scenes/StatisticsScene.js';
+import { StatisticsManager } from './managers/StatisticsManager.js';
+import { AnalyticsManager } from './managers/AnalyticsManager.js';
 import { enableGlobalNgrokHeaders } from './utils/NgrokUtils.js';
 import { EnvironmentConfig, isFeatureEnabled } from './config/EnvironmentConfig.js';
 import environmentSwitcher from './utils/EnvironmentSwitcher.js';
@@ -12,6 +15,9 @@ const envConfig = new EnvironmentConfig();
 
 // Initialize environment switcher (provides URL-based switching and console commands)
 environmentSwitcher.handleUrlChange();
+
+// Initialize Analytics Manager
+window.analyticsManager = new AnalyticsManager();
 
 // Create environment switching buttons in debug mode
 if (window.isDebug) {
@@ -42,7 +48,7 @@ const config = {
     height: 720,
     backgroundColor: '#000000',
     pixelArt: false,
-            scene: [LoadingScene, LobbyScene, FriendsGameScene, AIBotScene, FastGameScene],
+    scene: [LoadingScene, LobbyScene, FriendsGameScene, AIBotScene, FastGameScene, StatisticsScene],
     scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,

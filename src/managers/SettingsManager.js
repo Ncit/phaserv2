@@ -70,7 +70,7 @@ export class SettingsManager {
         this.createAppInfoSection();
         
         // Create settings section
-        this.createSettingsSection();
+        // this.createSettingsSection();
         
         // Add click handler to overlay to close dialog
         overlay.setInteractive();
@@ -137,26 +137,26 @@ export class SettingsManager {
         });
         
         // Platform support
-        const platformTitle = this.scene.add.text(-250, 50, 'Supported Platforms:', {
-            fontFamily: 'Arial',
-            fontSize: '16px',
-            fill: '#3498db',
-            stroke: '#000000',
-            strokeThickness: 1
-        }).setOrigin(0, 0.5);
-        this.dialog.add(platformTitle);
+        // const platformTitle = this.scene.add.text(-250, 50, 'Supported Platforms:', {
+        //     fontFamily: 'Arial',
+        //     fontSize: '16px',
+        //     fill: '#3498db',
+        //     stroke: '#000000',
+        //     strokeThickness: 1
+        // }).setOrigin(0, 0.5);
+        // this.dialog.add(platformTitle);
         
-        VersionConfig.platforms.forEach((platform, index) => {
-            const y = 75 + (index * 20);
-            const platformText = this.scene.add.text(-250, y, `• ${platform}`, {
-                fontFamily: 'Arial',
-                fontSize: '12px',
-                fill: '#ffffff',
-                stroke: '#000000',
-                strokeThickness: 1
-            }).setOrigin(0, 0.5);
-            this.dialog.add(platformText);
-        });
+        // VersionConfig.platforms.forEach((platform, index) => {
+        //     const y = 75 + (index * 20);
+        //     const platformText = this.scene.add.text(-250, y, `• ${platform}`, {
+        //         fontFamily: 'Arial',
+        //         fontSize: '12px',
+        //         fill: '#ffffff',
+        //         stroke: '#000000',
+        //         strokeThickness: 1
+        //     }).setOrigin(0, 0.5);
+        //     this.dialog.add(platformText);
+        // });
     }
 
     // Create settings section

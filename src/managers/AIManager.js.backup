@@ -59,7 +59,7 @@ export class AIManager {
         const callAmount = gameState.currentBet - player.currentBet;
         const potOdds = callAmount / (gameState.pot + callAmount);
         const handStrength = this.evaluateHandStrength(player, gameState);
-        const position = this.getPlayerPosition(player.position, gameState);
+        const position = this.getPlayerPosition(player.id, gameState);
         const isLatePosition = position >= 3;
         // Calculate adjusted hand strength based on adapted personality
         const adjustedHandStrength = this.adjustHandStrengthForPersonality(handStrength, adaptedPersonality);
@@ -371,13 +371,13 @@ export class AIManager {
 
     /**
      * Get player position relative to dealer
-     * @param {number} playerPosition - Player ID
+     * @param {number} playerId - Player ID
      * @param {Object} gameState - Current game state
      * @returns {number} - Player position (0-based)
      */
-    getPlayerPosition(playerPosition, gameState) {
+    getPlayerPosition(playerId, gameState) {
         const dealerPos = gameState.dealerPosition;
-        const playerPos = (playerPosition - dealerPos + gameState.players.length) % gameState.players.length;
+        const playerPos = (playerId - dealerPos + gameState.players.length) % gameState.players.length;
         return playerPos;
     }
 
@@ -412,7 +412,7 @@ export class AIManager {
                 player.handsPlayed++;
                 
                 // Check if this player won
-                const isWinner = winners.some(({ player: winner }) => winner.id === player.position);
+                const isWinner = winners.some(({ player: winner }) => winner.id === player.id);
                 if (isWinner) {
                     player.handsWon++;
                 }

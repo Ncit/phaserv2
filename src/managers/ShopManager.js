@@ -30,34 +30,60 @@ export class ShopManager {
 
     // Show the shop
     showShop() {
-        if (this.isVisible) return;
+        if (this.isDebug) {
+            console.log('ShopManager: showShop called, current visibility:', this.isVisible);
+        }
+        
+        if (this.isVisible) {
+            if (this.isDebug) {
+                console.log('ShopManager: Shop already visible, ignoring showShop call');
+            }
+            return;
+        }
         
         this.isVisible = true;
         this.createShopUI();
         
         if (this.isDebug) {
-            console.log('ShopManager: Shop opened');
+            console.log('ShopManager: Shop opened successfully');
         }
     }
 
     // Hide the shop
     hideShop() {
-        if (!this.isVisible) return;
+        if (this.isDebug) {
+            console.log('ShopManager: hideShop called, current visibility:', this.isVisible);
+        }
+        
+        if (!this.isVisible) {
+            if (this.isDebug) {
+                console.log('ShopManager: Shop already hidden, ignoring hideShop call');
+            }
+            return;
+        }
         
         this.isVisible = false;
         this.destroyShopUI();
         
         if (this.isDebug) {
-            console.log('ShopManager: Shop closed');
+            console.log('ShopManager: Shop closed successfully');
         }
     }
 
     // Toggle shop visibility
     toggleShop() {
+        if (this.isDebug) {
+            console.log('ShopManager: toggleShop called, current visibility:', this.isVisible);
+        }
+        
         if (this.isVisible) {
             this.hideShop();
         } else {
             this.showShop();
+        }
+        
+        if (this.isDebug) {
+            console.log('ShopManager: toggleShop completed, new visibility:', this.isVisible);
         }
     }
 
@@ -66,10 +92,26 @@ export class ShopManager {
         // Create main container
         this.shopContainer = this.scene.add.container(640, 360);
         
-        // Create background overlay (matching game style)
+        // Create background overlay (matching game style) - only covers areas outside shop
         const overlay = this.scene.add.rectangle(0, 0, 1280, 720, 0x000000, 0.8);
         overlay.setInteractive();
-        overlay.on('pointerdown', () => this.hideShop());
+        overlay.on('pointerdown', (pointer) => {
+            // Only close if clicking outside the shop area
+            const shopBounds = {
+                left: -this.config.width / 2,
+                right: this.config.width / 2,
+                top: -this.config.height / 2,
+                bottom: this.config.height / 2
+            };
+            
+            const clickX = pointer.x - 640; // Adjust for container position
+            const clickY = pointer.y - 360;
+            
+            if (clickX < shopBounds.left || clickX > shopBounds.right || 
+                clickY < shopBounds.top || clickY > shopBounds.bottom) {
+                this.hideShop();
+            }
+        });
         this.shopContainer.add(overlay);
         
         // Create shop background (matching game style)
@@ -492,5 +534,28 @@ export class ShopManager {
             isUserVIP: isUserVIP(),
             availableItems: getAvailableItems().length
         };
+    }
+
+    purchaseItem(itemName, itemPrice) {
+        console.log(`ShopManager: Purchasing ${itemName} for ${itemPrice} chips`);
+        
+        // Track purchase for analytics
+        if (window.analyticsManager) {
+            window.analyticsManager.trackPurchase(itemName, itemPrice, 'chips');
+        }
+        
+        // Emit purchase event
+        this.scene.events.emit('purchaseCompleted', {
+            item: itemName,
+            price: itemPrice,
+            success: true
+        });
+        
+        // Hide shop after purchase
+        this.hideShop();
+        
+        if (this.isDebug) {
+            console.log(`ShopManager: Purchase completed for ${itemName}`);
+        }
     }
 } 
