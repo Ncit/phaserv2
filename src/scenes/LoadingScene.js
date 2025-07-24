@@ -262,16 +262,6 @@ export class LoadingScene extends Phaser.Scene {
         setupApp((appData) => {
             window.appData = appData;
             console.log('📱 VK app data set:', appData);
-            
-            // Show VK-specific loading message
-            this.instructionText = this.add
-                .text(640, 500, 'Welcome to Poker Game!', {
-                    fontFamily: 'Arial',
-                    fontSize: '24px',
-                    fill: '#ffffff',
-                })
-                .setOrigin(0.5);
-
             // Transition to lobby after short delay
             this.time.delayedCall(1500, () => {
                 this.scene.start('LobbyScene');
@@ -298,15 +288,6 @@ export class LoadingScene extends Phaser.Scene {
             window.appData = mockTelegramData;
             console.log('📱 Mock Telegram app data set for testing:', mockTelegramData);
             
-            // Show testing message
-            this.instructionText = this.add
-                .text(640, 500, 'Telegram Mode (Testing)', {
-                    fontFamily: 'Arial',
-                    fontSize: '24px',
-                    fill: '#FFD700',
-                })
-                .setOrigin(0.5);
-
             // Transition to lobby after short delay
             this.time.delayedCall(1500, () => {
                 this.scene.start('LobbyScene');
@@ -323,16 +304,7 @@ export class LoadingScene extends Phaser.Scene {
                 setupTelegramApp((appData) => {
                     window.appData = appData;
                     console.log('📱 Telegram app data set:', appData);
-                    
-                    // Show Telegram-specific loading message
-                    this.instructionText = this.add
-                        .text(640, 500, 'Welcome to Poker Game!', {
-                            fontFamily: 'Arial',
-                            fontSize: '24px',
-                            fill: '#ffffff',
-                        })
-                        .setOrigin(0.5);
-
+                   
                     // Transition to lobby after short delay
                     this.time.delayedCall(1500, () => {
                         this.scene.start('LobbyScene');
