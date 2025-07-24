@@ -655,7 +655,15 @@ export class AIBotScene extends Phaser.Scene {
         
         // Enhanced AI decision making with personality-based timing
         const thinkingTime = this.aiManager.calculateThinkingTime(player);
-        setTimeout(() => {
+        
+        // Use Phaser's timer system instead of setTimeout for better scene lifecycle management
+        this.time.delayedCall(thinkingTime, () => {
+            // Check if scene is still active and aiManager still exists
+            if (!this.scene || !this.scene.isActive() || !this.aiManager) {
+                console.warn('AIBotScene: Scene no longer active or AIManager destroyed, skipping AI decision');
+                return;
+            }
+            
             try {
                 const decision = this.aiManager.calculateAIDecision(player, this.gameState);
                 this.executeAIAction(player, decision);
@@ -664,7 +672,7 @@ export class AIBotScene extends Phaser.Scene {
                 // Fallback to a simple fold decision
                 this.executeAIAction(player, { action: 'fold', amount: 0 });
             }
-        }, thinkingTime);
+        });
     }
 
 
@@ -674,6 +682,12 @@ export class AIBotScene extends Phaser.Scene {
 
 
     executeAIAction(player, decision) {
+        // Safety check for scene lifecycle
+        if (!this.scene || !this.scene.isActive()) {
+            console.warn('AIBotScene: Scene no longer active, skipping AI action execution');
+            return;
+        }
+        
         // Safety check for AIManager
         if (!this.aiManager) {
             console.error('AIBotScene: AIManager is null, cannot execute AI action');
@@ -1405,21 +1419,48 @@ export class AIBotScene extends Phaser.Scene {
         const isFallbackAvatar = playerData.avatarUrl === 'assets/avatar.png';
         avatar.setScale(isFallbackAvatar ? 0.3 : 0.3);
         
-        // Load and create avatar from URL
+        // Load and create avatar from URL with safety checks
         const avatarKey = `avatar${playerNumber}`;
-        this.load.image(avatarKey, playerData.avatarUrl);
         
-        // Create avatar after loading
-        this.load.once('complete', () => {
-            if (this.textures.exists(avatarKey)) {
-                // Replace the placeholder with the loaded avatar
-                avatar.setTexture(avatarKey);
+        // Only try to load if it's not the fallback avatar
+        if (!isFallbackAvatar && playerData.avatarUrl) {
+            try {
+                this.load.image(avatarKey, playerData.avatarUrl);
+                
+                // Create avatar after loading with safety checks
+                this.load.once('complete', () => {
+                    // Check if scene is still active
+                    if (!this.scene || !this.scene.isActive()) {
+                        console.warn('AIBotScene: Scene no longer active, skipping avatar texture update');
+                        return;
+                    }
+                    
+                    // Check if avatar still exists
+                    if (!avatar || !avatar.active) {
+                        console.warn('AIBotScene: Avatar no longer exists, skipping texture update');
+                        return;
+                    }
+                    
+                    // Check if texture exists before setting it
+                    if (this.textures && this.textures.exists(avatarKey)) {
+                        try {
+                            avatar.setTexture(avatarKey);
+                        } catch (error) {
+                            console.warn('AIBotScene: Failed to set avatar texture:', error);
+                            // Keep the default avatar
+                        }
+                    } else {
+                        console.warn('AIBotScene: Avatar texture not found, keeping default avatar');
+                    }
+                });
+                
+                // Start loading
+                this.load.start();
+            } catch (error) {
+                console.warn('AIBotScene: Failed to load avatar:', error);
+                // Keep the default avatar
             }
-            // If loading fails, keep the default avatar
-        });
-        
-        // Start loading
-        this.load.start();
+        }
         
         // Create player name background
         const nameX = x - 90;
@@ -1480,6 +1521,9 @@ export class AIBotScene extends Phaser.Scene {
     shutdown() {
         console.log(`AIBotScene: Shutting down scene ${this.scene.key} and cleaning up resources`);
         
+        // Clear all timers to prevent callbacks after shutdown
+        this.time.removeAllEvents();
+        
         // Remove all event listeners from buttons
         if (this.foldButton) {
             this.foldButton.off('pointerdown');
@@ -1501,6 +1545,11 @@ export class AIBotScene extends Phaser.Scene {
             this.allInButton.destroy();
             this.allInButton = null;
         }
+        if (this.nextRoundButton) {
+            this.nextRoundButton.off('pointerdown');
+            this.nextRoundButton.destroy();
+            this.nextRoundButton = null;
+        }
         if (this.menuGame) {
             this.menuGame.off('pointerdown');
             this.menuGame.destroy();
@@ -1516,151 +1565,32 @@ export class AIBotScene extends Phaser.Scene {
             this.chatButton.destroy();
             this.chatButton = null;
         }
-        if (this.nextRoundButton) {
-            this.nextRoundButton.off('pointerdown');
-            this.nextRoundButton.destroy();
-            this.nextRoundButton = null;
-        }
-
-        // Remove all event listeners from text objects
-        if (this.foldButtonText) {
-            this.foldButtonText.destroy();
-            this.foldButtonText = null;
-        }
-        if (this.callButtonText) {
-            this.callButtonText.destroy();
-            this.callButtonText = null;
-        }
-        if (this.raiseButtonText) {
-            this.raiseButtonText.destroy();
-            this.raiseButtonText = null;
-        }
-        if (this.allInButtonText) {
-            this.allInButtonText.destroy();
-            this.allInButtonText = null;
-        }
-        if (this.nextRoundButtonText) {
-            this.nextRoundButtonText.destroy();
-            this.nextRoundButtonText = null;
-        }
-        if (this.foldButtonValueX) {
-            this.foldButtonValueX.destroy();
-            this.foldButtonValueX = null;
-        }
-
-        // Clean up UI elements
-        if (this.chipBankText) {
-            this.chipBankText.destroy();
-            this.chipBankText = null;
-        }
-        if (this.phaseText) {
-            this.phaseText.destroy();
-            this.phaseText = null;
-        }
-        if (this.raiseCounterText) {
-            this.raiseCounterText.destroy();
-            this.raiseCounterText = null;
-        }
-        if (this.handRank) {
-            this.handRank.destroy();
-            this.handRank = null;
-        }
-
-        // Clean up background images
-        if (this.background) {
-            this.background.destroy();
-            this.background = null;
-        }
-        if (this.gamingTable) {
-            this.gamingTable.destroy();
-            this.gamingTable = null;
-        }
-        if (this.underline) {
-            this.underline.destroy();
-            this.underline = null;
-        }
-        if (this.chipBank) {
-            this.chipBank.destroy();
-            this.chipBank = null;
-        }
-        if (this.gameInfo) {
-            this.gameInfo.destroy();
-            this.gameInfo = null;
-        }
-        if (this.aiInfo) {
-            this.aiInfo.destroy();
-            this.aiInfo = null;
-        }
-
-        // Clean up player elements
-        if (this.humanPlayer && this.humanPlayer.elements) {
-            Object.values(this.humanPlayer.elements).forEach(element => {
-                if (element && element.destroy) {
-                    element.destroy();
-                }
-            });
-            this.humanPlayer = null;
-        }
-
-        this.aiPlayers.forEach(aiPlayer => {
-            if (aiPlayer.elements) {
-                Object.values(aiPlayer.elements).forEach(element => {
-                    if (element && element.destroy) {
-                        element.destroy();
-                    }
-                });
-            }
-        });
-        this.aiPlayers = [];
-
-        // Clean up community cards container
-        if (this.communityCardsContainer) {
-            this.communityCardsContainer.destroy();
-            this.communityCardsContainer = null;
-        }
-
+        
         // Clean up managers
-        if (this.cardManager) {
-            this.cardManager.cleanup();
-            this.cardManager = null;
-        }
-        if (this.uiManager) {
-            this.uiManager.cleanup();
-            this.uiManager = null;
-        }
         if (this.buttonManager) {
+            this.buttonManager.removeAllButtons();
             this.buttonManager = null;
         }
         if (this.playerManager) {
             this.playerManager = null;
         }
+        if (this.cardManager) {
+            this.cardManager = null;
+        }
+        if (this.uiManager) {
+            this.uiManager = null;
+        }
+        
+        // Clean up AI manager
         if (this.aiManager) {
             this.aiManager = null;
         }
-
-        // Remove all loaded avatar textures
-        for (let i = 1; i <= 5; i++) {
-            const avatarKey = `avatar${i}`;
-            if (this.textures.exists(avatarKey)) {
-                this.textures.remove(avatarKey);
-            }
-        }
-
-        // Clear all timers and intervals
-        if (this.aiTimer) {
-            clearTimeout(this.aiTimer);
-            this.aiTimer = null;
-        }
-
-        // Reset game state
-        this.gameState = null;
-
-        // Remove all scene events
-        this.events.removeAllListeners();
         
-        // Clear any remaining game objects
-        this.children.removeAll(true);
-
+        // Clear game state
+        this.gameState = null;
+        this.aiPlayers = [];
+        this.humanPlayer = null;
+        
         console.log(`AIBotScene: Cleanup completed for scene ${this.scene.key}`);
     }
 } 
