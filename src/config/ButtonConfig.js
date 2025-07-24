@@ -188,6 +188,12 @@ export const ButtonConfig = {
             action: 'chip',
             scale: 0.35,
         },
+        shop: {
+            pattern: 'special',
+            key: 'bonus_button', // Reuse bonus button asset for shop
+            action: 'shop',
+            scale: 0.4,
+        },
 
 
     },

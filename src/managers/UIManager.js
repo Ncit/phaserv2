@@ -5,6 +5,7 @@ import { eventManager } from '../utils/EventManager.js';
 import { ButtonManager } from './ButtonManager.js';
 import { PlayerManager } from './PlayerManager.js';
 import { CardManager } from './CardManager.js';
+import { friendsInvite } from '../scripts/vklogic.js';
 
 export class UIManager {
     constructor(scene) {
@@ -308,7 +309,8 @@ export class UIManager {
                 break;
                 
             case 'friends':
-                // Open friends list
+                // Open VK friends dialog
+                this.openVKFriendsDialog();
                 break;
                 
             case 'stats':
@@ -332,6 +334,43 @@ export class UIManager {
         if (this.isDebug) {
             console.log(`UIManager: Handled UI action '${action}'`);
         }
+    }
+
+    // Open VK friends dialog
+    openVKFriendsDialog() {
+        if (this.isDebug) {
+            console.log('UIManager: Opening VK friends dialog');
+        }
+        
+        try {
+            // Call the VK friends invitation function
+            friendsInvite();
+        } catch (error) {
+            console.error('UIManager: Error opening VK friends dialog:', error);
+            
+            // Fallback for non-VK environments
+            if (this.isDebug) {
+                console.log('UIManager: VK not available, showing debug message');
+                this.showDebugMessage('VK Friends dialog would open here');
+            }
+        }
+    }
+
+    // Show debug message (for non-VK environments)
+    showDebugMessage(message) {
+        const debugText = this.scene.add.text(640, 360, message, {
+            fontFamily: 'Arial',
+            fontSize: '18px',
+            fill: '#ffffff',
+            backgroundColor: '#000000',
+            padding: { x: 10, y: 5 }
+        });
+        debugText.setOrigin(0.5);
+        
+        // Remove after 3 seconds
+        this.scene.time.delayedCall(3000, () => {
+            debugText.destroy();
+        });
     }
 
     // Start a poker game (deal cards to active players)

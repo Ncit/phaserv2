@@ -1,6 +1,7 @@
 import { ButtonManager } from '../managers/ButtonManager.js';
 import { UIManager } from '../managers/UIManager.js';
 import { SettingsManager } from '../managers/SettingsManager.js';
+import { ShopManager } from '../managers/ShopManager.js';
 import { GameConfig } from '../config/GameConfig.js';
 import { ButtonConfig } from '../config/ButtonConfig.js';
 import { AssetConfig } from '../config/AssetConfig.js';
@@ -62,6 +63,7 @@ export class LobbyScene extends Phaser.Scene {
         this.buttonManager = new ButtonManager(this);
         this.uiManager = new UIManager(this);
         this.settingsManager = new SettingsManager(this);
+        this.shopManager = new ShopManager(this);
 
         // Create background elements (preserved exactly)
         this.background = this.add.image(640, 360, 'background');
@@ -75,14 +77,14 @@ export class LobbyScene extends Phaser.Scene {
         this.settingsButton = this.buttonManager.createButton('settings', 120, 660);
         this.friendsButton = this.buttonManager.createButton('friends', 180, 660);
         this.statsButton = this.buttonManager.createButton('stats', 240, 660);
-        this.planetIcon = this.add.image(300, 660, 'planet_icon');
+        this.planetIcon = this.add.image(360, 660, 'planet_icon');
 
         // Create text elements (preserved exactly)
-        this.activePlayers = this.add.text(320, 640, 'Активных участников:', {
+        this.activePlayers = this.add.text(380, 640, 'Активных участников:', {
             fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif',
             fontSize: 17,
         });
-        this.activePlayersCount = this.add.text(320, 660, '12011', {
+        this.activePlayersCount = this.add.text(380, 660, '12011', {
             fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif',
             fontSize: 19,
         });
@@ -145,6 +147,20 @@ export class LobbyScene extends Phaser.Scene {
         this.settingsButton.on('pointerdown', () => {
             this.settingsManager.showSettings();
         });
+
+        // Add shop button event listener
+        this.bonusButton.on('pointerdown', () => {
+            // this.shopManager.toggleShop();
+        });
+
+        // Listen for purchase completion events
+        this.events.on('purchaseCompleted', (purchaseResult) => {
+            this.updateChipDisplay();
+            console.log('LobbyScene: Purchase completed:', purchaseResult);
+        });
+
+        // Update chip display with real data
+        this.updateChipDisplay();
     }
 
     createButtons() {
@@ -266,4 +282,15 @@ export class LobbyScene extends Phaser.Scene {
     }
 
     update() {}
+
+    // Update chip display with real user data
+    updateChipDisplay() {
+        import('../scripts/vklogic.js').then(({ getUserChips, formatChips }) => {
+            const currentChips = getUserChips();
+            this.chipCount.setText(formatChips(currentChips));
+        }).catch(() => {
+            // Fallback if VK logic is not available
+            this.chipCount.setText('20000');
+        });
+    }
 } 

@@ -176,7 +176,11 @@ export class ButtonManager {
                     break;
                     
                 case 'bonus':
-                    eventManager.emit('ui_action', 'bonus');
+                    eventManager.emit('ui_action', 'shop'); //todo chnage to bonus after
+                    break;
+                    
+                case 'shop':
+                    eventManager.emit('ui_action', 'shop');
                     break;
                     
                 default:
@@ -207,6 +211,15 @@ export class ButtonManager {
             this.scene.settingsManager.showSettings();
         } else {
             console.warn('ButtonManager: SettingsManager not available in scene');
+        }
+    }
+
+    // Handle shop button click
+    handleShop() {
+        if (this.scene.shopManager) {
+            this.scene.shopManager.toggleShop();
+        } else {
+            console.warn('ButtonManager: ShopManager not available in scene');
         }
     }
 
