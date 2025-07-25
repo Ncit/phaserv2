@@ -641,10 +641,10 @@ export class FastGameScene extends Phaser.Scene {
         this.statisticsManager.recordGameStart();
         
         // Deal cards to all active players
-        this.dealCardsToPlayers();
+        this.dealHoleCards();
         
-        // Start the first betting round
-        this.startBettingRound();
+        // Update UI to start the first betting round
+        this.updateUI();
     }
 
     handleNewHand() {
@@ -1003,80 +1003,74 @@ export class FastGameScene extends Phaser.Scene {
         
         console.log('FastGameScene: Last action:', lastAction);
         
-        // Update UI based on action
+        // Update UI based on action (don't send actions to server)
         switch (lastAction.action) {
             case 'fold':
-                this.handlePlayerFold(lastAction);
+                this.updateUIForFold(lastAction);
                 break;
             case 'call':
             case 'check':
-                this.handlePlayerCall(lastAction);
+                this.updateUIForCall(lastAction);
                 break;
             case 'raise':
             case 'allIn':
-                this.handlePlayerRaise(lastAction);
+                this.updateUIForRaise(lastAction);
                 break;
         }
     }
 
-    handlePlayerFold(action) {
-        console.log('FastGameScene: Player folded');
+    // UI update methods that don't send actions to server
+    updateUIForFold(action) {
+        console.log('FastGameScene: Updating UI for fold action');
         
-        // Track player action for analytics
-        if (window.analyticsManager) {
-            window.analyticsManager.trackPlayerAction('fold', 'fast_game');
+        // Only track analytics if this is the current player's action
+        if (action.playerId === this.myPlayerId) {
+            // Track player action for analytics
+            if (window.analyticsManager) {
+                window.analyticsManager.trackPlayerAction('fold', 'fast_game');
+            }
+            
+            // Record statistics
+            this.statisticsManager.recordAction('fold');
         }
-        
-        // Record statistics
-        this.statisticsManager.recordAction('fold');
-        
-        // Send fold action to server
-        this.networkManager.sendAction('fold');
-        
-        // Disable player actions
-        this.disablePlayerActions();
     }
 
-    handlePlayerCall() {
-        console.log('FastGameScene: Player called');
+    updateUIForCall(action) {
+        console.log('FastGameScene: Updating UI for call action');
         
         const myPlayer = this.networkManager.getMyPlayer();
         const callAmount = this.gameState.currentBet - (myPlayer ? myPlayer.currentBet : 0);
         
-        // Track player action for analytics
-        if (window.analyticsManager) {
-            window.analyticsManager.trackPlayerAction('call', 'fast_game', callAmount);
+        // Only track analytics if this is the current player's action
+        if (action.playerId === this.myPlayerId) {
+            // Track player action for analytics
+            if (window.analyticsManager) {
+                window.analyticsManager.trackPlayerAction('call', 'fast_game', callAmount);
+            }
+            
+            // Record statistics
+            this.statisticsManager.recordAction('call');
         }
-        
-        // Record statistics
-        this.statisticsManager.recordAction('call');
-        
-        // Send call action to server
-        this.networkManager.sendAction('call');
-        
-        // Disable player actions
-        this.disablePlayerActions();
     }
 
-    handlePlayerRaise() {
-        console.log('FastGameScene: Player raised');
+    updateUIForRaise(action) {
+        console.log('FastGameScene: Updating UI for raise action');
         
-        const raiseAmount = this.gameState.minBet;
+        const raiseAmount = action.amount || this.gameState.minBet;
         
-        // Track player action for analytics
-        if (window.analyticsManager) {
-            window.analyticsManager.trackPlayerAction('raise', 'fast_game', raiseAmount);
+        // Only track analytics if this is the current player's action
+        if (action.playerId === this.myPlayerId) {
+            // Track player action for analytics
+            if (window.analyticsManager) {
+                window.analyticsManager.trackPlayerAction('raise', 'fast_game', raiseAmount);
+            }
+            
+            // Record statistics
+            this.statisticsManager.recordAction('raise');
         }
-        
-        // Record statistics
-        this.statisticsManager.recordAction('raise');
-        
-        // Send raise action to server
-        this.networkManager.sendAction('raise', raiseAmount);
-        
-        // Disable player actions
-        this.disablePlayerActions();
     }
+
+
 
     updateUI() {
         // Add call stack protection to prevent infinite loops
@@ -1643,8 +1637,6 @@ export class FastGameScene extends Phaser.Scene {
     }
 
     disablePlayerActions() {
-        console.log('FastGameScene: disablePlayerActions called - stack trace:', new Error().stack);
-        
         // Disable action buttons
         this.foldButton.disableInteractive();
         this.callButton.disableInteractive();
@@ -1711,6 +1703,99 @@ export class FastGameScene extends Phaser.Scene {
             window.forceEnableButtons = () => this.forceEnableButtons();
             window.debugButtonStatus = () => this.debugButtonStatus();
             console.log('FastGameScene: Debug methods available: window.forceEnableButtons() and window.debugButtonStatus()');
+        }
+    }
+
+    handleFold() {
+        if (!this.networkManager.isMyTurn()) return;
+        if (this.gameState.phase === 'showdown') return;
+        
+        const myPlayer = this.networkManager.getMyPlayer();
+        if (myPlayer && myPlayer.isSpectator) {
+            console.log('FastGameScene: Spectators cannot make actions');
+            return;
+        }
+        
+        if (myPlayer && (myPlayer.folded || myPlayer.allIn)) {
+            console.log('FastGameScene: Player cannot act - folded or all-in');
+            return;
+        }
+        
+        try {
+            this.networkManager.sendPokerAction('fold');
+            this.disablePlayerActions();
+            
+            // Record fold action
+            if (this.statisticsManager) {
+                this.statisticsManager.recordAction('fold');
+            }
+        } catch (error) {
+            console.error('FastGameScene: Error sending fold action:', error);
+        }
+    }
+
+    handleCall() {
+        if (!this.networkManager.isMyTurn()) return;
+        if (this.gameState.phase === 'showdown') return;
+        
+        const myPlayer = this.networkManager.getMyPlayer();
+        if (myPlayer && myPlayer.isSpectator) {
+            console.log('FastGameScene: Spectators cannot make actions');
+            return;
+        }
+        
+        if (myPlayer && (myPlayer.folded || myPlayer.allIn)) {
+            console.log('FastGameScene: Player cannot act - folded or all-in');
+            return;
+        }
+        
+        try {
+            this.networkManager.sendPokerAction('call');
+            this.disablePlayerActions();
+            
+            // Record call action
+            if (this.statisticsManager) {
+                this.statisticsManager.recordAction('call');
+            }
+        } catch (error) {
+            console.error('FastGameScene: Error sending call action:', error);
+        }
+    }
+
+    handleRaise() {
+        if (!this.networkManager.isMyTurn()) return;
+        if (this.gameState.phase === 'showdown') return;
+        
+        const myPlayer = this.networkManager.getMyPlayer();
+        if (myPlayer && myPlayer.isSpectator) {
+            console.log('FastGameScene: Spectators cannot make actions');
+            return;
+        }
+        
+        if (myPlayer && (myPlayer.folded || myPlayer.allIn)) {
+            console.log('FastGameScene: Player cannot act - folded or all-in');
+            return;
+        }
+        
+        try {
+            // Calculate the total bet amount (pot's current bet + minimum raise)
+            const totalBetAmount = this.gameState.currentBet + this.gameState.minBet;
+            
+            console.log('FastGameScene: Raising to total amount:', {
+                potCurrentBet: this.gameState.currentBet,
+                minBet: this.gameState.minBet,
+                totalBetAmount: totalBetAmount
+            });
+            
+            this.networkManager.sendPokerAction('raise', totalBetAmount);
+            this.disablePlayerActions();
+            
+            // Record raise action
+            if (this.statisticsManager) {
+                this.statisticsManager.recordAction('raise');
+            }
+        } catch (error) {
+            console.error('FastGameScene: Error sending raise action:', error);
         }
     }
 
