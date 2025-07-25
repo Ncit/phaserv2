@@ -157,6 +157,11 @@ export const ButtonConfig = {
             key: 'stats_button',
             action: 'stats',
         },
+        leaderboard: {
+            pattern: 'control',
+            key: 'stats_button', // Reuse stats button asset for leaderboard
+            action: 'leaderboard',
+        },
 
         // Game interface buttons
         chat: {

@@ -4,6 +4,7 @@ import { FriendsGameScene } from './scenes/FriendsGameScene.js';
 import { AIBotScene } from './scenes/AIBotScene.js';
 import { FastGameScene } from './scenes/FastGameScene.js';
 import { StatisticsScene } from './scenes/StatisticsScene.js';
+import LeaderboardScene from './scenes/LeaderboardScene.js';
 import { StatisticsManager } from './managers/StatisticsManager.js';
 import { AnalyticsManager } from './managers/AnalyticsManager.js';
 import { enableGlobalNgrokHeaders } from './utils/NgrokUtils.js';
@@ -48,7 +49,7 @@ const config = {
     height: 720,
     backgroundColor: '#000000',
     pixelArt: false,
-    scene: [LoadingScene, LobbyScene, FriendsGameScene, AIBotScene, FastGameScene, StatisticsScene],
+    scene: [LoadingScene, LobbyScene, FriendsGameScene, AIBotScene, FastGameScene, StatisticsScene, LeaderboardScene],
     scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,

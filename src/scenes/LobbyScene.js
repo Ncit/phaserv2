@@ -77,6 +77,7 @@ export class LobbyScene extends Phaser.Scene {
         this.settingsButton = this.buttonManager.createButton('settings', 120, 660);
         this.friendsButton = this.buttonManager.createButton('friends', 180, 660);
         this.statsButton = this.buttonManager.createButton('stats', 240, 660);
+        this.leaderboardButton = this.buttonManager.createButton('leaderboard', 300, 660);
         this.planetIcon = this.add.image(360, 660, 'planet_icon');
 
         // Create text elements (preserved exactly)

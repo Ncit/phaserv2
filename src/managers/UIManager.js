@@ -359,6 +359,10 @@ export class UIManager {
                 // Navigate to statistics scene
                 this.scene.scene.start('StatisticsScene');
                 break;
+            case 'leaderboard':
+                // Navigate to leaderboard scene
+                this.scene.scene.start('LeaderboardScene');
+                break;
             case 'friends':
                 // Open VK friends dialog
                 this.openVKFriendsDialog();

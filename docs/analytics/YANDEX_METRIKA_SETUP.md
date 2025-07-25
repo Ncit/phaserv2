@@ -50,6 +50,40 @@ When deployed to a real domain:
 - **Real analytics data** is collected
 - **No CORS issues** on production domains
 
+## Common Console Messages
+
+### Expected Messages (Not Errors)
+
+**Topics API Warning (Development):**
+```
+AnalyticsManager: Topics API not available (expected in development): Attestation check for Topics on https://mc.yandex.com/ failed.
+```
+- **This is normal** - Topics API is a privacy feature not available in development
+- **Doesn't affect analytics** - Your events are still tracked
+- **Can be ignored** - This is expected behavior
+
+**Localhost Detection:**
+```
+AnalyticsManager: Running on localhost - Yandex Metrika disabled to avoid CORS issues
+AnalyticsManager: Events will be logged to console in debug mode
+```
+- **Expected in development** - Analytics disabled to prevent CORS errors
+- **Events still logged** - Check console for event tracking
+
+### Error Messages (Need Attention)
+
+**Configuration Error:**
+```
+AnalyticsManager: Yandex Metrika ID not configured. Please set your Metrika ID in AnalyticsConfig.js
+```
+- **Fix**: Set your Metrika ID in `AnalyticsConfig.js`
+
+**Initialization Error:**
+```
+AnalyticsManager: Failed to initialize Yandex Metrika: [error details]
+```
+- **Check**: Network connection and Metrika ID validity
+
 ## Tracked Events
 
 The analytics system automatically tracks the following events:
@@ -176,6 +210,12 @@ Once configured and deployed to production, you can view your analytics data in 
 - All data is anonymized
 
 ## Troubleshooting
+
+### Topics API Errors
+**"Attestation check for Topics on https://mc.yandex.com/ failed"**
+- **This is expected** in development environments
+- **Doesn't affect analytics** - Events are still tracked
+- **Can be ignored** - Topics API is a privacy feature not available in development
 
 ### CORS Errors on Localhost
 **This is expected behavior!** The system automatically detects localhost and disables Yandex Metrika to avoid CORS issues. Events are still logged to console for development.

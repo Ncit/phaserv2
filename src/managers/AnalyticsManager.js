@@ -31,7 +31,7 @@ export class AnalyticsManager {
                 return;
             }
 
-            // Create Yandex Metrika script
+            // Create Yandex Metrika script with error handling
             const script = document.createElement('script');
             script.type = 'text/javascript';
             script.innerHTML = `
@@ -41,7 +41,17 @@ export class AnalyticsManager {
                 k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
                 (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
                 
-                ym(${this.metrikaId}, "init", ${JSON.stringify(AnalyticsConfig.yandexMetrika.options)});
+                // Initialize with error handling for Topics API
+                try {
+                    ym(${this.metrikaId}, "init", ${JSON.stringify(AnalyticsConfig.yandexMetrika.options)});
+                } catch (error) {
+                    // Log Topics API errors as warnings (they're expected in development)
+                    if (error.message && error.message.includes('Topics')) {
+                        console.warn('AnalyticsManager: Topics API not available (expected in development):', error.message);
+                    } else {
+                        console.error('AnalyticsManager: Yandex Metrika initialization error:', error);
+                    }
+                }
             `;
             
             document.head.appendChild(script);
