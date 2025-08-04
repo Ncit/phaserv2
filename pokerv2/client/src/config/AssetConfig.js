@@ -82,7 +82,7 @@ export const AssetConfig = {
     // Media and branding assets
     media: {
         mediaPoker: { key: 'media_poker', path: 'assets/media_poker.png' },
-        winlineLogo: { key: 'winline_logo', path: 'assets/winline_logo.png' },
+        winlineLogo: { key: 'logo', path: 'assets/logo.png' },
         phaser: { key: 'phaser', path: 'assets/phaser.png' },
     },
 

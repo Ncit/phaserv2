@@ -96,7 +96,7 @@ pokerv2/
 - ✅ `top_bar_logo.png` - Top bar logo
 - ✅ `train_game.png` - AI bot button
 - ✅ `underline.png` - Underline
-- ✅ `winline_logo.png` - Winline logo
+- ✅ `logo.png` - Winline logo
 
 ### **Card Assets**
 - ✅ All 52 playing cards (4 suits × 13 values)
