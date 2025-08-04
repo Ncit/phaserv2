@@ -1,5 +1,6 @@
 import { EventManager } from '../utils/EventManager.js';
 import { createSocketOptionsWithNgrokHeaders } from '../utils/NgrokUtils.js';
+import { getEnvironment } from '../config/EnvironmentConfig.js';
 
 export class NetworkManager {
     constructor() {
@@ -7,7 +8,7 @@ export class NetworkManager {
         this.isConnected = false;
         this.gameId = null;
         this.playerId = null;
-        this.serverUrl = 'https://javelin-hopeful-goshawk.ngrok-free.app';
+        this.serverUrl = this.getServerUrl();
         this.eventManager = new EventManager();
         
         // Connection state
@@ -27,6 +28,18 @@ export class NetworkManager {
         this.setupEventListeners();
     }
 
+    getServerUrl() {
+        const environment = getEnvironment();
+        
+        switch (environment) {
+            case 'development':
+            case 'productionVK':
+            case 'productionTelegram':
+            default:
+                return 'https://nikmobdev.ru';
+        }
+    }
+
     setupEventListeners() {
         // Remove the circular reference - these listeners are not needed
         // as the socket events are handled directly in setupSocketListeners
@@ -40,15 +53,17 @@ export class NetworkManager {
                 // Import socket.io-client dynamically
                 import('https://cdn.socket.io/4.7.2/socket.io.esm.min.js')
                     .then(({ io }) => {
-                        const socketOptions = createSocketOptionsWithNgrokHeaders({
+                        // Use standard socket options since we're not using ngrok anymore
+                        const socketOptions = {
                             transports: ['websocket', 'polling'],
                             timeout: 20000,
                             reconnection: true,
                             reconnectionAttempts: this.maxReconnectAttempts,
-                            reconnectionDelay: this.reconnectDelay
-                        });
+                            reconnectionDelay: this.reconnectDelay,
+                            path: '/pokerserver/socket.io'
+                        };
                         
-                        this.socket = io(this.serverUrl, socketOptions);
+                        this.socket = io('https://nikmobdev.ru', socketOptions);
 
                         this.setupSocketListeners();
                         

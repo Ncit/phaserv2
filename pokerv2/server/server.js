@@ -19,6 +19,17 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
+// Handle /pokerserver route for nginx proxy
+app.use('/pokerserver', (req, res, next) => {
+    // Don't modify Socket.IO requests - let them pass through as-is
+    if (req.url.startsWith('/socket.io')) {
+        return next();
+    }
+    // Remove /pokerserver from the path for internal routing
+    req.url = req.url.replace('/pokerserver', '');
+    next();
+});
+
 // Single room game instance
 const game = new SingleRoomGame();
 

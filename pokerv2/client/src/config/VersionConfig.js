@@ -3,15 +3,15 @@
 
 export const VersionConfig = {
     // App version - will be updated by git hooks
-    version: '1.0.8',
+    version: '1.0.9',
     
     // Build information
-    buildDate: '2025-07-20',
-    buildTime: '22:01:03',
+    buildDate: '2025-08-04',
+    buildTime: '18:09:43',
     
     // Git information (will be populated by build process)
-    gitCommit: 'a270e40',
-    gitBranch: 'publish_website',
+    gitCommit: '6e4b605',
+    gitBranch: 'server_deploy_v2',
     
     // App metadata
     appName: 'Poker Game',
