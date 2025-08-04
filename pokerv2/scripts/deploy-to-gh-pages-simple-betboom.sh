@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Simple GitHub Pages Deployment Script
-# Deploys client files to gh-pages branch for GitHub Pages hosting
+# Simple GitHub Pages Deployment Script for BetBoom Repository
+# Deploys client files to gh-pages-betboom branch for GitHub Pages hosting
 
 set -e
 
@@ -32,20 +32,22 @@ log_error() {
 # Configuration
 CLIENT_DIR="pokerv2/client"
 GH_PAGES_BRANCH="gh-pages-betboom"
-COMMIT_MESSAGE="Deploy to GitHub Pages"
+COMMIT_MESSAGE="Deploy to GitHub Pages (BetBoom)"
+TARGET_REPO="git@github.com:Ncit/pokerv3.git"
+TARGET_REPO_NAME="Ncit/pokerv3"
 
 # Function to show usage
 show_usage() {
     echo "Usage: $0 [OPTIONS]"
     echo ""
     echo "Options:"
-    echo "  -m, --message MESSAGE    Custom commit message (default: 'Deploy to GitHub Pages')"
+    echo "  -m, --message MESSAGE    Custom commit message (default: 'Deploy to GitHub Pages (BetBoom)')"
     echo "  -f, --force              Force deployment even with uncommitted changes"
     echo "  -h, --help               Show this help message"
     echo ""
     echo "Examples:"
     echo "  $0                       # Deploy with default settings"
-    echo "  $0 -m 'Update client UI' # Deploy with custom message"
+    echo "  $0 -m 'Update BetBoom UI' # Deploy with custom message"
     echo "  $0 --force               # Force deployment"
 }
 
@@ -97,9 +99,11 @@ check_prerequisites() {
         exit 1
     fi
     
-    # Check if remote origin exists
-    if ! git remote get-url origin &> /dev/null; then
-        log_error "No remote origin configured"
+    # Check if we can access the target repository
+    log "Checking access to target repository: $TARGET_REPO"
+    if ! git ls-remote "$TARGET_REPO" &> /dev/null; then
+        log_error "Cannot access target repository: $TARGET_REPO"
+        log_error "Please ensure you have SSH access to the repository."
         exit 1
     fi
     
@@ -130,18 +134,18 @@ check_git_status() {
     fi
 }
 
-# Function to create or update gh-pages branch
+# Function to create or update gh-pages-betboom branch
 setup_gh_pages_branch() {
     log "Setting up gh-pages-betboom branch..."
     
     # Store current branch
     CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
     
-    # Check if gh-pages branch exists locally
+    # Check if gh-pages-betboom branch exists locally
     if git show-ref --verify --quiet refs/heads/$GH_PAGES_BRANCH; then
         log "gh-pages-betboom branch exists locally, checking it out..."
         git checkout $GH_PAGES_BRANCH
-        git pull origin $GH_PAGES_BRANCH 2>/dev/null || true
+        git pull "$TARGET_REPO" $GH_PAGES_BRANCH 2>/dev/null || true
     else
         log "gh-pages-betboom branch doesn't exist locally, creating it..."
         git checkout --orphan $GH_PAGES_BRANCH
@@ -166,9 +170,9 @@ deploy_files() {
     # Store the original directory path
     ORIGINAL_DIR=$(pwd)
     
-    # Check if we're in the gh-pages branch (which won't have pokerv2 directory)
+    # Check if we're in the gh-pages-betboom branch (which won't have pokerv2 directory)
     if [[ ! -d "$CLIENT_DIR" ]]; then
-        # We're in gh-pages branch, need to copy from the original branch
+        # We're in gh-pages-betboom branch, need to copy from the original branch
         log "Client directory not found in current branch, copying from original branch..."
         
         # Temporarily checkout the original branch to copy files
@@ -205,9 +209,9 @@ deploy_files() {
         git commit -m "$COMMIT_MESSAGE"
         log_success "Files committed to gh-pages-betboom branch"
         
-        # Push to remote
-        log "Pushing to remote repository..."
-        git push origin $GH_PAGES_BRANCH
+        # Push to target repository
+        log "Pushing to target repository: $TARGET_REPO"
+        git push "$TARGET_REPO" $GH_PAGES_BRANCH
         log_success "Deployment completed successfully!"
         
         # Show deployment URL
@@ -219,26 +223,18 @@ deploy_files() {
 
 # Function to show deployment URL
 show_deployment_url() {
-    # Get repository URL
-    local repo_url=$(git config --get remote.origin.url)
+    # Use the target repository name
+    local deployment_url="https://$TARGET_REPO_NAME.github.io"
     
-    if [[ $repo_url == *"github.com"* ]]; then
-        # Extract username and repository name
-        local repo_name=$(echo "$repo_url" | sed 's/.*github\.com[:/]\([^/]*\/[^/]*\)\.git.*/\1/')
-        local deployment_url="https://$repo_name.github.io"
-        
-        echo ""
-        echo "=========================================="
-        echo "🚀 DEPLOYMENT SUCCESSFUL!"
-        echo "=========================================="
-        echo "Your application is now available at:"
-        echo "   🌐 $deployment_url"
-        echo ""
-        echo "Note: It may take a few minutes for changes to appear."
-        echo "=========================================="
-    else
-        log_warning "Could not determine deployment URL. Please check your GitHub repository settings."
-    fi
+    echo ""
+    echo "=========================================="
+    echo "🚀 BETBOOM DEPLOYMENT SUCCESSFUL!"
+    echo "=========================================="
+    echo "Your BetBoom application is now available at:"
+    echo "   🌐 $deployment_url"
+    echo ""
+    echo "Note: It may take a few minutes for changes to appear."
+    echo "=========================================="
 }
 
 # Function to restore original branch
@@ -265,7 +261,7 @@ restore_branch() {
 
 # Main deployment function
 main() {
-    log "Starting GitHub Pages deployment..."
+    log "Starting BetBoom GitHub Pages deployment..."
     echo ""
     
     # Parse command line arguments
@@ -284,7 +280,7 @@ main() {
     # Restore original branch
     restore_branch
     
-    log_success "Deployment process completed!"
+    log_success "BetBoom deployment process completed!"
 }
 
 # Run main function with all arguments
