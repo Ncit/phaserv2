@@ -31,6 +31,7 @@ export class NetworkManager {
         
         switch (environment) {
             case 'development':
+                return 'http://localhost:3000';
             case 'productionVK':
             case 'productionTelegram':
             default:
@@ -58,11 +59,13 @@ export class NetworkManager {
                     .then(({ io }) => {
                         const socketOptions = {
                             transports: ['websocket', 'polling'],
-                            timeout: 20000,
+                            timeout: 30000,
                             reconnection: true,
                             reconnectionAttempts: this.maxReconnectAttempts,
                             reconnectionDelay: this.reconnectDelay,
-                            path: '/pokerserver/socket.io'
+                            path: '/pokerserver/socket.io',
+                            forceNew: true,
+                            autoConnect: true
                         };
                         
                         console.log('NetworkManager: Connecting to server:', {
@@ -71,6 +74,15 @@ export class NetworkManager {
                         });
                         
                         this.socket = io(this.serverUrl, socketOptions);
+
+                        // Add debugging for transport changes
+                        this.socket.on('upgrade', () => {
+                            console.log('NetworkManager: Transport upgraded to WebSocket');
+                        });
+
+                        this.socket.on('upgradeError', (error) => {
+                            console.error('NetworkManager: Transport upgrade failed:', error);
+                        });
 
                         this.setupSocketListeners();
                         
