@@ -10,12 +10,63 @@ const server = http.createServer(app);
 const io = socketIo(server, {
     cors: {
         origin: "*",
-        methods: ["GET", "POST"]
+        methods: ["GET", "POST", "OPTIONS"],
+        allowedHeaders: ["Content-Type", "X-Requested-With", "X-VK-Platform", "X-VK-WebView"],
+        credentials: false
+    },
+    allowEIO3: true,
+    transports: ['polling', 'websocket'],
+    pingTimeout: 60000,
+    pingInterval: 25000,
+    upgradeTimeout: 30000,
+    maxHttpBufferSize: 1e6,
+    allowRequest: (req, callback) => {
+        // Allow all requests, but log VK WebView requests
+        const userAgent = req.headers['user-agent'] || '';
+        const isVKWebView = userAgent.includes('wv') && userAgent.includes('Android');
+        
+        if (isVKWebView) {
+            console.log('🔧 Server: VK Android WebView request detected:', {
+                url: req.url,
+                headers: req.headers,
+                userAgent: userAgent
+            });
+        }
+        
+        callback(null, true);
     }
 });
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: "*",
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "X-Requested-With", "X-VK-Platform", "X-VK-WebView"],
+    credentials: false
+}));
+
+// VK WebView specific middleware
+app.use((req, res, next) => {
+    const userAgent = req.headers['user-agent'] || '';
+    const isVKWebView = userAgent.includes('wv') && userAgent.includes('Android');
+    
+    if (isVKWebView) {
+        console.log('🔧 Server: VK WebView request:', {
+            method: req.method,
+            url: req.url,
+            headers: req.headers
+        });
+        
+        // Add VK-specific headers
+        res.setHeader('X-VK-Supported', 'true');
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Requested-With, X-VK-Platform, X-VK-WebView');
+    }
+    
+    next();
+});
+
 app.use(express.json());
 app.use(express.static('public'));
 
@@ -28,6 +79,31 @@ app.use('/pokerserver', (req, res, next) => {
     // Remove /pokerserver from the path for internal routing
     req.url = req.url.replace('/pokerserver', '');
     next();
+});
+
+// VK WebView test endpoint
+app.get('/pokerserver/vk-test', (req, res) => {
+    const userAgent = req.headers['user-agent'] || '';
+    const isVKWebView = userAgent.includes('wv') && userAgent.includes('Android');
+    
+    res.json({
+        status: 'ok',
+        message: 'VK WebView test endpoint',
+        isVKWebView: isVKWebView,
+        userAgent: userAgent,
+        headers: req.headers,
+        timestamp: new Date().toISOString()
+    });
+});
+
+// Socket.IO endpoint test
+app.get('/pokerserver/socket-test', (req, res) => {
+    res.json({
+        status: 'ok',
+        message: 'Socket.IO endpoint accessible',
+        socketIO: true,
+        timestamp: new Date().toISOString()
+    });
 });
 
 // Single room game instance
