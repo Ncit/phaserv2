@@ -20,6 +20,7 @@ const io = socketIo(server, {
     pingInterval: 25000,
     upgradeTimeout: 30000,
     maxHttpBufferSize: 1e6,
+    path: '/pokerserver/socket.io',
     allowRequest: (req, callback) => {
         // Allow all requests
         callback(null, true);
@@ -41,6 +42,7 @@ app.use(express.static('public'));
 app.use('/pokerserver', (req, res, next) => {
     // Don't modify Socket.IO requests - let them pass through as-is
     if (req.url.startsWith('/socket.io')) {
+        console.log('Socket.IO request:', req.method, req.url);
         return next();
     }
     // Remove /pokerserver from the path for internal routing
@@ -62,6 +64,19 @@ app.get('/pokerserver/socket-test', (req, res) => {
 
 // Single room game instance
 const game = new SingleRoomGame();
+
+// Socket.IO debugging
+io.engine.on('connection_error', (err) => {
+    console.error('Socket.IO connection error:', err);
+});
+
+io.engine.on('initial_headers', (headers, req) => {
+    console.log('Socket.IO initial headers:', headers);
+});
+
+io.engine.on('headers', (headers, req) => {
+    console.log('Socket.IO headers:', headers);
+});
 
 // Socket.IO connection handling
 io.on('connection', (socket) => {
