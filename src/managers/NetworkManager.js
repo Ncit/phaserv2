@@ -1,7 +1,6 @@
 import { EventManager } from '../utils/EventManager.js';
-
+import { createSocketOptionsWithNgrokHeaders } from '../utils/NgrokUtils.js';
 import { getEnvironment } from '../config/EnvironmentConfig.js';
-import debugManager from './DebugManager.js';
 
 export class NetworkManager {
     constructor() {
@@ -21,7 +20,10 @@ export class NetworkManager {
         this.gameState = null;
         this.players = [];
         
-
+        // Ngrok header for all requests
+        this.ngrokHeaders = {
+            'ngrok-skip-browser-warning': '69420'
+        };
         
         this.setupEventListeners();
     }
@@ -29,20 +31,8 @@ export class NetworkManager {
     getServerUrl() {
         const environment = getEnvironment();
         
-        console.log('NetworkManager: Current environment:', environment);
-        console.log('NetworkManager: Hostname:', window.location.hostname);
-        
-        // Force development mode if running locally
-        if (window.location.hostname === 'localhost' || 
-            window.location.hostname === '127.0.0.1' ||
-            window.location.hostname.includes('localhost')) {
-            console.log('NetworkManager: Forcing development mode for localhost');
-            return 'http://localhost:3000';
-        }
-        
         switch (environment) {
             case 'development':
-                return 'http://localhost:3000';
             case 'productionVK':
             case 'productionTelegram':
             default:
@@ -60,40 +50,20 @@ export class NetworkManager {
             try {
                 console.log('NetworkManager: Connecting to server...');
                 
-                // Debug: Start connection timer
-                if (debugManager.isDebugEnabled()) {
-                    debugManager.startTimer('network_connection');
-                }
-                
                 // Import socket.io-client dynamically
                 import('https://cdn.socket.io/4.7.2/socket.io.esm.min.js')
                     .then(({ io }) => {
+                        // Use standard socket options since we're not using ngrok anymore
                         const socketOptions = {
                             transports: ['websocket', 'polling'],
-                            timeout: 30000,
+                            timeout: 20000,
                             reconnection: true,
                             reconnectionAttempts: this.maxReconnectAttempts,
                             reconnectionDelay: this.reconnectDelay,
-                            path: '/pokerserver/socket.io',
-                            forceNew: true,
-                            autoConnect: true
+                            path: '/pokerserver/socket.io'
                         };
                         
-                        console.log('NetworkManager: Connecting to server:', {
-                            serverUrl: this.serverUrl,
-                            socketOptions: socketOptions
-                        });
-                        
-                        this.socket = io(this.serverUrl, socketOptions);
-
-                        // Add debugging for transport changes
-                        this.socket.on('upgrade', () => {
-                            console.log('NetworkManager: Transport upgraded to WebSocket');
-                        });
-
-                        this.socket.on('upgradeError', (error) => {
-                            console.error('NetworkManager: Transport upgrade failed:', error);
-                        });
+                        this.socket = io('https://nikmobdev.ru', socketOptions);
 
                         this.setupSocketListeners();
                         
@@ -101,79 +71,29 @@ export class NetworkManager {
                             console.log('NetworkManager: Connected to server');
                             this.isConnected = true;
                             this.connectionAttempts = 0;
-                            
-                            // Debug: End connection timer and log success
-                            if (debugManager.isDebugEnabled()) {
-                                const duration = debugManager.endTimer('network_connection');
-                                debugManager.logNetworkRequest({
-                                    type: 'websocket',
-                                    event: 'connect',
-                                    status: 'success',
-                                    duration: duration,
-                                    timestamp: Date.now()
-                                });
-                            }
-                            
                             resolve();
                         });
 
                         this.socket.on('connect_error', (error) => {
                             console.error('NetworkManager: Connection error:', error);
-                            console.error('NetworkManager: Error details:', {
-                                message: error.message,
-                                description: error.description,
-                                type: error.type,
-                                context: error.context
-                            });
-                            
                             this.isConnected = false;
-                            
-                            // Debug: Log connection error
-                            if (debugManager.isDebugEnabled()) {
-                                debugManager.endTimer('network_connection');
-                                debugManager.logError('Socket.IO Connection Error', error);
-                            }
-                            
                             reject(error);
                         });
 
                         this.socket.on('disconnect', (reason) => {
                             console.log('NetworkManager: Disconnected from server:', reason);
                             this.isConnected = false;
-                            
-                            // Debug: Log disconnection
-                            if (debugManager.isDebugEnabled()) {
-                                debugManager.logNetworkRequest({
-                                    type: 'websocket',
-                                    event: 'disconnect',
-                                    reason: reason,
-                                    timestamp: Date.now()
-                                });
-                            }
-                            
                             this.eventManager.emit('disconnected', { reason });
                         });
 
                     })
                     .catch(error => {
                         console.error('NetworkManager: Failed to load socket.io:', error);
-                        
-                        // Debug: Log socket.io loading error
-                        if (debugManager.isDebugEnabled()) {
-                            debugManager.logError('Socket.IO Loading Error', error);
-                        }
-                        
                         reject(error);
                     });
 
             } catch (error) {
                 console.error('NetworkManager: Connection setup error:', error);
-                
-                // Debug: Log connection setup error
-                if (debugManager.isDebugEnabled()) {
-                    debugManager.logError('NetworkManager Setup Error', error);
-                }
-                
                 reject(error);
             }
         });
@@ -185,18 +105,6 @@ export class NetworkManager {
         // Game events
         this.socket.on('gameJoined', (data) => {
             console.log('NetworkManager: Game joined:', data);
-            
-            // Debug: Log game joined event
-            if (debugManager.isDebugEnabled()) {
-                debugManager.logNetworkRequest({
-                    type: 'websocket',
-                    event: 'gameJoined',
-                    data: data,
-                    direction: 'incoming',
-                    timestamp: Date.now()
-                });
-            }
-            
             this.gameId = data.gameId;
             this.playerId = data.playerId;
             this.gameState = data.gameState;
@@ -211,29 +119,9 @@ export class NetworkManager {
         this.socket.on('gameStateUpdate', (data) => {
             console.log('NetworkManager: Game state update:', data);
             
-            // Debug: Log game state update
-            if (debugManager.isDebugEnabled()) {
-                debugManager.logNetworkRequest({
-                    type: 'websocket',
-                    event: 'gameStateUpdate',
-                    data: data,
-                    direction: 'incoming',
-                    timestamp: Date.now()
-                });
-            }
-            
             // Validate game state data
             if (!data || !data.gameState) {
                 console.warn('NetworkManager: Received invalid gameStateUpdate data:', data);
-                
-                // Debug: Log invalid data warning
-                if (debugManager.isDebugEnabled()) {
-                    debugManager.logError('Invalid Game State Data', {
-                        received: data,
-                        expected: 'gameState object'
-                    });
-                }
-                
                 return;
             }
             
@@ -357,18 +245,6 @@ export class NetworkManager {
         }
 
         console.log('NetworkManager: Sending poker action:', { action, amount });
-        
-        // Debug: Log outgoing poker action
-        if (debugManager.isDebugEnabled()) {
-            debugManager.logNetworkRequest({
-                type: 'websocket',
-                event: 'pokerAction',
-                data: { action, amount },
-                direction: 'outgoing',
-                timestamp: Date.now()
-            });
-        }
-        
         this.socket.emit('pokerAction', { action, amount });
     }
 
@@ -491,6 +367,9 @@ export class NetworkManager {
         this.eventManager.cleanup();
     }
 
-
-
+    // Utility method to make fetch requests with ngrok headers
+    async fetchWithNgrokHeaders(url, options = {}) {
+        const { fetchWithNgrokHeaders } = await import('../utils/NgrokUtils.js');
+        return fetchWithNgrokHeaders(url, options);
+    }
 } 

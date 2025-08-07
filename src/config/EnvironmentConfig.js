@@ -13,6 +13,7 @@ class EnvironmentConfig {
                     playerSelection: true,
                     debugLogging: true,
                     mockData: true,
+                    ngrokHeaders: true,
                     verboseErrors: true
                 },
                 api: {
@@ -27,6 +28,7 @@ class EnvironmentConfig {
                     playerSelection: false,
                     debugLogging: false,
                     mockData: false,
+                    ngrokHeaders: true,
                     verboseErrors: false
                 },
                 api: {
@@ -41,6 +43,7 @@ class EnvironmentConfig {
                     playerSelection: false,
                     debugLogging: false,
                     mockData: false,
+                    ngrokHeaders: true,
                     verboseErrors: false
                 },
                 api: {
@@ -128,7 +131,8 @@ class EnvironmentConfig {
         
         // Check for localhost/development
         if (window.location.hostname === 'localhost' || 
-            window.location.hostname === '127.0.0.1') {
+            window.location.hostname === '127.0.0.1' ||
+            window.location.hostname.includes('ngrok.io')) {
             return 'development';
         }
         
