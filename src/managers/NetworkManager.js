@@ -29,6 +29,17 @@ export class NetworkManager {
     getServerUrl() {
         const environment = getEnvironment();
         
+        console.log('NetworkManager: Current environment:', environment);
+        console.log('NetworkManager: Hostname:', window.location.hostname);
+        
+        // Force development mode if running locally
+        if (window.location.hostname === 'localhost' || 
+            window.location.hostname === '127.0.0.1' ||
+            window.location.hostname.includes('localhost')) {
+            console.log('NetworkManager: Forcing development mode for localhost');
+            return 'http://localhost:3000';
+        }
+        
         switch (environment) {
             case 'development':
                 return 'http://localhost:3000';
