@@ -200,7 +200,6 @@ In debug mode, a visual environment switcher appears in the top-right corner:
         playerSelection: true,
         debugLogging: true,
         mockData: true,
-        ngrokHeaders: true,
         verboseErrors: true
     }
 }
@@ -215,7 +214,6 @@ In debug mode, a visual environment switcher appears in the top-right corner:
         playerSelection: false,
         debugLogging: false,
         mockData: false,
-        ngrokHeaders: true,
         verboseErrors: false
     }
 }
@@ -230,7 +228,6 @@ In debug mode, a visual environment switcher appears in the top-right corner:
         playerSelection: false,
         debugLogging: false,
         mockData: false,
-        ngrokHeaders: true,
         verboseErrors: false
     }
 }
