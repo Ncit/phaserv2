@@ -47,7 +47,7 @@ To enable Eruda manually, add to your HTML:
 ### Basic Usage
 
 1. **Open Eruda Panel**
-   - Click the **🔧 ERUDA** button in the top-right corner of the screen
+   - Tap the Eruda icon in the bottom-right corner of the screen
    - The debugging panel will slide up from the bottom
 
 2. **Navigate Between Tabs**
