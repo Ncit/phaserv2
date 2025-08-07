@@ -59,22 +59,37 @@ export class NetworkManager {
                 // Import socket.io-client dynamically
                 import('https://cdn.socket.io/4.7.2/socket.io.esm.min.js')
                     .then(({ io }) => {
-                        // Use standard socket options since we're not using ngrok anymore
+                        // Enhanced socket options with better error handling
                         const socketOptions = {
-                            transports: ['websocket', 'polling'],
-                            timeout: 20000,
+                            transports: ['polling', 'websocket'], // Try polling first, then websocket
+                            timeout: 30000, // Increased timeout
                             reconnection: true,
                             reconnectionAttempts: this.maxReconnectAttempts,
                             reconnectionDelay: this.reconnectDelay,
-                            path: '/pokerserver/socket.io'
+                            reconnectionDelayMax: 5000,
+                            maxReconnectionAttempts: 5,
+                            path: '/pokerserver/socket.io',
+                            forceNew: true,
+                            autoConnect: true,
+                            // Additional options for better compatibility
+                            upgrade: true,
+                            rememberUpgrade: false,
+                            // Error handling
+                            rejectUnauthorized: false
                         };
+                        
+                        console.log('NetworkManager: Socket options:', socketOptions);
                         
                         this.socket = io('https://nikmobdev.ru', socketOptions);
 
                         this.setupSocketListeners();
                         
+                        // Enhanced connection handling
                         this.socket.on('connect', () => {
                             console.log('NetworkManager: Connected to server');
+                            console.log('NetworkManager: Transport:', this.socket.io.engine.transport.name);
+                            console.log('NetworkManager: Socket ID:', this.socket.id);
+                            
                             this.isConnected = true;
                             this.connectionAttempts = 0;
                             
@@ -85,6 +100,8 @@ export class NetworkManager {
                                     type: 'websocket',
                                     event: 'connect',
                                     status: 'success',
+                                    transport: this.socket.io.engine.transport.name,
+                                    socketId: this.socket.id,
                                     duration: duration,
                                     timestamp: Date.now()
                                 });
@@ -95,19 +112,45 @@ export class NetworkManager {
 
                         this.socket.on('connect_error', (error) => {
                             console.error('NetworkManager: Connection error:', error);
+                            console.error('NetworkManager: Error details:', {
+                                message: error.message,
+                                description: error.description,
+                                type: error.type,
+                                context: error.context
+                            });
+                            
                             this.isConnected = false;
+                            this.connectionAttempts++;
                             
                             // Debug: Log connection error
                             if (debugManager.isDebugEnabled()) {
                                 debugManager.endTimer('network_connection');
-                                debugManager.logError('Socket.IO Connection Error', error);
+                                debugManager.logError('Socket.IO Connection Error', {
+                                    error: error,
+                                    attempt: this.connectionAttempts,
+                                    maxAttempts: this.maxReconnectAttempts
+                                });
                             }
                             
-                            reject(error);
+                            // Try fallback transport if websocket fails
+                            if (this.connectionAttempts === 1 && this.socket.io.engine.transport.name === 'websocket') {
+                                console.log('NetworkManager: WebSocket failed, trying polling fallback...');
+                                this.socket.io.engine.transport.name = 'polling';
+                                // Don't reject yet, let reconnection handle it
+                                return;
+                            }
+                            
+                            // If we've exhausted attempts, reject
+                            if (this.connectionAttempts >= this.maxReconnectAttempts) {
+                                console.error('NetworkManager: Max connection attempts reached');
+                                reject(error);
+                            }
                         });
 
                         this.socket.on('disconnect', (reason) => {
                             console.log('NetworkManager: Disconnected from server:', reason);
+                            console.log('NetworkManager: Transport at disconnect:', this.socket.io.engine.transport.name);
+                            
                             this.isConnected = false;
                             
                             // Debug: Log disconnection
@@ -116,11 +159,46 @@ export class NetworkManager {
                                     type: 'websocket',
                                     event: 'disconnect',
                                     reason: reason,
+                                    transport: this.socket.io.engine.transport.name,
                                     timestamp: Date.now()
                                 });
                             }
                             
                             this.eventManager.emit('disconnected', { reason });
+                        });
+
+                        // Additional error handlers
+                        this.socket.on('error', (error) => {
+                            console.error('NetworkManager: Socket error:', error);
+                            if (debugManager.isDebugEnabled()) {
+                                debugManager.logError('Socket.IO Error', error);
+                            }
+                        });
+
+                        this.socket.on('reconnect', (attemptNumber) => {
+                            console.log('NetworkManager: Reconnected after', attemptNumber, 'attempts');
+                            if (debugManager.isDebugEnabled()) {
+                                debugManager.logNetworkRequest({
+                                    type: 'websocket',
+                                    event: 'reconnect',
+                                    attempts: attemptNumber,
+                                    timestamp: Date.now()
+                                });
+                            }
+                        });
+
+                        this.socket.on('reconnect_error', (error) => {
+                            console.error('NetworkManager: Reconnection error:', error);
+                            if (debugManager.isDebugEnabled()) {
+                                debugManager.logError('Socket.IO Reconnection Error', error);
+                            }
+                        });
+
+                        this.socket.on('reconnect_failed', () => {
+                            console.error('NetworkManager: Reconnection failed');
+                            if (debugManager.isDebugEnabled()) {
+                                debugManager.logError('Socket.IO Reconnection Failed', 'Max reconnection attempts reached');
+                            }
                         });
 
                     })

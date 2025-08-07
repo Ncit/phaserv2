@@ -9,11 +9,18 @@ Eruda is now **enabled by default** in all production environments, providing po
 ## 📱 Visual Indicators
 
 ### Debug Status Indicator
-When debug mode is active, you'll see a small indicator in the top-right corner:
-- **🐛 DEBUG** - Yellow indicator (development)
-- **🐛 DEBUG** - Red indicator (production)
+When debug mode is active, you'll see debug controls in the top-right corner:
 
-Click the indicator to toggle the Eruda debug panel.
+**🐛 DEBUG** - Debug status indicator (click for debug info)
+- Yellow indicator (development)
+- Red indicator (production)
+
+**🔧 ERUDA** - Eruda debug panel button (click to open/close debug panel)
+- Blue button (development)
+- Red button (production)
+
+Click the **🔧 ERUDA** button to toggle the Eruda debug panel.
+Click the **🐛 DEBUG** indicator to view debug status information in the console.
 
 ## 🔧 Production Debug Features
 
@@ -44,7 +51,7 @@ https://nikmobdev.ru/pokerserver/#debug
 ## 🎮 Using Debug Tools in Production
 
 ### 1. Open Debug Panel
-- Tap the **🐛 DEBUG** indicator in the top-right corner
+- Click the **🔧 ERUDA** button in the top-right corner
 - Or add `?debug=true` to the URL
 
 ### 2. Monitor Network Activity

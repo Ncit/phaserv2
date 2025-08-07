@@ -18,6 +18,10 @@ export class DebugStatusIndicator {
                 <span class="debug-icon">🐛</span>
                 <span class="debug-text">DEBUG</span>
             </div>
+            <button class="eruda-button" id="eruda-toggle-button">
+                <span class="eruda-icon">🔧</span>
+                <span>ERUDA</span>
+            </button>
         `;
         
         // Add styles
@@ -43,6 +47,10 @@ export class DebugStatusIndicator {
                 z-index: 9999;
                 pointer-events: none;
                 transition: opacity 0.3s ease;
+                display: flex;
+                flex-direction: column;
+                align-items: flex-end;
+                gap: 5px;
             }
             
             .debug-indicator {
@@ -57,6 +65,9 @@ export class DebugStatusIndicator {
                 gap: 4px;
                 box-shadow: 0 2px 4px rgba(0,0,0,0.2);
                 border: 1px solid rgba(255, 193, 7, 0.3);
+                pointer-events: auto;
+                cursor: pointer;
+                transition: all 0.2s ease;
             }
             
             .debug-icon {
@@ -68,15 +79,47 @@ export class DebugStatusIndicator {
                 letter-spacing: 0.5px;
             }
             
+            .eruda-button {
+                background: rgba(0, 123, 255, 0.9);
+                color: white;
+                padding: 6px 10px;
+                border-radius: 8px;
+                font-size: 11px;
+                font-weight: bold;
+                border: none;
+                cursor: pointer;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                transition: all 0.2s ease;
+                pointer-events: auto;
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                font-family: monospace;
+            }
+            
+            .eruda-button:hover {
+                background: rgba(0, 123, 255, 1);
+                transform: translateY(-1px);
+                box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+            }
+            
+            .eruda-button:active {
+                transform: translateY(0);
+                box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            }
+            
+            .eruda-icon {
+                font-size: 12px;
+            }
+            
             #debug-status-indicator.hidden {
                 opacity: 0;
                 pointer-events: none;
             }
             
-            #debug-status-indicator:hover {
-                background: rgba(255, 193, 7, 1);
-                cursor: pointer;
-                pointer-events: auto;
+            #debug-status-indicator.hidden .debug-indicator,
+            #debug-status-indicator.hidden .eruda-button {
+                pointer-events: none;
             }
             
             /* Production specific styling */
@@ -87,6 +130,16 @@ export class DebugStatusIndicator {
             }
             
             .production-debug .debug-indicator:hover {
+                background: rgba(220, 53, 69, 1);
+                transform: translateY(-1px);
+            }
+            
+            .production-debug .eruda-button {
+                background: rgba(220, 53, 69, 0.9);
+                border: 1px solid rgba(220, 53, 69, 0.3);
+            }
+            
+            .production-debug .eruda-button:hover {
                 background: rgba(220, 53, 69, 1);
             }
         `;
@@ -140,11 +193,24 @@ export class DebugStatusIndicator {
         }, 5000);
         
         // Add click handler to toggle Eruda
-        this.element.addEventListener('click', () => {
-            if (typeof eruda !== 'undefined') {
-                eruda.toggle();
-            }
-        });
+        const erudaButton = this.element.querySelector('#eruda-toggle-button');
+        if (erudaButton) {
+            erudaButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (typeof eruda !== 'undefined') {
+                    eruda.toggle();
+                }
+            });
+        }
+        
+        // Add click handler to debug indicator (for status info)
+        const debugIndicator = this.element.querySelector('.debug-indicator');
+        if (debugIndicator) {
+            debugIndicator.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.showDebugInfo();
+            });
+        }
         
         // Listen for debug status changes
         window.addEventListener('debugStatusChanged', () => {
@@ -164,6 +230,52 @@ export class DebugStatusIndicator {
             this.element.classList.add('hidden');
             this.isVisible = false;
         }
+    }
+    
+    // Show debug information
+    showDebugInfo() {
+        const info = {
+            debugEnabled: this.isVisible,
+            environment: window.location.hostname,
+            isProduction: !(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'),
+            erudaAvailable: typeof eruda !== 'undefined',
+            debugManagerAvailable: typeof window.debugManager !== 'undefined',
+            timestamp: new Date().toISOString()
+        };
+        
+        console.log('🐛 Debug Status:', info);
+        
+        // Show a brief notification
+        this.showNotification('Debug info logged to console', 2000);
+    }
+    
+    // Show notification
+    showNotification(message, duration = 3000) {
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 80px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            z-index: 10000;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        `;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }, duration);
     }
     
     // Public API
