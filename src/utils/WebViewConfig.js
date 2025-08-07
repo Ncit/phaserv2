@@ -46,13 +46,16 @@ class WebViewConfig {
         // 1. Fix WebSocket connection issues
         this.fixWebSocketConnections();
         
-        // 2. Handle mixed content issues
+        // 2. Fix XHR polling issues
+        this.fixXHRPolling();
+        
+        // 3. Handle mixed content issues
         this.handleMixedContent();
         
-        // 3. Apply WebView-specific optimizations
+        // 4. Apply WebView-specific optimizations
         this.applyWebViewOptimizations();
         
-        // 4. Setup error handling
+        // 5. Setup error handling
         this.setupErrorHandling();
     }
 
@@ -87,6 +90,57 @@ class WebViewConfig {
         window.WebSocket.OPEN = originalWebSocket.OPEN;
         window.WebSocket.CLOSING = originalWebSocket.CLOSING;
         window.WebSocket.CLOSED = originalWebSocket.CLOSED;
+    }
+
+    /**
+     * Fix XHR polling issues in VK Android WebView
+     */
+    fixXHRPolling() {
+        // Override XMLHttpRequest to handle VK Android WebView issues
+        const originalXHR = window.XMLHttpRequest;
+        
+        window.XMLHttpRequest = function() {
+            const xhr = new originalXHR();
+            
+            // Add VK-specific headers for polling requests
+            const originalOpen = xhr.open;
+            xhr.open = function(method, url, async, user, password) {
+                console.log('🔧 WebViewConfig: XHR request to:', url);
+                
+                // Add VK-specific headers for Socket.IO polling
+                if (url.includes('socket.io') && this.isVKAndroidWebView) {
+                    console.log('🔧 WebViewConfig: Adding VK headers to XHR request');
+                    
+                    // Override send to add headers
+                    const originalSend = xhr.send;
+                    xhr.send = function(data) {
+                        // Add VK-specific headers
+                        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                        xhr.setRequestHeader('X-VK-Platform', 'android');
+                        xhr.setRequestHeader('X-VK-WebView', 'true');
+                        
+                        // Add CORS headers
+                        xhr.setRequestHeader('Origin', window.location.origin);
+                        xhr.setRequestHeader('Referer', window.location.href);
+                        
+                        console.log('🔧 WebViewConfig: XHR request sent with VK headers');
+                        return originalSend.call(this, data);
+                    };
+                }
+                
+                return originalOpen.call(this, method, url, async, user, password);
+            };
+            
+            return xhr;
+        };
+        
+        // Copy static properties
+        Object.setPrototypeOf(window.XMLHttpRequest, originalXHR);
+        window.XMLHttpRequest.UNSENT = originalXHR.UNSENT;
+        window.XMLHttpRequest.OPENED = originalXHR.OPENED;
+        window.XMLHttpRequest.HEADERS_RECEIVED = originalXHR.HEADERS_RECEIVED;
+        window.XMLHttpRequest.LOADING = originalXHR.LOADING;
+        window.XMLHttpRequest.DONE = originalXHR.DONE;
     }
 
     /**
