@@ -34,7 +34,7 @@ docs/
 │   ├── AUTO_ALLIN_FEATURE.md   # Auto all-in feature
 │   ├── THREE_ALLIN_TEST.md     # Three all-in testing
 │   ├── TELEGRAM_README.md      # Telegram integration
-│   └── NGROK_HEADERS_README.md # Ngrok headers setup
+
 └── fixes/                       # Bug fixes and patches
     ├── RAISE_FIX.md
     ├── RAISE_BUTTON_DISABLE_FIX.md
@@ -62,7 +62,7 @@ docs/
 - **[Client Scripts](client/CLIENT_SCRIPTS_UPDATE.md)** - Client-side script management
 - **[Server Dependencies](server/DEPENDENCY_UPDATE_GUIDE.md)** - Server dependency management
 - **[Environment Setup](features/ui/ENVIRONMENT_SCRIPTS_README.md)** - Environment configuration
-- **[Ngrok Headers](features/NGROK_HEADERS_README.md)** - Development tunneling setup
+
 
 ### **🐛 Bug Fixes**
 - **[All Fixes](fixes/)** - Complete list of bug fixes and patches
@@ -105,7 +105,7 @@ Organized by feature category for easy navigation.
 - **Auto All-in Feature**: Automatic all-in functionality
 - **Three All-in Test**: Testing scenarios
 - **Telegram README**: Telegram platform integration
-- **Ngrok Headers**: Development tunneling setup
+
 
 ### **🐛 Bug Fixes**
 Comprehensive collection of bug fixes and patches.

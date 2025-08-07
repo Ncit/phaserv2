@@ -43,7 +43,6 @@ All test files in `client/tests/` had their import paths updated from `src/` to 
 - `tests/test-reconnection-button-fix.html`
 - `tests/test-telegram-integration.html`
 - `tests/test-showdown-no-rotation.html`
-- `tests/test-ngrok-headers.html`
 
 ### **2. Main Project Documentation (4 files updated)**
 - `README.md`

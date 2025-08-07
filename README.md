@@ -149,7 +149,7 @@ The game supports multiple environments with feature flags:
 - `playerSelection`: Debug player selection UI
 - `debugLogging`: Console logging and debugging
 - `mockData`: Mock data for testing
-- `ngrokHeaders`: Ngrok tunnel headers
+
 - `verboseErrors`: Detailed error messages
 
 ## 🧪 **Testing**

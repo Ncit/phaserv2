@@ -35,7 +35,7 @@ const telegramConfig = {
         playerSelection: false,
         debugLogging: false,
         mockData: false,
-        ngrokHeaders: true,
+
         verboseErrors: false
     }
 };

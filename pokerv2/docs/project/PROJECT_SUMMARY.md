@@ -56,7 +56,7 @@ pokerv2/
 - `playerSelection`: Debug player selection UI
 - `debugLogging`: Console logging and debugging
 - `mockData`: Mock data for testing
-- `ngrokHeaders`: Ngrok tunnel headers
+
 - `verboseErrors`: Detailed error messages
 
 ## 🎮 **Game Features**

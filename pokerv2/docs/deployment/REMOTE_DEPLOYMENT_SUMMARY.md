@@ -17,7 +17,6 @@
 ### 3. Client Configuration
 - ✅ Updated all environments to use remote server
 - ✅ Updated NetworkManager to use HTTPS
-- ✅ Removed ngrok dependency
 - ✅ Simplified environment configuration
 
 ## 🔧 Technical Details
@@ -40,7 +39,6 @@ Automatic HTTPS redirect via nginx
 ### Client Configuration
 ```javascript
 // All environments now use: https://nikmobdev.ru/pokerserver
-// Removed ngrok dependency
 // Simplified socket configuration
 ```
 

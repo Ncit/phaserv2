@@ -27,7 +27,7 @@ window.gameConfig = {
         playerSelection: true,
         debugLogging: true,
         mockData: true,
-        ngrokHeaders: true,
+
         verboseErrors: true
     },
     api: {
@@ -77,7 +77,6 @@ The system automatically detects the environment based on:
 
 ### Test
 - **Debug**: true
-- **Features**: Debug features enabled, no ngrok headers
 - **API**: Local test server
 - **Use case**: Automated testing
 
@@ -88,7 +87,7 @@ The new system uses feature flags for better control:
 - `playerSelection`: Show debug player selection screen
 - `debugLogging`: Enable console logging and debug information
 - `mockData`: Use mock data instead of real API calls
-- `ngrokHeaders`: Enable ngrok-specific headers
+
 - `verboseErrors`: Show detailed error messages
 
 ## Migration Steps

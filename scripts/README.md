@@ -139,7 +139,7 @@ The environment scripts manage these feature flags:
 | `playerSelection` | ✅ | ❌ | ❌ | Debug player selection UI |
 | `debugLogging` | ✅ | ❌ | ❌ | Console logging and debugging |
 | `mockData` | ✅ | ❌ | ❌ | Mock data for testing |
-| `ngrokHeaders` | ✅ | ✅ | ✅ | Ngrok tunnel headers |
+
 | `verboseErrors` | ✅ | ❌ | ❌ | Detailed error messages |
 
 ## 📁 **File Structure**

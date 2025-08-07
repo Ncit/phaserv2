@@ -1,5 +1,5 @@
 import { EventManager } from '../utils/EventManager.js';
-import { createSocketOptionsWithNgrokHeaders } from '../utils/NgrokUtils.js';
+
 import { getEnvironment } from '../config/EnvironmentConfig.js';
 import debugManager from './DebugManager.js';
 
@@ -21,10 +21,7 @@ export class NetworkManager {
         this.gameState = null;
         this.players = [];
         
-        // Ngrok header for all requests
-        this.ngrokHeaders = {
-            'ngrok-skip-browser-warning': '69420'
-        };
+
         
         this.setupEventListeners();
     }
@@ -59,7 +56,7 @@ export class NetworkManager {
                 // Import socket.io-client dynamically
                 import('https://cdn.socket.io/4.7.2/socket.io.esm.min.js')
                     .then(({ io }) => {
-                        // Use standard socket options since we're not using ngrok anymore
+                        // Use standard socket options
                         const socketOptions = {
                             transports: ['websocket', 'polling'],
                             timeout: 20000,
@@ -460,9 +457,5 @@ export class NetworkManager {
         this.eventManager.cleanup();
     }
 
-    // Utility method to make fetch requests with ngrok headers
-    async fetchWithNgrokHeaders(url, options = {}) {
-        const { fetchWithNgrokHeaders } = await import('../utils/NgrokUtils.js');
-        return fetchWithNgrokHeaders(url, options);
-    }
+
 } 

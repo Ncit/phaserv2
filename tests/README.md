@@ -111,7 +111,6 @@ This directory contains all test files for the poker game. Tests are organized b
 
 ### Server Tests
 - `test-server-client-sync.html` - Tests server-client synchronization
-- `test-ngrok-headers.html` - Tests ngrok headers functionality
 
 ### Spectator Tests
 - `test-spectator-cards-hidden.html` - Tests spectator card hiding
