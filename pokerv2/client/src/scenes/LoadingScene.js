@@ -34,13 +34,13 @@ export class LoadingScene extends Phaser.Scene {
         this.load.image('background', 'assets/lobby_background.png');
         this.load.image('lobby_overlay', 'assets/lobby_overlay.png');
         this.load.image('dim_overlay', 'assets/dim_overlay.png');
-        this.load.image('top_bar', 'assets/top_bar_logo_betboom.png');
+        this.load.image('top_bar', 'assets/top_bar_logo.png');
         this.load.image('bottom_bar', 'assets/bottom_bar.png');
         this.load.image('planet_icon', 'assets/planet_icon.png');
         this.load.image('settings_button', 'assets/settings_button.png');
         this.load.image('stats_button', 'assets/stats_button.png');
         this.load.image('friends_button', 'assets/friends_button.png');
-        this.load.image('chip_button', 'assets/chip_button_betboom.png');
+        this.load.image('chip_button', 'assets/chip_button.png');
         this.load.image('underline', 'assets/underline.png');
         this.load.image('avatar', 'assets/avatar.png');
         this.load.image('crown', 'assets/crown.png');
@@ -52,10 +52,10 @@ export class LoadingScene extends Phaser.Scene {
         this.load.image('friends_game_btn', 'assets/friends_game.png');
         this.load.image('high_bid_btn', 'assets/high_bid.png');
         this.load.image('random_match_btn', 'assets/random_match.png');
-        this.load.image('ai_bot_btn', 'assets/train_game_betboom.png');
+        this.load.image('ai_bot_btn', 'assets/train_game.png');
 
         // Load bonus button asset
-        this.load.image('bonus_button', 'assets/bonus_button_betboom.png');
+        this.load.image('bonus_button', 'assets/bonus_button.png');
 
         // Load debug player selection assets
         this.load.image('player_select_bg', 'assets/player_name_placeholder.png');

@@ -12,7 +12,7 @@ export const AssetConfig = {
 
     // UI element assets
     ui: {
-        topBar: { key: 'top_bar', path: 'assets/top_bar_logo_betboom.png' },
+        topBar: { key: 'top_bar', path: 'assets/top_bar_logo.png' },
         bottomBar: { key: 'bottom_bar', path: 'assets/bottom_bar.png' },
         underline: { key: 'underline', path: 'assets/underline.png' },
         progress: { key: 'progress', path: 'assets/progress.png' },
@@ -39,8 +39,8 @@ export const AssetConfig = {
         menuGame: { key: 'menu_game', path: 'assets/menu_game.png' },
         
         // Special buttons
-        bonus: { key: 'bonus_button', path: 'assets/bonus_button_betboom.png' },
-        chip: { key: 'chip_button', path: 'assets/chip_button_betboom.png' },
+        bonus: { key: 'bonus_button', path: 'assets/bonus_button.png' },
+        chip: { key: 'chip_button', path: 'assets/chip_button.png' },
         plus: { key: 'plus_button', path: 'assets/plus_button.png' },
         minus: { key: 'minus_button', path: 'assets/minus_button.png' },
         
@@ -52,7 +52,7 @@ export const AssetConfig = {
     gameModes: {
         fastGame: { key: 'fast_game', path: 'assets/fast_game.png' },
         highBid: { key: 'high_bid', path: 'assets/high_bid.png' },
-        trainGame: { key: 'ai_bot_btn', path: 'assets/train_game_betboom.png' },
+        trainGame: { key: 'ai_bot_btn', path: 'assets/train_game.png' },
         randomMatch: { key: 'random_match', path: 'assets/random_match.png' },
         friendsGame: { key: 'friends_game', path: 'assets/friends_game.png' },
     },
@@ -67,7 +67,7 @@ export const AssetConfig = {
 
     // Card assets
     cards: {
-        backCard: { key: 'back_card', path: 'assets/back_card_betboom.png' },
+        backCard: { key: 'back_card', path: 'assets/back_card.png' },
         
         // All playing cards (suits: clubs, diamonds, hearts, spades)
         // Values: 2-10, jack, queen, king, ace
@@ -82,7 +82,7 @@ export const AssetConfig = {
     // Media and branding assets
     media: {
         mediaPoker: { key: 'media_poker', path: 'assets/media_poker.png' },
-        winlineLogo: { key: 'logo', path: 'assets/logo_betboom.png' },
+        winlineLogo: { key: 'winline_logo', path: 'assets/winline_logo.png' },
         phaser: { key: 'phaser', path: 'assets/phaser.png' },
     },
 
