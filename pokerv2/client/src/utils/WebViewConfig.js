@@ -134,13 +134,23 @@ class WebViewConfig {
             return xhr;
         };
         
-        // Copy static properties
+        // Copy static properties safely
         Object.setPrototypeOf(window.XMLHttpRequest, originalXHR);
-        window.XMLHttpRequest.UNSENT = originalXHR.UNSENT;
-        window.XMLHttpRequest.OPENED = originalXHR.OPENED;
-        window.XMLHttpRequest.HEADERS_RECEIVED = originalXHR.HEADERS_RECEIVED;
-        window.XMLHttpRequest.LOADING = originalXHR.LOADING;
-        window.XMLHttpRequest.DONE = originalXHR.DONE;
+        
+        // Safely copy read-only static properties
+        const staticProperties = ['UNSENT', 'OPENED', 'HEADERS_RECEIVED', 'LOADING', 'DONE'];
+        staticProperties.forEach(prop => {
+            try {
+                Object.defineProperty(window.XMLHttpRequest, prop, {
+                    value: originalXHR[prop],
+                    writable: false,
+                    enumerable: true,
+                    configurable: true
+                });
+            } catch (error) {
+                console.warn(`🔧 WebViewConfig: Could not copy static property ${prop}:`, error.message);
+            }
+        });
     }
 
     /**
