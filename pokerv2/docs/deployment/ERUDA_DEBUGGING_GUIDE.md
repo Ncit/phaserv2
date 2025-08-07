@@ -235,9 +235,11 @@ http://localhost:8080/test-debug.html
 Debug mode is automatically enabled when:
 
 - Running on `localhost` or `127.0.0.1`
+- Running on production domains (`nikmobdev.ru`, `github.io`, `vercel.app`, `netlify.app`)
 - URL contains `?debug=true`
 - URL contains `#debug`
 - `window.isDebug` is set to `true`
+- **All production environments** (enabled by default)
 
 ### Manual Enable/Disable
 
@@ -289,8 +291,18 @@ Eruda is also compatible with iOS WebView and provides the same debugging capabi
 
 ## Production Considerations
 
-### Disable in Production
-For production builds, disable Eruda:
+### Production Debugging Enabled
+Eruda is now enabled for production environments by default, providing debugging capabilities in live applications.
+
+### Benefits of Production Debugging
+- **Real-time Issue Diagnosis**: Debug issues as they occur in production
+- **User Support**: Help users troubleshoot problems directly
+- **Performance Monitoring**: Monitor real-world performance metrics
+- **Error Tracking**: Capture and analyze production errors
+- **WebView Debugging**: Debug mobile WebView applications in production
+
+### Disable if Needed
+If you need to disable Eruda in production:
 
 ```javascript
 // Disable debug mode
@@ -302,12 +314,15 @@ debugManager.disable()
 // <script>eruda.init();</script>
 ```
 
-### Conditional Loading
-Load Eruda only in development:
+### Conditional Loading (Alternative)
+If you prefer conditional loading:
 
 ```javascript
-if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    // Load Eruda only in development
+// Only enable for specific environments
+if (window.location.hostname === 'localhost' || 
+    window.location.hostname === '127.0.0.1' ||
+    window.location.hostname === 'nikmobdev.ru') {
+    // Load Eruda for development and specific production domains
     const script = document.createElement('script');
     script.src = '//cdn.jsdelivr.net/npm/eruda';
     script.onload = () => eruda.init();

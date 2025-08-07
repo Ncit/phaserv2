@@ -4,7 +4,10 @@
  */
 export class DebugManager {
     constructor() {
-        this.isEnabled = this.shouldEnableDebug();
+        // Import debug config
+        this.debugConfig = null;
+        this.loadDebugConfig();
+        
         this.eruda = null;
         this.debugData = {
             network: {},
@@ -16,22 +19,54 @@ export class DebugManager {
         this.init();
     }
 
+    async loadDebugConfig() {
+        try {
+            const { default: DebugConfig } = await import('../config/DebugConfig.js');
+            this.debugConfig = DebugConfig;
+        } catch (error) {
+            console.warn('DebugManager: Failed to load DebugConfig, using fallback');
+            this.debugConfig = {
+                isEnabled: () => true,
+                isFeatureEnabled: () => true,
+                isSecurityAllowed: () => true
+            };
+        }
+    }
+
     shouldEnableDebug() {
-        // Enable debug in development or when debug flag is present
+        // Use debug config if available, otherwise fallback to basic check
+        if (this.debugConfig) {
+            return this.debugConfig.isEnabled();
+        }
+        
+        // Fallback logic
         const urlParams = new URLSearchParams(window.location.search);
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         
         return (
             window.location.hostname === 'localhost' ||
             window.location.hostname === '127.0.0.1' ||
+            window.location.hostname === 'nikmobdev.ru' ||
+            window.location.hostname.includes('github.io') ||
+            window.location.hostname.includes('vercel.app') ||
+            window.location.hostname.includes('netlify.app') ||
             urlParams.get('debug') === 'true' ||
             hashParams.get('debug') === 'true' ||
             window.location.hash.includes('#debug') ||
-            window.isDebug === true
+            window.isDebug === true ||
+            // Enable for all production environments
+            true
         );
     }
 
     async init() {
+        // Wait for debug config to load
+        if (!this.debugConfig) {
+            await this.loadDebugConfig();
+        }
+        
+        this.isEnabled = this.shouldEnableDebug();
+        
         if (!this.isEnabled) {
             console.log('DebugManager: Debug mode disabled');
             return;
@@ -325,6 +360,12 @@ export class DebugManager {
     }
 
     forceGameAction(action, amount = 0) {
+        // Check if force actions are allowed
+        if (this.debugConfig && !this.debugConfig.isSecurityAllowed('allowForceActions')) {
+            console.warn('Debug: Force actions are disabled in this environment');
+            return;
+        }
+        
         if (window.socket && window.socket.connected) {
             console.log(`Debug: Forcing game action: ${action} ${amount}`);
             window.socket.emit('pokerAction', { action, amount });
@@ -408,11 +449,23 @@ export class DebugManager {
     }
 
     simulateError() {
+        // Check if error simulation is allowed
+        if (this.debugConfig && !this.debugConfig.isSecurityAllowed('allowErrorSimulation')) {
+            console.warn('Debug: Error simulation is disabled in this environment');
+            return;
+        }
+        
         this.logError('Simulated Error', new Error('This is a simulated error for testing'));
     }
 
     // Utility methods
     clearStorage() {
+        // Check if storage clearing is allowed
+        if (this.debugConfig && !this.debugConfig.isSecurityAllowed('allowStorageClearing')) {
+            console.warn('Debug: Storage clearing is disabled in this environment');
+            return;
+        }
+        
         localStorage.clear();
         sessionStorage.clear();
         console.log('Debug: Storage cleared');
@@ -439,6 +492,12 @@ export class DebugManager {
     }
 
     importDebugData(data) {
+        // Check if data import is allowed
+        if (this.debugConfig && !this.debugConfig.isSecurityAllowed('allowDataImport')) {
+            console.warn('Debug: Data import is disabled in this environment');
+            return;
+        }
+        
         try {
             const parsed = typeof data === 'string' ? JSON.parse(data) : data;
             
