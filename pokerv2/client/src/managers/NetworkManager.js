@@ -1,4 +1,5 @@
 import { EventManager } from '../utils/EventManager.js';
+import webViewConfig from '../utils/WebViewConfig.js';
 
 import { getEnvironment } from '../config/EnvironmentConfig.js';
 import debugManager from './DebugManager.js';
@@ -56,8 +57,24 @@ export class NetworkManager {
                 // Import socket.io-client dynamically
                 import('https://cdn.socket.io/4.7.2/socket.io.esm.min.js')
                     .then(({ io }) => {
-                        // Use standard socket options
-                        const socketOptions = {
+                        // Use WebView-optimized socket options for VK Android WebView
+                        const socketOptions = webViewConfig.needsWebViewHandling() ? {
+                            transports: ['polling', 'websocket'], // Prioritize polling for WebView
+                            timeout: 30000, // Longer timeout for WebView
+                            reconnection: true,
+                            reconnectionAttempts: this.maxReconnectAttempts,
+                            reconnectionDelay: this.reconnectDelay,
+                            reconnectionDelayMax: 10000,
+                            maxReconnectionAttempts: 10,
+                            path: '/pokerserver/socket.io',
+                            forceNew: true,
+                            autoConnect: true,
+                            upgrade: true,
+                            rememberUpgrade: false,
+                            // WebView-specific options
+                            withCredentials: false,
+                            rejectUnauthorized: false
+                        } : {
                             transports: ['websocket', 'polling'],
                             timeout: 20000,
                             reconnection: true,
@@ -66,7 +83,17 @@ export class NetworkManager {
                             path: '/pokerserver/socket.io'
                         };
                         
-                        this.socket = io('https://nikmobdev.ru', socketOptions);
+                        // Use appropriate server URL based on WebView configuration
+                        const serverUrl = webViewConfig.needsWebViewHandling() ? 
+                            'https://nikmobdev.ru' : 'https://nikmobdev.ru';
+                        
+                        console.log('🔧 NetworkManager: Connecting to server with WebView config:', {
+                            serverUrl: serverUrl,
+                            isVKAndroidWebView: webViewConfig.isVKAndroidWebView,
+                            socketOptions: socketOptions
+                        });
+                        
+                        this.socket = io(serverUrl, socketOptions);
 
                         this.setupSocketListeners();
                         
@@ -92,12 +119,26 @@ export class NetworkManager {
 
                         this.socket.on('connect_error', (error) => {
                             console.error('NetworkManager: Connection error:', error);
+                            console.error('NetworkManager: Error details:', {
+                                message: error.message,
+                                description: error.description,
+                                type: error.type,
+                                context: error.context,
+                                isVKAndroidWebView: webViewConfig.isVKAndroidWebView
+                            });
+                            
                             this.isConnected = false;
                             
                             // Debug: Log connection error
                             if (debugManager.isDebugEnabled()) {
                                 debugManager.endTimer('network_connection');
                                 debugManager.logError('Socket.IO Connection Error', error);
+                            }
+                            
+                            // Special handling for VK Android WebView
+                            if (webViewConfig.isVKAndroidWebView) {
+                                console.log('🔧 NetworkManager: VK Android WebView error - attempting recovery...');
+                                this.handleVKWebViewError(error);
                             }
                             
                             reject(error);
@@ -457,5 +498,37 @@ export class NetworkManager {
         this.eventManager.cleanup();
     }
 
+    /**
+     * Handle VK Android WebView specific errors
+     */
+    handleVKWebViewError(error) {
+        console.log('🔧 NetworkManager: VK WebView error handler activated');
+        
+        // Log detailed error information
+        console.error('🔧 NetworkManager: VK WebView error details:', {
+            error: error,
+            userAgent: navigator.userAgent,
+            platform: navigator.platform,
+            webViewConfig: webViewConfig.getConfigInfo()
+        });
+        
+        // Try to recover by switching to polling transport
+        if (this.socket && this.socket.io) {
+            console.log('🔧 NetworkManager: Attempting to force polling transport...');
+            try {
+                this.socket.io.engine.transport.name = 'polling';
+                console.log('🔧 NetworkManager: Transport switched to polling');
+            } catch (transportError) {
+                console.error('🔧 NetworkManager: Failed to switch transport:', transportError);
+            }
+        }
+        
+        // Emit custom event for debugging
+        this.eventManager.emit('vk-webview-error', {
+            error: error,
+            timestamp: Date.now(),
+            config: webViewConfig.getConfigInfo()
+        });
+    }
 
 } 
