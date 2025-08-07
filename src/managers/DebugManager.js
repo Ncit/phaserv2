@@ -124,14 +124,16 @@ export class DebugManager {
         // Make debug manager globally accessible
         window.debugManager = this;
         
-        // Add debug methods to global scope
-        window.debug = {
-            // Network debugging
-            network: {
-                getStatus: () => this.getNetworkStatus(),
-                getLogs: () => this.getNetworkLogs(),
-                clearLogs: () => this.clearNetworkLogs()
-            },
+                    // Add debug methods to global scope
+            window.debug = {
+                // Network debugging
+                network: {
+                    getStatus: () => this.getNetworkStatus(),
+                    getLogs: () => this.getNetworkLogs(),
+                    clearLogs: () => this.clearNetworkLogs(),
+                    runDiagnostics: () => this.runNetworkDiagnostics(),
+                    quickTest: () => this.quickNetworkTest()
+                },
             
             // Game debugging
             game: {
@@ -307,6 +309,27 @@ export class DebugManager {
             if (networkPanel) {
                 networkPanel.set(this.networkLogs);
             }
+        }
+    }
+
+    // Network diagnostics methods
+    async runNetworkDiagnostics() {
+        try {
+            const { default: networkDiagnostics } = await import('../utils/NetworkDiagnostics.js');
+            return await networkDiagnostics.runDiagnostics();
+        } catch (error) {
+            console.error('Debug: Failed to run network diagnostics:', error);
+            return null;
+        }
+    }
+
+    async quickNetworkTest() {
+        try {
+            const { default: networkDiagnostics } = await import('../utils/NetworkDiagnostics.js');
+            return await networkDiagnostics.quickTest();
+        } catch (error) {
+            console.error('Debug: Failed to run quick network test:', error);
+            return null;
         }
     }
 
