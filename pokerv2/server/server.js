@@ -11,7 +11,7 @@ const io = socketIo(server, {
     cors: {
         origin: "*",
         methods: ["GET", "POST", "OPTIONS"],
-        allowedHeaders: ["Content-Type", "X-Requested-With", "X-VK-Platform", "X-VK-WebView"],
+        allowedHeaders: ["Content-Type", "X-Requested-With"],
         credentials: false
     },
     allowEIO3: true,
@@ -21,18 +21,7 @@ const io = socketIo(server, {
     upgradeTimeout: 30000,
     maxHttpBufferSize: 1e6,
     allowRequest: (req, callback) => {
-        // Allow all requests, but log VK WebView requests
-        const userAgent = req.headers['user-agent'] || '';
-        const isVKWebView = userAgent.includes('wv') && userAgent.includes('Android');
-        
-        if (isVKWebView) {
-            console.log('🔧 Server: VK Android WebView request detected:', {
-                url: req.url,
-                headers: req.headers,
-                userAgent: userAgent
-            });
-        }
-        
+        // Allow all requests
         callback(null, true);
     }
 });
@@ -41,31 +30,9 @@ const io = socketIo(server, {
 app.use(cors({
     origin: "*",
     methods: ["GET", "POST", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "X-Requested-With", "X-VK-Platform", "X-VK-WebView"],
+    allowedHeaders: ["Content-Type", "X-Requested-With"],
     credentials: false
 }));
-
-// VK WebView specific middleware
-app.use((req, res, next) => {
-    const userAgent = req.headers['user-agent'] || '';
-    const isVKWebView = userAgent.includes('wv') && userAgent.includes('Android');
-    
-    if (isVKWebView) {
-        console.log('🔧 Server: VK WebView request:', {
-            method: req.method,
-            url: req.url,
-            headers: req.headers
-        });
-        
-        // Add VK-specific headers
-        res.setHeader('X-VK-Supported', 'true');
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Requested-With, X-VK-Platform, X-VK-WebView');
-    }
-    
-    next();
-});
 
 app.use(express.json());
 app.use(express.static('public'));
@@ -81,20 +48,7 @@ app.use('/pokerserver', (req, res, next) => {
     next();
 });
 
-// VK WebView test endpoint
-app.get('/pokerserver/vk-test', (req, res) => {
-    const userAgent = req.headers['user-agent'] || '';
-    const isVKWebView = userAgent.includes('wv') && userAgent.includes('Android');
-    
-    res.json({
-        status: 'ok',
-        message: 'VK WebView test endpoint',
-        isVKWebView: isVKWebView,
-        userAgent: userAgent,
-        headers: req.headers,
-        timestamp: new Date().toISOString()
-    });
-});
+
 
 // Socket.IO endpoint test
 app.get('/pokerserver/socket-test', (req, res) => {
