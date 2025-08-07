@@ -189,8 +189,8 @@ export class AssetHelper {
         scene.load.image('fold_x', 'assets/fold_x.png');
         scene.load.image('button_placeholder', 'assets/button_placeholder.png');
         scene.load.image('underline', 'assets/underline.png');
-        scene.load.image('chip_button', 'assets/chip_button.png');
-        scene.load.image('back_card', 'assets/back_card.png');
+        scene.load.image('chip_button', 'assets/chip_button_betboom.png');
+        scene.load.image('back_card', 'assets/back_card_betboom.png');
         scene.load.image('player_name_placeholder', 'assets/player_name_placeholder.png');
         scene.load.image('avatarCircle', 'assets/avatar_cirlce.png');
         scene.load.image('avatar', 'assets/avatar.png');

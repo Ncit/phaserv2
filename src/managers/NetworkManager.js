@@ -1,6 +1,8 @@
 import { EventManager } from '../utils/EventManager.js';
-import { createSocketOptionsWithNgrokHeaders } from '../utils/NgrokUtils.js';
+import webViewConfig from '../utils/WebViewConfig.js';
+
 import { getEnvironment } from '../config/EnvironmentConfig.js';
+import debugManager from './DebugManager.js';
 
 export class NetworkManager {
     constructor() {
@@ -20,10 +22,7 @@ export class NetworkManager {
         this.gameState = null;
         this.players = [];
         
-        // Ngrok header for all requests
-        this.ngrokHeaders = {
-            'ngrok-skip-browser-warning': '69420'
-        };
+
         
         this.setupEventListeners();
     }
@@ -50,11 +49,32 @@ export class NetworkManager {
             try {
                 console.log('NetworkManager: Connecting to server...');
                 
+                // Debug: Start connection timer
+                if (debugManager.isDebugEnabled()) {
+                    debugManager.startTimer('network_connection');
+                }
+                
                 // Import socket.io-client dynamically
                 import('https://cdn.socket.io/4.7.2/socket.io.esm.min.js')
                     .then(({ io }) => {
-                        // Use standard socket options since we're not using ngrok anymore
-                        const socketOptions = {
+                        // Use WebView-optimized socket options for VK Android WebView
+                        const socketOptions = webViewConfig.needsWebViewHandling() ? {
+                            transports: ['polling', 'websocket'], // Prioritize polling for WebView
+                            timeout: 30000, // Longer timeout for WebView
+                            reconnection: true,
+                            reconnectionAttempts: this.maxReconnectAttempts,
+                            reconnectionDelay: this.reconnectDelay,
+                            reconnectionDelayMax: 10000,
+                            maxReconnectionAttempts: 10,
+                            path: '/pokerserver/socket.io',
+                            forceNew: true,
+                            autoConnect: true,
+                            upgrade: true,
+                            rememberUpgrade: false,
+                            // WebView-specific options
+                            withCredentials: false,
+                            rejectUnauthorized: false
+                        } : {
                             transports: ['websocket', 'polling'],
                             timeout: 20000,
                             reconnection: true,
@@ -63,7 +83,17 @@ export class NetworkManager {
                             path: '/pokerserver/socket.io'
                         };
                         
-                        this.socket = io('https://nikmobdev.ru', socketOptions);
+                        // Use appropriate server URL based on WebView configuration
+                        const serverUrl = webViewConfig.needsWebViewHandling() ? 
+                            'https://nikmobdev.ru' : 'https://nikmobdev.ru';
+                        
+                        console.log('🔧 NetworkManager: Connecting to server with WebView config:', {
+                            serverUrl: serverUrl,
+                            isVKAndroidWebView: webViewConfig.isVKAndroidWebView,
+                            socketOptions: socketOptions
+                        });
+                        
+                        this.socket = io(serverUrl, socketOptions);
 
                         this.setupSocketListeners();
                         
@@ -71,29 +101,86 @@ export class NetworkManager {
                             console.log('NetworkManager: Connected to server');
                             this.isConnected = true;
                             this.connectionAttempts = 0;
+                            
+                            // Debug: End connection timer and log success
+                            if (debugManager.isDebugEnabled()) {
+                                const duration = debugManager.endTimer('network_connection');
+                                debugManager.logNetworkRequest({
+                                    type: 'websocket',
+                                    event: 'connect',
+                                    status: 'success',
+                                    duration: duration,
+                                    timestamp: Date.now()
+                                });
+                            }
+                            
                             resolve();
                         });
 
                         this.socket.on('connect_error', (error) => {
                             console.error('NetworkManager: Connection error:', error);
+                            console.error('NetworkManager: Error details:', {
+                                message: error.message,
+                                description: error.description,
+                                type: error.type,
+                                context: error.context,
+                                isVKAndroidWebView: webViewConfig.isVKAndroidWebView
+                            });
+                            
                             this.isConnected = false;
+                            
+                            // Debug: Log connection error
+                            if (debugManager.isDebugEnabled()) {
+                                debugManager.endTimer('network_connection');
+                                debugManager.logError('Socket.IO Connection Error', error);
+                            }
+                            
+                            // Special handling for VK Android WebView
+                            if (webViewConfig.isVKAndroidWebView) {
+                                console.log('🔧 NetworkManager: VK Android WebView error - attempting recovery...');
+                                this.handleVKWebViewError(error);
+                            }
+                            
                             reject(error);
                         });
 
                         this.socket.on('disconnect', (reason) => {
                             console.log('NetworkManager: Disconnected from server:', reason);
                             this.isConnected = false;
+                            
+                            // Debug: Log disconnection
+                            if (debugManager.isDebugEnabled()) {
+                                debugManager.logNetworkRequest({
+                                    type: 'websocket',
+                                    event: 'disconnect',
+                                    reason: reason,
+                                    timestamp: Date.now()
+                                });
+                            }
+                            
                             this.eventManager.emit('disconnected', { reason });
                         });
 
                     })
                     .catch(error => {
                         console.error('NetworkManager: Failed to load socket.io:', error);
+                        
+                        // Debug: Log socket.io loading error
+                        if (debugManager.isDebugEnabled()) {
+                            debugManager.logError('Socket.IO Loading Error', error);
+                        }
+                        
                         reject(error);
                     });
 
             } catch (error) {
                 console.error('NetworkManager: Connection setup error:', error);
+                
+                // Debug: Log connection setup error
+                if (debugManager.isDebugEnabled()) {
+                    debugManager.logError('NetworkManager Setup Error', error);
+                }
+                
                 reject(error);
             }
         });
@@ -105,6 +192,18 @@ export class NetworkManager {
         // Game events
         this.socket.on('gameJoined', (data) => {
             console.log('NetworkManager: Game joined:', data);
+            
+            // Debug: Log game joined event
+            if (debugManager.isDebugEnabled()) {
+                debugManager.logNetworkRequest({
+                    type: 'websocket',
+                    event: 'gameJoined',
+                    data: data,
+                    direction: 'incoming',
+                    timestamp: Date.now()
+                });
+            }
+            
             this.gameId = data.gameId;
             this.playerId = data.playerId;
             this.gameState = data.gameState;
@@ -119,9 +218,29 @@ export class NetworkManager {
         this.socket.on('gameStateUpdate', (data) => {
             console.log('NetworkManager: Game state update:', data);
             
+            // Debug: Log game state update
+            if (debugManager.isDebugEnabled()) {
+                debugManager.logNetworkRequest({
+                    type: 'websocket',
+                    event: 'gameStateUpdate',
+                    data: data,
+                    direction: 'incoming',
+                    timestamp: Date.now()
+                });
+            }
+            
             // Validate game state data
             if (!data || !data.gameState) {
                 console.warn('NetworkManager: Received invalid gameStateUpdate data:', data);
+                
+                // Debug: Log invalid data warning
+                if (debugManager.isDebugEnabled()) {
+                    debugManager.logError('Invalid Game State Data', {
+                        received: data,
+                        expected: 'gameState object'
+                    });
+                }
+                
                 return;
             }
             
@@ -245,6 +364,18 @@ export class NetworkManager {
         }
 
         console.log('NetworkManager: Sending poker action:', { action, amount });
+        
+        // Debug: Log outgoing poker action
+        if (debugManager.isDebugEnabled()) {
+            debugManager.logNetworkRequest({
+                type: 'websocket',
+                event: 'pokerAction',
+                data: { action, amount },
+                direction: 'outgoing',
+                timestamp: Date.now()
+            });
+        }
+        
         this.socket.emit('pokerAction', { action, amount });
     }
 
@@ -367,9 +498,37 @@ export class NetworkManager {
         this.eventManager.cleanup();
     }
 
-    // Utility method to make fetch requests with ngrok headers
-    async fetchWithNgrokHeaders(url, options = {}) {
-        const { fetchWithNgrokHeaders } = await import('../utils/NgrokUtils.js');
-        return fetchWithNgrokHeaders(url, options);
+    /**
+     * Handle VK Android WebView specific errors
+     */
+    handleVKWebViewError(error) {
+        console.log('🔧 NetworkManager: VK WebView error handler activated');
+        
+        // Log detailed error information
+        console.error('🔧 NetworkManager: VK WebView error details:', {
+            error: error,
+            userAgent: navigator.userAgent,
+            platform: navigator.platform,
+            webViewConfig: webViewConfig.getConfigInfo()
+        });
+        
+        // Try to recover by switching to polling transport
+        if (this.socket && this.socket.io) {
+            console.log('🔧 NetworkManager: Attempting to force polling transport...');
+            try {
+                this.socket.io.engine.transport.name = 'polling';
+                console.log('🔧 NetworkManager: Transport switched to polling');
+            } catch (transportError) {
+                console.error('🔧 NetworkManager: Failed to switch transport:', transportError);
+            }
+        }
+        
+        // Emit custom event for debugging
+        this.eventManager.emit('vk-webview-error', {
+            error: error,
+            timestamp: Date.now(),
+            config: webViewConfig.getConfigInfo()
+        });
     }
+
 } 
