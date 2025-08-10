@@ -1,0 +1,41 @@
+http:
+  routers:
+    poker-client:
+      rule: "Host(`nikmobdev.ru`) && PathPrefix(`/winlinepoker`)"
+      service: poker-client
+      tls: {}
+      middlewares:
+        - cors-headers
+        - security-headers
+
+  services:
+    poker-client:
+      loadBalancer:
+        servers:
+          - url: "http://localhost:8080"
+
+  middlewares:
+    cors-headers:
+      headers:
+        accessControlAllowOrigin: "*"
+        accessControlAllowMethods: "GET, POST, PUT, DELETE, OPTIONS"
+        accessControlAllowHeaders: "Content-Type, Authorization"
+    
+    security-headers:
+      headers:
+        xContentTypeOptions: "nosniff"
+        xFrameOptions: "DENY"
+        xXSSProtection: "1; mode=block"
+
+tcp:
+  routers:
+    poker-server:
+      rule: "HostSNI(`*`)"
+      service: poker-server
+      tls: {}
+
+  services:
+    poker-server:
+      loadBalancer:
+        servers:
+          - address: "localhost:3000"

@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asset Config Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .warning { background-color: #fff3cd; color: #856404; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .code {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .asset-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .asset-item {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Asset Config Test</h1>
+    <p>This test verifies that conditional asset loading based on <code>window.isWinline</code> works correctly.</p>
+
+    <div class="test-section">
+        <h3>🌐 Winline Flag Control</h3>
+        <button onclick="setWinline(true)">Set Winline = true</button>
+        <button onclick="setWinline(false)">Set Winline = false</button>
+        <button onclick="toggleWinline()">Toggle Winline</button>
+        <button onclick="reloadPage()">Reload Page</button>
+    </div>
+
+    <div class="test-section">
+        <h3>📊 Current Status</h3>
+        <div id="current-status" class="status info">Loading...</div>
+    </div>
+
+    <div class="test-section">
+        <h3>🎴 Asset Paths</h3>
+        <div id="asset-paths" class="code">Loading asset configuration...</div>
+        <button onclick="updateAssetPaths()">Update Asset Paths</button>
+    </div>
+
+    <div class="test-section">
+        <h3>🔍 Asset Details</h3>
+        <div id="asset-details" class="asset-info">Loading...</div>
+    </div>
+
+    <div class="test-section">
+        <h3>📝 Console Output</h3>
+        <div id="console-output" class="code"></div>
+        <button onclick="clearConsole()">Clear Console</button>
+    </div>
+
+    <div class="test-section">
+        <h3>💡 Test Instructions</h1>
+        <ol>
+            <li>Click "Set Winline = true" to test Winline assets</li>
+            <li>Click "Set Winline = false" to test Betboom assets</li>
+            <li>Use "Toggle Winline" to switch between them</li>
+            <li>Check "Asset Paths" to see the conditional paths</li>
+            <li>Monitor console output for detailed information</li>
+        </ol>
+    </div>
+
+    <script>
+        // Capture console output
+        const originalLog = console.log;
+        const originalWarn = console.warn;
+        const originalError = console.error;
+        const consoleOutput = document.getElementById('console-output');
+
+        function addToConsole(type, ...args) {
+            const timestamp = new Date().toLocaleTimeString();
+            const message = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+            ).join(' ');
+            
+            consoleOutput.textContent += `[${timestamp}] ${type.toUpperCase()}: ${message}\n`;
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addToConsole('log', ...args);
+        };
+
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            addToConsole('warn', ...args);
+        };
+
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addToConsole('error', ...args);
+        };
+
+        // Winline control functions
+        function setWinline(value) {
+            window.isWinline = value;
+            console.log(`🔄 Set window.isWinline = ${value}`);
+            updateStatus();
+            updateAssetPaths();
+            updateAssetDetails();
+        }
+
+        function toggleWinline() {
+            window.isWinline = !window.isWinline;
+            console.log(`🔄 Toggled window.isWinline to ${window.isWinline}`);
+            updateStatus();
+            updateAssetPaths();
+            updateAssetDetails();
+        }
+
+        function reloadPage() {
+            console.log('🔄 Reloading page...');
+            window.location.reload();
+        }
+
+        function updateStatus() {
+            const statusDiv = document.getElementById('current-status');
+            
+            if (window.isWinline === true) {
+                statusDiv.className = 'status success';
+                statusDiv.textContent = '✅ Winline Mode - Using Winline assets (back_card.png, top_bar_logo.png, etc.)';
+            } else if (window.isWinline === false) {
+                statusDiv.className = 'status warning';
+                statusDiv.textContent = '⚠️ Betboom Mode - Using Betboom assets (back_card_betboom.png, top_bar_logo_betboom.png, etc.)';
+            } else {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = '❌ Error - window.isWinline is not set';
+            }
+        }
+
+        function updateAssetPaths() {
+            const pathsDiv = document.getElementById('asset-paths');
+            
+            try {
+                // Simulate the asset config structure
+                const assetConfig = {
+                    cards: {
+                        backCard: { 
+                            key: 'back_card', 
+                            path: (window.isWinline ? 'assets/back_card.png' : 'assets/back_card_betboom.png')
+                        }
+                    },
+                    ui: {
+                        topBar: { 
+                            key: 'top_bar', 
+                            path: (window.isWinline ? 'assets/top_bar_logo.png' : 'assets/top_bar_logo_betboom.png')
+                        }
+                    },
+                    buttons: {
+                        bonus: { 
+                            key: 'bonus_button', 
+                            path: (window.isWinline ? 'assets/bonus_button.png' : 'assets/bonus_button_betboom.png')
+                        },
+                        chip: { 
+                            key: 'chip_button', 
+                            path: (window.isWinline ? 'assets/chip_button.png' : 'assets/chip_button_betboom.png')
+                        }
+                    },
+                    gameModes: {
+                        trainGame: { 
+                            key: 'ai_bot_btn', 
+                            path: (window.isWinline ? 'assets/train_game.png' : 'assets/train_game_betboom.png')
+                        }
+                    }
+                };
+
+                const paths = {
+                    'Back Card': assetConfig.cards.backCard.path,
+                    'Top Bar Logo': assetConfig.ui.topBar.path,
+                    'Bonus Button': assetConfig.buttons.bonus.path,
+                    'Chip Button': assetConfig.buttons.chip.path,
+                    'Train Game': assetConfig.gameModes.trainGame.path
+                };
+
+                pathsDiv.textContent = JSON.stringify(paths, null, 2);
+                console.log('📁 Asset paths updated:', paths);
+            } catch (error) {
+                pathsDiv.textContent = `Error: ${error.message}`;
+                console.error('❌ Error updating asset paths:', error);
+            }
+        }
+
+        function updateAssetDetails() {
+            const detailsDiv = document.getElementById('asset-details');
+            
+            try {
+                const assets = [
+                    {
+                        name: 'Back Card',
+                        winline: 'assets/back_card.png',
+                        betboom: 'assets/back_card_betboom.png',
+                        current: window.isWinline ? 'assets/back_card.png' : 'assets/back_card_betboom.png'
+                    },
+                    {
+                        name: 'Top Bar Logo',
+                        winline: 'assets/top_bar_logo.png',
+                        betboom: 'assets/top_bar_logo_betboom.png',
+                        current: window.isWinline ? 'assets/top_bar_logo.png' : 'assets/top_bar_logo_betboom.png'
+                    },
+                    {
+                        name: 'Bonus Button',
+                        winline: 'assets/bonus_button.png',
+                        betboom: 'assets/bonus_button_betboom.png',
+                        current: window.isWinline ? 'assets/bonus_button.png' : 'assets/bonus_button_betboom.png'
+                    },
+                    {
+                        name: 'Chip Button',
+                        winline: 'assets/chip_button.png',
+                        betboom: 'assets/chip_button_betboom.png',
+                        current: window.isWinline ? 'assets/chip_button.png' : 'assets/chip_button_betboom.png'
+                    },
+                    {
+                        name: 'Train Game',
+                        winline: 'assets/train_game.png',
+                        betboom: 'assets/train_game_betboom.png',
+                        current: window.isWinline ? 'assets/train_game.png' : 'assets/train_game_betboom.png'
+                    }
+                ];
+
+                detailsDiv.innerHTML = assets.map(asset => `
+                    <div class="asset-item">
+                        <strong>${asset.name}</strong><br>
+                        <small>Winline: ${asset.winline}</small><br>
+                        <small>Betboom: ${asset.betboom}</small><br>
+                        <strong>Current: ${asset.current}</strong>
+                    </div>
+                `).join('');
+
+                console.log('🔍 Asset details updated');
+            } catch (error) {
+                detailsDiv.innerHTML = `<div class="asset-item error">Error: ${error.message}</div>`;
+                console.error('❌ Error updating asset details:', error);
+            }
+        }
+
+        function clearConsole() {
+            consoleOutput.textContent = '';
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🧪 Asset Config Test Started');
+            console.log('🎴 Testing conditional asset loading based on window.isWinline');
+            
+            // Set default value if not already set
+            if (typeof window.isWinline === 'undefined') {
+                window.isWinline = true;
+                console.log('🔧 Set default window.isWinline = true');
+            }
+            
+            console.log(`📊 Initial window.isWinline = ${window.isWinline}`);
+            
+            updateStatus();
+            updateAssetPaths();
+            updateAssetDetails();
+        });
+
+        // Monitor for changes
+        let currentWinline = window.isWinline;
+        setInterval(() => {
+            if (window.isWinline !== currentWinline) {
+                currentWinline = window.isWinline;
+                console.log(`🔄 Detected change: window.isWinline = ${currentWinline}`);
+                updateStatus();
+                updateAssetPaths();
+                updateAssetDetails();
+            }
+        }, 100);
+    </script>
+</body>
+</html> 

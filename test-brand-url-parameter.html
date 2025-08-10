@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brand URL Parameter Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .brand-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+        }
+        .winline { border-color: #4CAF50; background-color: #f1f8e9; }
+        .betboom { border-color: #FF9800; background-color: #fff3e0; }
+        .test-links {
+            margin: 20px 0;
+        }
+        .test-links a {
+            display: inline-block;
+            margin: 5px;
+            padding: 10px 15px;
+            background-color: #2196F3;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .test-links a:hover {
+            background-color: #1976D2;
+        }
+        .current-status {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .asset-preview {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #fafafa;
+            border-radius: 5px;
+        }
+        .asset-item {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 3px;
+        }
+        .asset-item img {
+            width: 50px;
+            height: 50px;
+            margin-right: 15px;
+            border: 1px solid #ddd;
+        }
+        .asset-info {
+            flex: 1;
+        }
+        .asset-path {
+            font-family: monospace;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Brand URL Parameter Test</h1>
+        <p>This test demonstrates how the brand switching works via URL parameters.</p>
+        
+        <div class="current-status">
+            <h3>Current Status</h3>
+            <p><strong>Brand:</strong> <span id="currentBrand">Loading...</span></p>
+            <p><strong>window.isWinline:</strong> <span id="currentWinline">Loading...</span></p>
+            <p><strong>URL Parameter:</strong> <span id="currentParam">Loading...</span></p>
+        </div>
+
+        <div class="test-links">
+            <h3>Test Different Brands</h3>
+            <a href="?brand=winline">🎯 Winline Brand</a>
+            <a href="?brand=betboom">🎰 Betboom Brand</a>
+            <a href="?">🔄 Default (Winline)</a>
+        </div>
+
+        <div class="asset-preview">
+            <h3>Asset Loading Preview</h3>
+            <div id="assetList">
+                <p>Loading assets...</p>
+            </div>
+        </div>
+
+        <div class="brand-section winline">
+            <h3>🎯 Winline Assets (Default)</h3>
+            <p>When <code>?brand=winline</code> or no parameter is specified:</p>
+            <ul>
+                <li>Top bar logo: <code>assets/top_bar_logo.png</code></li>
+                <li>Bonus button: <code>assets/bonus_button.png</code></li>
+                <li>Chip button: <code>assets/chip_button.png</code></li>
+                <li>Train game: <code>assets/train_game.png</code></li>
+                <li>Back card: <code>assets/back_card.png</code></li>
+            </ul>
+        </div>
+
+        <div class="brand-section betboom">
+            <h3>🎰 Betboom Assets</h3>
+            <p>When <code>?brand=betboom</code> is specified:</p>
+            <ul>
+                <li>Top bar logo: <code>assets/top_bar_logo_betboom.png</code></li>
+                <li>Bonus button: <code>assets/bonus_button_betboom.png</code></li>
+                <li>Chip button: <code>assets/chip_button_betboom.png</code></li>
+                <li>Train game: <code>assets/train_game_betboom.png</code></li>
+                <li>Back card: <code>assets/back_card_betboom.png</code></li>
+            </ul>
+        </div>
+
+        <div class="brand-section">
+            <h3>🔧 How It Works</h3>
+            <p>The system now checks for a <code>brand</code> URL parameter:</p>
+            <ul>
+                <li><strong>No parameter or <code>?brand=winline</code></strong> → Uses Winline assets</li>
+                <li><strong><code>?brand=betboom</code></strong> → Uses Betboom assets</li>
+                <li>Any other value defaults to Winline</li>
+            </ul>
+            <p><strong>Example URLs:</strong></p>
+            <ul>
+                <li><code>index.html</code> → Winline (default)</li>
+                <li><code>index.html?brand=winline</code> → Winline</li>
+                <li><code>index.html?brand=betboom</code> → Betboom</li>
+                <li><code>index.html?brand=anything</code> → Winline (default)</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Simulate the same logic that's now in main.js
+        function detectBrand() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const brandParam = urlParams.get('brand');
+            const isWinline = brandParam !== 'betboom'; // true for 'winline' or any other value, false for 'betboom'
+            
+            // Update display
+            document.getElementById('currentBrand').textContent = isWinline ? 'Winline' : 'Betboom';
+            document.getElementById('currentWinline').textContent = isWinline.toString();
+            document.getElementById('currentParam').textContent = brandParam || 'winline (default)';
+            
+            // Update page styling
+            document.body.className = isWinline ? 'winline' : 'betboom';
+            
+            console.log(`🎨 Brand detected: ${isWinline ? 'Winline' : 'Betboom'} (from URL parameter: ${brandParam || 'winline (default)'})`);
+            
+            return { isWinline, brandParam };
+        }
+
+        // Simulate asset loading based on brand
+        function loadAssets(isWinline) {
+            const assetList = document.getElementById('assetList');
+            const assets = [
+                {
+                    name: 'Top Bar Logo',
+                    winline: 'assets/top_bar_logo.png',
+                    betboom: 'assets/top_bar_logo_betboom.png'
+                },
+                {
+                    name: 'Bonus Button',
+                    winline: 'assets/bonus_button.png',
+                    betboom: 'assets/bonus_button_betboom.png'
+                },
+                {
+                    name: 'Chip Button',
+                    winline: 'assets/chip_button.png',
+                    betboom: 'assets/chip_button_betboom.png'
+                },
+                {
+                    name: 'Train Game',
+                    winline: 'assets/train_game.png',
+                    betboom: 'assets/train_game_betboom.png'
+                },
+                {
+                    name: 'Back Card',
+                    winline: 'assets/back_card.png',
+                    betboom: 'assets/back_card_betboom.png'
+                }
+            ];
+
+            let html = '';
+            assets.forEach(asset => {
+                const currentPath = isWinline ? asset.winline : asset.betboom;
+                const brandClass = isWinline ? 'winline' : 'betboom';
+                
+                html += `
+                    <div class="asset-item ${brandClass}">
+                        <div class="asset-info">
+                            <strong>${asset.name}</strong>
+                            <div class="asset-path">${currentPath}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            assetList.innerHTML = html;
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const { isWinline } = detectBrand();
+            loadAssets(isWinline);
+        });
+
+        // Handle URL changes (for testing)
+        window.addEventListener('popstate', () => {
+            const { isWinline } = detectBrand();
+            loadAssets(isWinline);
+        });
+
+        // Add click handlers for test links
+        document.querySelectorAll('.test-links a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const url = new URL(link.href);
+                window.history.pushState({}, '', url);
+                const { isWinline } = detectBrand();
+                loadAssets(isWinline);
+            });
+        });
+    </script>
+</body>
+</html> 
